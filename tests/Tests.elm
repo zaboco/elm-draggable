@@ -31,25 +31,25 @@ all =
             \lastPosition ->
                 TentativeDrag lastPosition
                     |> D.update DragEnd
-                    |> Should.equal ( NoDrag, Cmd.none )
+                    |> shouldYield NoDrag
         , fuzz positionF "DragEnd: Dragging -> NoDrag" <|
             \lastPosition ->
                 Dragging lastPosition
                     |> D.update DragEnd
-                    |> Should.equal ( NoDrag, Cmd.none )
+                    |> shouldYield NoDrag
         , fuzz3 positionF dragUpdatesF positionF "multi DragAt records last position" <|
             \firstPosition middleDragUpdates lastPosition ->
                 Return.singleton NoDrag
-                    |> andThen (D.update << DragStart <| firstPosition)
+                    |> andThenUpdate (DragStart firstPosition)
                     |> andThenAll middleDragUpdates
-                    |> andThen (D.update << DragAt <| lastPosition)
+                    |> andThenUpdate (DragAt lastPosition)
                     |> shouldYield (Dragging lastPosition)
         , fuzz2 positionF dragUpdatesF "complete drag ends up in NoDrag" <|
             \firstPosition middleDragUpdates ->
                 Return.singleton NoDrag
-                    |> andThen (D.update << DragStart <| firstPosition)
+                    |> andThenUpdate (DragStart firstPosition)
                     |> andThenAll middleDragUpdates
-                    |> andThen (D.update DragEnd)
+                    |> andThenUpdate DragEnd
                     |> shouldYield NoDrag
         ]
 
@@ -79,6 +79,11 @@ shouldYield expected ( actual, _ ) =
 
 
 -- Return Helpers
+
+
+andThenUpdate : Msg -> Return Msg Model -> Return Msg Model
+andThenUpdate =
+    andThen << D.update
 
 
 andThenAll : List (a -> Return msg a) -> Return msg a -> Return msg a
