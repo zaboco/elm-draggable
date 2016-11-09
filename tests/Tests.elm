@@ -37,20 +37,30 @@ all =
                 Dragging lastPosition
                     |> D.update DragEnd
                     |> shouldYield NoDrag
-        , fuzz3 positionF dragUpdatesF positionF "multi DragAt records last position" <|
-            \firstPosition middleDragUpdates lastPosition ->
-                Return.singleton NoDrag
-                    |> andThenUpdate (DragStart firstPosition)
-                    |> andThenAll middleDragUpdates
-                    |> andThenUpdate (DragAt lastPosition)
-                    |> shouldYield (Dragging lastPosition)
-        , fuzz2 positionF dragUpdatesF "complete drag ends up in NoDrag" <|
-            \firstPosition middleDragUpdates ->
-                Return.singleton NoDrag
-                    |> andThenUpdate (DragStart firstPosition)
-                    |> andThenAll middleDragUpdates
-                    |> andThenUpdate DragEnd
-                    |> shouldYield NoDrag
+        , fuzz3 positionF dragsF positionF "multi DragAt records last position" <|
+            \firstPosition middleDrags lastPosition ->
+                let
+                    msgs =
+                        [ DragStart firstPosition ] ++ middleDrags ++ [ DragAt lastPosition ]
+
+                    expected =
+                        Dragging lastPosition
+                in
+                    NoDrag
+                        |> chainUpdate msgs
+                        |> shouldYield expected
+        , fuzz2 positionF dragsF "complete drag ends up in NoDrag" <|
+            \firstPosition middleDrags ->
+                let
+                    msgs =
+                        [ DragStart firstPosition ] ++ middleDrags ++ [ DragEnd ]
+
+                    expected =
+                        NoDrag
+                in
+                    NoDrag
+                        |> chainUpdate msgs
+                        |> shouldYield expected
         ]
 
 
@@ -58,9 +68,9 @@ all =
 -- Fuzzers
 
 
-dragUpdatesF : Fuzzer (List (Model -> Return Msg Model))
-dragUpdatesF =
-    list <| Fuzz.map (D.update << DragAt) <| positionF
+dragsF : Fuzzer (List Msg)
+dragsF =
+    list <| Fuzz.map DragAt <| positionF
 
 
 positionF : Fuzzer Position
@@ -81,14 +91,9 @@ shouldYield expected ( actual, _ ) =
 -- Return Helpers
 
 
-andThenUpdate : Msg -> Return Msg Model -> Return Msg Model
-andThenUpdate =
-    andThen << D.update
-
-
-andThenAll : List (a -> Return msg a) -> Return msg a -> Return msg a
-andThenAll fns initial =
-    fns |> List.foldl andThen initial
+chainUpdate : List Msg -> Model -> Return Msg Model
+chainUpdate msgs model =
+    List.foldl (andThen << D.update) (Return.singleton model) msgs
 
 
 andThen : (a -> Return msg b) -> Return msg a -> Return msg b
