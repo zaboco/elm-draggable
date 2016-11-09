@@ -11,31 +11,48 @@ import Types exposing (Model(..), Msg(..))
 
 all : Test
 all =
+    Test.concat
+        [ updateResult
+        , updateEvents
+        ]
+
+
+type alias Updater =
+    Msg -> Model -> Return Msg Model
+
+
+defaultUpdate : Updater
+defaultUpdate =
+    D.update
+
+
+updateResult : Test
+updateResult =
     describe "update result"
         [ fuzz positionF "DragStart: NoDrag -> DragAttempt" <|
             \position ->
                 NoDrag
-                    |> D.update (DragStart position)
+                    |> defaultUpdate (DragStart position)
                     |> shouldYield (TentativeDrag position)
         , fuzz2 positionF positionF "DragAt: TentativeDrag -> Dragging" <|
             \oldPosition newPosition ->
                 TentativeDrag oldPosition
-                    |> D.update (DragAt newPosition)
+                    |> defaultUpdate (DragAt newPosition)
                     |> shouldYield (Dragging newPosition)
         , fuzz2 positionF positionF "DragAt: Dragging -> Dragging" <|
             \oldPosition newPosition ->
                 Dragging oldPosition
-                    |> D.update (DragAt newPosition)
+                    |> defaultUpdate (DragAt newPosition)
                     |> shouldYield (Dragging newPosition)
         , fuzz positionF "DragEnd: TentativeDrag -> NoDrag" <|
             \lastPosition ->
                 TentativeDrag lastPosition
-                    |> D.update DragEnd
+                    |> defaultUpdate DragEnd
                     |> shouldYield NoDrag
         , fuzz positionF "DragEnd: Dragging -> NoDrag" <|
             \lastPosition ->
                 Dragging lastPosition
-                    |> D.update DragEnd
+                    |> defaultUpdate DragEnd
                     |> shouldYield NoDrag
         , fuzz3 positionF dragsF positionF "multi DragAt records last position" <|
             \firstPosition middleDrags lastPosition ->
@@ -47,7 +64,7 @@ all =
                         Dragging lastPosition
                 in
                     NoDrag
-                        |> chainUpdate msgs
+                        |> chainUpdate defaultUpdate msgs
                         |> shouldYield expected
         , fuzz2 positionF dragsF "complete drag ends up in NoDrag" <|
             \firstPosition middleDrags ->
@@ -59,9 +76,14 @@ all =
                         NoDrag
                 in
                     NoDrag
-                        |> chainUpdate msgs
+                        |> chainUpdate defaultUpdate msgs
                         |> shouldYield expected
         ]
+
+
+updateEvents : Test
+updateEvents =
+    describe "update events" []
 
 
 
@@ -91,9 +113,9 @@ shouldYield expected ( actual, _ ) =
 -- Return Helpers
 
 
-chainUpdate : List Msg -> Model -> Return Msg Model
-chainUpdate msgs model =
-    List.foldl (andThen << D.update) (Return.singleton model) msgs
+chainUpdate : Updater -> List Msg -> Model -> Return Msg Model
+chainUpdate update msgs model =
+    List.foldl (andThen << update) (Return.singleton model) msgs
 
 
 andThen : (a -> Return msg b) -> Return msg a -> Return msg b
