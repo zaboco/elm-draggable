@@ -21,6 +21,10 @@ type alias Emit msg model =
     ( model, List msg )
 
 
+type alias UpdateEmitter msg =
+    Msg -> Drag -> Emit msg Drag
+
+
 type alias Delta =
     { dx : Int
     , dy : Int

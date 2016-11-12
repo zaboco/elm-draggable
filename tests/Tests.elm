@@ -15,10 +15,6 @@ all =
         ]
 
 
-type alias UpdateEmitter msg =
-    Msg -> Drag -> Emit msg Drag
-
-
 type EmitMsg
     = OnDragStart
     | OnDragBy Delta
@@ -26,8 +22,8 @@ type EmitMsg
     | OnClick
 
 
-defaultUpdate : UpdateEmitter EmitMsg
-defaultUpdate =
+updateWithEvents : UpdateEmitter EmitMsg
+updateWithEvents =
     updateAndEmit fullConfig
 
 
@@ -40,17 +36,22 @@ fullConfig =
     }
 
 
+defaultUpdate : UpdateEmitter ()
+defaultUpdate =
+    updateAndEmit defaultConfig
+
+
 singleUpdateTests : List Test
 singleUpdateTests =
     [ fuzz positionF "NoDrag -[DragStart]-> DragAttempt (onDragStart)" <|
         \startPosition ->
             NoDrag
-                |> defaultUpdate (DragStart startPosition)
+                |> updateWithEvents (DragStart startPosition)
                 |> Should.equal ( TentativeDrag startPosition, [] )
     , fuzz2 positionF positionF "TentativeDrag -[DragAt]-> Dragging (onDragBy)" <|
         \p1 p2 ->
             TentativeDrag p1
-                |> defaultUpdate (DragAt p2)
+                |> updateWithEvents (DragAt p2)
                 |> Should.equal
                     ( Dragging p2
                     , [ OnDragStart, OnDragBy (distance p1 p2) ]
@@ -58,17 +59,17 @@ singleUpdateTests =
     , fuzz2 positionF positionF "Dragging -[DragAt]-> Dragging (onDragBy)" <|
         \p1 p2 ->
             Dragging p1
-                |> defaultUpdate (DragAt p2)
+                |> updateWithEvents (DragAt p2)
                 |> Should.equal ( Dragging p2, [ OnDragBy (distance p1 p2) ] )
     , fuzz positionF "TentativeDrag -[DragEnd]-> NoDrag (onClick)" <|
         \endPosition ->
             TentativeDrag endPosition
-                |> defaultUpdate DragEnd
+                |> updateWithEvents DragEnd
                 |> Should.equal ( NoDrag, [ OnClick ] )
     , fuzz positionF "Dragging -[DragEnd]-> NoDrag (onDragEnd)" <|
         \endPosition ->
             Dragging endPosition
-                |> defaultUpdate DragEnd
+                |> updateWithEvents DragEnd
                 |> Should.equal ( NoDrag, [ OnDragEnd ] )
     ]
 
@@ -96,17 +97,37 @@ chainUpdateTests =
                         ]
             in
                 NoDrag
-                    |> chainUpdate defaultUpdate msgs
+                    |> chainUpdate updateWithEvents msgs
                     |> Should.equal ( expectedState, expectedEvents )
     , fuzz positionF "DragStart DragEnd" <|
         \startPosition ->
             let
                 msgs =
                     [ DragStart startPosition, DragEnd ]
+
+                expected =
+                    ( NoDrag, [ OnClick ] )
+            in
+                NoDrag
+                    |> chainUpdate updateWithEvents msgs
+                    |> Should.equal expected
+    , fuzz2 positionF positionF "no events if none configured" <|
+        \startPosition endPosition ->
+            let
+                msgs =
+                    [ DragStart startPosition
+                    , DragAt endPosition
+                    , DragEnd
+                    , DragStart endPosition
+                    , DragEnd
+                    ]
+
+                expected =
+                    ( NoDrag, [] )
             in
                 NoDrag
                     |> chainUpdate defaultUpdate msgs
-                    |> Should.equal ( NoDrag, [ OnClick ] )
+                    |> Should.equal expected
     ]
 
 
@@ -130,7 +151,7 @@ positionF =
 
 
 
--- Return Helpers
+-- Update Helpers
 
 
 chainUpdate : UpdateEmitter msg -> List Msg -> Drag -> Emit msg Drag

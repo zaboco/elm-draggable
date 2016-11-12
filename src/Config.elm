@@ -1,7 +1,7 @@
-module Config exposing (Config)
+module Config exposing (Config(..))
 
 import Internal
 
 
-type Config
-    = Confing Internal.Config
+type Config msg
+    = Config (Internal.Config msg)
