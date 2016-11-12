@@ -2,13 +2,13 @@ module Internal exposing (..)
 
 import Mouse exposing (Position)
 import Maybe.Extra exposing (maybeToList)
+import String
 
 
 type Drag
     = NoDrag
     | TentativeDrag Position
     | Dragging Position
-    | Invalid Msg Drag
 
 
 type Msg
@@ -73,15 +73,32 @@ updateAndEmit config msg drag =
         ( DragEnd, Dragging _ ) ->
             ( NoDrag, maybeToList config.onDragEnd )
 
-        ( _, unknown ) ->
-            case unknown of
-                Invalid _ _ ->
-                    ( unknown, [] )
-
-                _ ->
-                    ( Invalid msg drag, [] )
+        _ ->
+            ( drag, [] )
+                |> logInvalidState drag msg
 
 
 distance : Position -> Position -> Delta
 distance p1 p2 =
     { dx = p2.x - p1.x, dy = p2.y - p1.y }
+
+
+
+-- utility
+
+
+logInvalidState : Drag -> Msg -> a -> a
+logInvalidState drag msg result =
+    let
+        str =
+            String.join ""
+                [ "Invalid drag state: "
+                , toString drag
+                , ": "
+                , toString msg
+                ]
+
+        _ =
+            Debug.log str
+    in
+        result

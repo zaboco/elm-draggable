@@ -5,13 +5,17 @@ import Mouse exposing (Position)
 import Test exposing (..)
 import Expect as Should exposing (Expectation)
 import Internal exposing (..)
+import String
 
 
 all : Test
 all =
     Test.concat
-        [ describe "singleUpdate" singleUpdateTests
-        , describe "chainUpdate" chainUpdateTests
+        [ describe "single update" singleUpdateTests
+        , describe "chain update" chainUpdateTests
+        , describe
+            "invalid updates leave the state unchanged"
+            invalidUpdateTests
         ]
 
 
@@ -71,6 +75,31 @@ singleUpdateTests =
             Dragging endPosition
                 |> updateWithEvents DragEnd
                 |> Should.equal ( NoDrag, [ OnDragEnd ] )
+    ]
+
+
+invalidUpdateTests : List Test
+invalidUpdateTests =
+    [ fuzz positionF "Invalid DragAt from NoDrag" <|
+        \position ->
+            NoDrag
+                |> updateWithEvents (DragAt position)
+                |> Should.equal ( NoDrag, [] )
+    , test "Invalid DragEnd from NoDrag" <|
+        \() ->
+            NoDrag
+                |> updateWithEvents DragEnd
+                |> Should.equal ( NoDrag, [] )
+    , fuzz2 positionF positionF "Invalid DragStart from TentativeDrag" <|
+        \position startPosition ->
+            TentativeDrag position
+                |> updateWithEvents (DragStart startPosition)
+                |> Should.equal ( TentativeDrag position, [] )
+    , fuzz2 positionF positionF "Invalid DragStart from Dragging" <|
+        \position startPosition ->
+            Dragging position
+                |> updateWithEvents (DragStart startPosition)
+                |> Should.equal ( Dragging position, [] )
     ]
 
 
