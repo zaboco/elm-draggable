@@ -46,12 +46,15 @@ singleUpdateTests =
         \startPosition ->
             NoDrag
                 |> defaultUpdate (DragStart startPosition)
-                |> Should.equal ( TentativeDrag startPosition, [ OnDragStart ] )
+                |> Should.equal ( TentativeDrag startPosition, [] )
     , fuzz2 positionF positionF "TentativeDrag -[DragAt]-> Dragging (onDragBy)" <|
         \p1 p2 ->
             TentativeDrag p1
                 |> defaultUpdate (DragAt p2)
-                |> Should.equal ( Dragging p2, [ OnDragBy (distance p1 p2) ] )
+                |> Should.equal
+                    ( Dragging p2
+                    , [ OnDragStart, OnDragBy (distance p1 p2) ]
+                    )
     , fuzz2 positionF positionF "Dragging -[DragAt]-> Dragging (onDragBy)" <|
         \p1 p2 ->
             Dragging p1
@@ -103,18 +106,13 @@ chainUpdateTests =
             in
                 NoDrag
                     |> chainUpdate defaultUpdate msgs
-                    |> Should.equal ( NoDrag, [ OnDragStart, OnClick ] )
+                    |> Should.equal ( NoDrag, [ OnClick ] )
     ]
 
 
 deltas : Position -> List Position -> List Delta
 deltas first rest =
     List.map2 distance (first :: rest) rest
-
-
-distance : Position -> Position -> Delta
-distance p1 p2 =
-    { dx = p2.x - p1.x, dy = p2.y - p1.y }
 
 
 
