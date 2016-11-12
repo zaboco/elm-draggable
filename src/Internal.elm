@@ -49,16 +49,10 @@ updateAndEmit config msg drag =
             ( TentativeDrag initialPosition, maybeToList config.onDragStart )
 
         ( DragAt newPosition, TentativeDrag oldPosition ) ->
-            let
-                delta =
-                    { dx = newPosition.x - oldPosition.x
-                    , dy = newPosition.y - oldPosition.y
-                    }
-            in
-                ( Dragging newPosition, maybeToList (config.onDragBy delta) )
+            updateOnDragAt config newPosition oldPosition
 
-        ( DragAt newPosition, Dragging _ ) ->
-            ( Dragging newPosition, [] )
+        ( DragAt newPosition, Dragging oldPosition ) ->
+            updateOnDragAt config newPosition oldPosition
 
         ( DragEnd, TentativeDrag _ ) ->
             ( NoDrag, [] )
@@ -73,3 +67,14 @@ updateAndEmit config msg drag =
 
                 _ ->
                     ( Invalid msg drag, [] )
+
+
+updateOnDragAt : Config msg -> Position -> Position -> Emit msg Drag
+updateOnDragAt { onDragBy } newPosition oldPosition =
+    let
+        delta =
+            { dx = newPosition.x - oldPosition.x
+            , dy = newPosition.y - oldPosition.y
+            }
+    in
+        ( Dragging newPosition, maybeToList (onDragBy delta) )

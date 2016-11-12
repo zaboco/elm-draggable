@@ -106,18 +106,12 @@ updateEvents =
                     NoDrag
                         |> updateAndEmit config (DragStart initialPosition)
                         |> shouldEmit []
-        , fuzz2 positionF positionF "emits DragBy" <|
-            \p1 p2 ->
-                let
-                    delta =
-                        { dx = p2.x - p1.x, dy = p2.y - p1.y }
-
-                    config =
-                        { defaultConfig | onDragBy = Just << OnDragBy }
-                in
-                    TentativeDrag p1
-                        |> updateAndEmit config (DragAt p2)
-                        |> shouldEmit [ OnDragBy delta ]
+        , testDragByEvent
+            "emits DragBy when Dragging after TentativeDrag"
+            TentativeDrag
+        , testDragByEvent
+            "emits DragBy when it keeps Dragging"
+            Dragging
         , fuzz positionF "emits DragEnd if it was Dragging" <|
             \dragPosition ->
                 let
@@ -128,6 +122,22 @@ updateEvents =
                         |> updateAndEmit config DragEnd
                         |> shouldEmit [ OnDragEnd ]
         ]
+
+
+testDragByEvent : String -> (Position -> Drag) -> Test
+testDragByEvent desc draggedAt =
+    fuzz2 positionF positionF desc <|
+        \p1 p2 ->
+            let
+                delta =
+                    { dx = p2.x - p1.x, dy = p2.y - p1.y }
+
+                config =
+                    { defaultConfig | onDragBy = Just << OnDragBy }
+            in
+                draggedAt p1
+                    |> updateAndEmit config (DragAt p2)
+                    |> shouldEmit [ OnDragBy delta ]
 
 
 
