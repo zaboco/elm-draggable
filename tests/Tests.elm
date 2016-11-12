@@ -83,6 +83,7 @@ type EmitMsg
     = OnDragStart
     | OnDragBy Delta
     | OnDragEnd
+    | OnClick
 
 
 updateEvents : Test
@@ -121,6 +122,15 @@ updateEvents =
                     Dragging dragPosition
                         |> updateAndEmit config DragEnd
                         |> shouldEmit [ OnDragEnd ]
+        , fuzz positionF "emits Click if it stops dragging after TentativeDrag" <|
+            \dragPosition ->
+                let
+                    config =
+                        { defaultConfig | onClick = Just OnClick }
+                in
+                    TentativeDrag dragPosition
+                        |> updateAndEmit config DragEnd
+                        |> shouldEmit [ OnClick ]
         ]
 
 
