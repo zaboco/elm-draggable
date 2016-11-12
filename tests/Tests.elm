@@ -1,6 +1,6 @@
 module Tests exposing (..)
 
-import Fuzz exposing (Fuzzer, int, list)
+import Fuzz exposing (Fuzzer)
 import Mouse exposing (Position)
 import Test exposing (..)
 import Expect as Should exposing (Expectation)
@@ -10,73 +10,13 @@ import Internal exposing (..)
 all : Test
 all =
     Test.concat
-        [ updateResult
-        , updateEvents
+        [ describe "singleUpdate" singleUpdateTests
+        , describe "chainUpdate" chainUpdateTests
         ]
 
 
-type alias UpdateEmitter =
-    Msg -> Drag -> Emit Msg Drag
-
-
-defaultUpdate : UpdateEmitter
-defaultUpdate =
-    updateAndEmit defaultConfig
-
-
-updateResult : Test
-updateResult =
-    describe "update result"
-        [ fuzz positionF "DragStart: NoDrag -> DragAttempt" <|
-            \position ->
-                NoDrag
-                    |> defaultUpdate (DragStart position)
-                    |> shouldYield (TentativeDrag position)
-        , fuzz2 positionF positionF "DragAt: TentativeDrag -> Dragging" <|
-            \oldPosition newPosition ->
-                TentativeDrag oldPosition
-                    |> defaultUpdate (DragAt newPosition)
-                    |> shouldYield (Dragging newPosition)
-        , fuzz2 positionF positionF "DragAt: Dragging -> Dragging" <|
-            \oldPosition newPosition ->
-                Dragging oldPosition
-                    |> defaultUpdate (DragAt newPosition)
-                    |> shouldYield (Dragging newPosition)
-        , fuzz positionF "DragEnd: TentativeDrag -> NoDrag" <|
-            \lastPosition ->
-                TentativeDrag lastPosition
-                    |> defaultUpdate DragEnd
-                    |> shouldYield NoDrag
-        , fuzz positionF "DragEnd: Dragging -> NoDrag" <|
-            \lastPosition ->
-                Dragging lastPosition
-                    |> defaultUpdate DragEnd
-                    |> shouldYield NoDrag
-        , fuzz3 positionF dragsF positionF "multi DragAt records last position" <|
-            \firstPosition middleDrags lastPosition ->
-                let
-                    msgs =
-                        [ DragStart firstPosition ] ++ middleDrags ++ [ DragAt lastPosition ]
-
-                    expected =
-                        Dragging lastPosition
-                in
-                    NoDrag
-                        |> chainUpdateEmit defaultUpdate msgs
-                        |> shouldYield expected
-        , fuzz2 positionF dragsF "complete drag ends up in NoDrag" <|
-            \firstPosition middleDrags ->
-                let
-                    msgs =
-                        [ DragStart firstPosition ] ++ middleDrags ++ [ DragEnd ]
-
-                    expected =
-                        NoDrag
-                in
-                    NoDrag
-                        |> chainUpdateEmit defaultUpdate msgs
-                        |> shouldYield expected
-        ]
+type alias UpdateEmitter msg =
+    Msg -> Drag -> Emit msg Drag
 
 
 type EmitMsg
@@ -86,104 +26,117 @@ type EmitMsg
     | OnClick
 
 
-updateEvents : Test
-updateEvents =
-    describe "update events"
-        [ fuzz positionF "emits DragStart" <|
-            \initialPosition ->
-                let
-                    config =
-                        { defaultConfig | onDragStart = Just OnDragStart }
-                in
-                    NoDrag
-                        |> updateAndEmit config (DragStart initialPosition)
-                        |> shouldEmit [ OnDragStart ]
-        , fuzz positionF "does not emit DragStart if not in config" <|
-            \initialPosition ->
-                let
-                    config =
-                        { defaultConfig | onDragStart = Nothing }
-                in
-                    NoDrag
-                        |> updateAndEmit config (DragStart initialPosition)
-                        |> shouldEmit []
-        , testDragByEvent
-            "emits DragBy when Dragging after TentativeDrag"
-            TentativeDrag
-        , testDragByEvent
-            "emits DragBy when it keeps Dragging"
-            Dragging
-        , fuzz positionF "emits DragEnd if it was Dragging" <|
-            \dragPosition ->
-                let
-                    config =
-                        { defaultConfig | onDragEnd = Just OnDragEnd }
-                in
-                    Dragging dragPosition
-                        |> updateAndEmit config DragEnd
-                        |> shouldEmit [ OnDragEnd ]
-        , fuzz positionF "emits Click if it stops dragging after TentativeDrag" <|
-            \dragPosition ->
-                let
-                    config =
-                        { defaultConfig | onClick = Just OnClick }
-                in
-                    TentativeDrag dragPosition
-                        |> updateAndEmit config DragEnd
-                        |> shouldEmit [ OnClick ]
-        ]
+defaultUpdate : UpdateEmitter EmitMsg
+defaultUpdate =
+    updateAndEmit fullConfig
 
 
-testDragByEvent : String -> (Position -> Drag) -> Test
-testDragByEvent desc draggedAt =
-    fuzz2 positionF positionF desc <|
+fullConfig : Config EmitMsg
+fullConfig =
+    { onDragStart = Just OnDragStart
+    , onDragBy = Just << OnDragBy
+    , onDragEnd = Just OnDragEnd
+    , onClick = Just OnClick
+    }
+
+
+singleUpdateTests : List Test
+singleUpdateTests =
+    [ fuzz positionF "NoDrag -[DragStart]-> DragAttempt (onDragStart)" <|
+        \startPosition ->
+            NoDrag
+                |> defaultUpdate (DragStart startPosition)
+                |> Should.equal ( TentativeDrag startPosition, [ OnDragStart ] )
+    , fuzz2 positionF positionF "TentativeDrag -[DragAt]-> Dragging (onDragBy)" <|
         \p1 p2 ->
-            let
-                delta =
-                    { dx = p2.x - p1.x, dy = p2.y - p1.y }
+            TentativeDrag p1
+                |> defaultUpdate (DragAt p2)
+                |> Should.equal ( Dragging p2, [ OnDragBy (distance p1 p2) ] )
+    , fuzz2 positionF positionF "Dragging -[DragAt]-> Dragging (onDragBy)" <|
+        \p1 p2 ->
+            Dragging p1
+                |> defaultUpdate (DragAt p2)
+                |> Should.equal ( Dragging p2, [ OnDragBy (distance p1 p2) ] )
+    , fuzz positionF "TentativeDrag -[DragEnd]-> NoDrag (onClick)" <|
+        \endPosition ->
+            TentativeDrag endPosition
+                |> defaultUpdate DragEnd
+                |> Should.equal ( NoDrag, [ OnClick ] )
+    , fuzz positionF "Dragging -[DragEnd]-> NoDrag (onDragEnd)" <|
+        \endPosition ->
+            Dragging endPosition
+                |> defaultUpdate DragEnd
+                |> Should.equal ( NoDrag, [ OnDragEnd ] )
+    ]
 
-                config =
-                    { defaultConfig | onDragBy = Just << OnDragBy }
+
+chainUpdateTests : List Test
+chainUpdateTests =
+    [ fuzz2 positionF positionsStrictF "DragStart DragAt+ DragEnd" <|
+        \startPosition dragPositions ->
+            let
+                msgs =
+                    List.concat
+                        [ [ DragStart startPosition ]
+                        , List.map DragAt dragPositions
+                        , [ DragEnd ]
+                        ]
+
+                expectedState =
+                    NoDrag
+
+                expectedEvents =
+                    List.concat
+                        [ [ OnDragStart ]
+                        , List.map OnDragBy (deltas startPosition dragPositions)
+                        , [ OnDragEnd ]
+                        ]
             in
-                draggedAt p1
-                    |> updateAndEmit config (DragAt p2)
-                    |> shouldEmit [ OnDragBy delta ]
+                NoDrag
+                    |> chainUpdate defaultUpdate msgs
+                    |> Should.equal ( expectedState, expectedEvents )
+    , fuzz positionF "DragStart DragEnd" <|
+        \startPosition ->
+            let
+                msgs =
+                    [ DragStart startPosition, DragEnd ]
+            in
+                NoDrag
+                    |> chainUpdate defaultUpdate msgs
+                    |> Should.equal ( NoDrag, [ OnDragStart, OnClick ] )
+    ]
+
+
+deltas : Position -> List Position -> List Delta
+deltas first rest =
+    List.map2 distance (first :: rest) rest
+
+
+distance : Position -> Position -> Delta
+distance p1 p2 =
+    { dx = p2.x - p1.x, dy = p2.y - p1.y }
 
 
 
 -- Fuzzers
 
 
-dragsF : Fuzzer (List Msg)
-dragsF =
-    list <| Fuzz.map DragAt <| positionF
+positionsStrictF : Fuzzer (List Position)
+positionsStrictF =
+    Fuzz.map2 (::) positionF (Fuzz.list positionF)
 
 
 positionF : Fuzzer Position
 positionF =
-    Fuzz.map2 Position int int
-
-
-
--- Expectation Helpers
-
-
-shouldYield : model -> ( model, x ) -> Expectation
-shouldYield expected ( actual, _ ) =
-    Should.equal expected actual
-
-
-shouldEmit : List msg -> ( x, List msg ) -> Expectation
-shouldEmit expected ( _, actual ) =
-    Should.equal expected actual
+    Fuzz.map2 Position Fuzz.int Fuzz.int
 
 
 
 -- Return Helpers
 
 
-chainUpdateEmit : UpdateEmitter -> List Msg -> Drag -> Emit Msg Drag
-chainUpdateEmit update msgs model =
+chainUpdate : UpdateEmitter msg -> List Msg -> Drag -> Emit msg Drag
+chainUpdate update msgs model =
     List.foldl (andThenEmit << update) ( model, [] ) msgs
 
 
