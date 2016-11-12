@@ -81,20 +81,30 @@ updateResult =
 
 type EmitMsg
     = OnDragStart
+    | OnDragAt Position
 
 
 updateEvents : Test
 updateEvents =
     describe "update events"
         [ fuzz positionF "emits DragStart" <|
-            \firstPosition ->
+            \initialPosition ->
                 let
                     config =
-                        Config { onDragStart = Just OnDragStart }
+                        { defaultConfig | onDragStart = Just OnDragStart }
                 in
                     NoDrag
-                        |> updateAndEmit config (DragStart firstPosition)
+                        |> updateAndEmit config (DragStart initialPosition)
                         |> shouldEmit [ OnDragStart ]
+        , fuzz2 positionF positionF "emits DragAt" <|
+            \initialPosition dragPosition ->
+                let
+                    config =
+                        { defaultConfig | onDragAt = Just << OnDragAt }
+                in
+                    TentativeDrag initialPosition
+                        |> updateAndEmit config (DragAt dragPosition)
+                        |> shouldEmit [ OnDragAt dragPosition ]
         ]
 
 

@@ -21,25 +21,27 @@ type alias Emit msg model =
     ( model, List msg )
 
 
-type Config msg
-    = Config { onDragStart : Maybe msg }
+type alias Config msg =
+    { onDragStart : Maybe msg
+    , onDragAt : Position -> Maybe msg
+    }
 
 
 defaultConfig : Config msg
 defaultConfig =
-    Config
-        { onDragStart = Nothing
-        }
+    { onDragStart = Nothing
+    , onDragAt = \_ -> Nothing
+    }
 
 
 updateAndEmit : Config msg -> Msg -> Drag -> Emit msg Drag
-updateAndEmit (Config config) msg drag =
+updateAndEmit config msg drag =
     case ( msg, drag ) of
         ( DragStart initialPosition, NoDrag ) ->
             ( TentativeDrag initialPosition, maybeToList config.onDragStart )
 
         ( DragAt newPosition, TentativeDrag _ ) ->
-            ( Dragging newPosition, [] )
+            ( Dragging newPosition, maybeToList (config.onDragAt newPosition) )
 
         ( DragAt newPosition, Dragging _ ) ->
             ( Dragging newPosition, [] )
