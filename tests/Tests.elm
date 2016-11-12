@@ -4,7 +4,7 @@ import Fuzz exposing (Fuzzer, int, list)
 import Mouse exposing (Position)
 import Test exposing (..)
 import Expect as Should exposing (Expectation)
-import Internal exposing (Drag(..), Msg(..), Emit, updateAndEmit)
+import Internal exposing (..)
 
 
 all : Test
@@ -21,7 +21,7 @@ type alias UpdateEmitter =
 
 defaultUpdate : UpdateEmitter
 defaultUpdate =
-    updateAndEmit Nothing
+    updateAndEmit defaultConfig
 
 
 updateResult : Test
@@ -88,9 +88,13 @@ updateEvents =
     describe "update events"
         [ fuzz positionF "emits DragStart" <|
             \firstPosition ->
-                NoDrag
-                    |> updateAndEmit (Just OnDragStart) (DragStart firstPosition)
-                    |> shouldEmit [ OnDragStart ]
+                let
+                    config =
+                        Config { onDragStart = Just OnDragStart }
+                in
+                    NoDrag
+                        |> updateAndEmit config (DragStart firstPosition)
+                        |> shouldEmit [ OnDragStart ]
         ]
 
 
