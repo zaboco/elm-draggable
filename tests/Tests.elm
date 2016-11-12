@@ -96,6 +96,15 @@ updateEvents =
                     NoDrag
                         |> updateAndEmit config (DragStart initialPosition)
                         |> shouldEmit [ OnDragStart ]
+        , fuzz positionF "does not emit DragStart if not in config" <|
+            \initialPosition ->
+                let
+                    config =
+                        { defaultConfig | onDragStart = Nothing }
+                in
+                    NoDrag
+                        |> updateAndEmit config (DragStart initialPosition)
+                        |> shouldEmit []
         , fuzz2 positionF positionF "emits DragAt" <|
             \initialPosition dragPosition ->
                 let
