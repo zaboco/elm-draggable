@@ -1,4 +1,4 @@
-module DraggableDiv exposing (..)
+module BasicDrag exposing (..)
 
 import Html exposing (Html)
 import Html.App
@@ -49,11 +49,7 @@ update msg model =
             )
 
         DragMsg dragMsg ->
-            let
-                ( dragState, dragCmd ) =
-                    Draggable.update dragConfig dragMsg model.drag
-            in
-                { model | drag = dragState } ! [ dragCmd ]
+            Draggable.update dragConfig dragMsg model
 
 
 subscriptions : Model -> Sub Msg

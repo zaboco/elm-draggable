@@ -76,10 +76,23 @@ init =
     Internal.NoDrag
 
 
-{-| Handle Drag update messages
+{-| Handle update messages for the draggable model
 -}
-update : Config msg -> Msg -> Drag -> ( Drag, Cmd msg )
-update (Config config) msg drag =
+update :
+    Config msg
+    -> Msg
+    -> { m | drag : Drag }
+    -> ( { m | drag : Drag }, Cmd msg )
+update config msg model =
+    let
+        ( dragState, dragCmd ) =
+            updateDraggable config msg model.drag
+    in
+        { model | drag = dragState } ! [ dragCmd ]
+
+
+updateDraggable : Config msg -> Msg -> Drag -> ( Drag, Cmd msg )
+updateDraggable (Config config) msg drag =
     let
         ( newDrag, newMsgs ) =
             Internal.updateAndEmit config msg drag
