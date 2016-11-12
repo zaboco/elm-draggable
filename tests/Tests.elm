@@ -21,7 +21,7 @@ type alias UpdateEmitter =
 
 defaultUpdate : UpdateEmitter
 defaultUpdate =
-    updateAndEmit
+    updateAndEmit Nothing
 
 
 updateResult : Test
@@ -79,9 +79,19 @@ updateResult =
         ]
 
 
+type EmitMsg
+    = OnDragStart
+
+
 updateEvents : Test
 updateEvents =
-    describe "update events" []
+    describe "update events"
+        [ fuzz positionF "emits DragStart" <|
+            \firstPosition ->
+                NoDrag
+                    |> updateAndEmit (Just OnDragStart) (DragStart firstPosition)
+                    |> shouldEmit [ OnDragStart ]
+        ]
 
 
 
@@ -104,6 +114,11 @@ positionF =
 
 shouldYield : model -> ( model, x ) -> Expectation
 shouldYield expected ( actual, _ ) =
+    Should.equal expected actual
+
+
+shouldEmit : List msg -> ( x, List msg ) -> Expectation
+shouldEmit expected ( _, actual ) =
     Should.equal expected actual
 
 

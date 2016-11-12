@@ -1,6 +1,7 @@
 module Internal exposing (..)
 
 import Mouse exposing (Position)
+import Maybe.Extra exposing (maybeToList)
 
 
 type Drag
@@ -20,11 +21,11 @@ type alias Emit msg model =
     ( model, List msg )
 
 
-updateAndEmit : Msg -> Drag -> Emit msg Drag
-updateAndEmit msg drag =
+updateAndEmit : Maybe msg -> Msg -> Drag -> Emit msg Drag
+updateAndEmit onDragStartMaybe msg drag =
     case ( msg, drag ) of
         ( DragStart initialPosition, NoDrag ) ->
-            ( TentativeDrag initialPosition, [] )
+            ( TentativeDrag initialPosition, maybeToList onDragStartMaybe )
 
         ( DragAt newPosition, TentativeDrag _ ) ->
             ( Dragging newPosition, [] )
