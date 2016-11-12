@@ -81,7 +81,7 @@ updateResult =
 
 type EmitMsg
     = OnDragStart
-    | OnDragAt Position
+    | OnDragBy Delta
 
 
 updateEvents : Test
@@ -105,15 +105,18 @@ updateEvents =
                     NoDrag
                         |> updateAndEmit config (DragStart initialPosition)
                         |> shouldEmit []
-        , fuzz2 positionF positionF "emits DragAt" <|
-            \initialPosition dragPosition ->
+        , fuzz2 positionF positionF "emits DragBy" <|
+            \p1 p2 ->
                 let
+                    delta =
+                        { dx = p2.x - p1.x, dy = p2.y - p1.y }
+
                     config =
-                        { defaultConfig | onDragAt = Just << OnDragAt }
+                        { defaultConfig | onDragBy = Just << OnDragBy }
                 in
-                    TentativeDrag initialPosition
-                        |> updateAndEmit config (DragAt dragPosition)
-                        |> shouldEmit [ OnDragAt dragPosition ]
+                    TentativeDrag p1
+                        |> updateAndEmit config (DragAt p2)
+                        |> shouldEmit [ OnDragBy delta ]
         ]
 
 
