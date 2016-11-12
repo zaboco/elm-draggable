@@ -7,7 +7,8 @@
         "src"
     ],
     "exposed-modules": [
-        "Draggable"
+        "Draggable",
+        "Draggable.Delta"
     ],
     "dependencies": {
         "elm-community/maybe-extra": "2.0.0 <= v < 3.0.0",

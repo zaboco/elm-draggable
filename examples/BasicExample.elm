@@ -1,10 +1,11 @@
-module BasicDrag exposing (..)
+module BasicExample exposing (..)
 
 import Html exposing (Html)
 import Html.App
 import Html.Attributes as A
 import Mouse exposing (Position)
 import Draggable
+import Draggable.Delta as Delta exposing (Delta)
 
 
 type alias Model =
@@ -14,7 +15,7 @@ type alias Model =
 
 
 type Msg
-    = OnDragBy Draggable.Delta
+    = OnDragBy Delta
     | DragMsg Draggable.Msg
 
 
@@ -43,8 +44,8 @@ dragConfig =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        OnDragBy { dx, dy } ->
-            ( { model | xy = { x = model.xy.x + dx, y = model.xy.y + dy } }
+        OnDragBy delta ->
+            ( { model | xy = Delta.translate delta model.xy }
             , Cmd.none
             )
 

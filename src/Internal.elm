@@ -1,5 +1,6 @@
 module Internal exposing (..)
 
+import Draggable.Delta as Delta exposing (Delta)
 import Mouse exposing (Position)
 import Maybe.Extra exposing (maybeToList)
 import String
@@ -23,12 +24,6 @@ type alias Emit msg model =
 
 type alias UpdateEmitter msg =
     Msg -> Drag -> Emit msg Drag
-
-
-type alias Delta =
-    { dx : Int
-    , dy : Int
-    }
 
 
 type alias Config msg =
@@ -58,13 +53,13 @@ updateAndEmit config msg drag =
             ( Dragging newPosition
             , List.concatMap maybeToList
                 [ config.onDragStart
-                , config.onDragBy (distance oldPosition newPosition)
+                , config.onDragBy (Delta.distanceTo newPosition oldPosition)
                 ]
             )
 
         ( DragAt newPosition, Dragging oldPosition ) ->
             ( Dragging newPosition
-            , maybeToList (config.onDragBy (distance oldPosition newPosition))
+            , maybeToList (config.onDragBy (Delta.distanceTo newPosition oldPosition))
             )
 
         ( DragEnd, TentativeDrag _ ) ->
@@ -76,11 +71,6 @@ updateAndEmit config msg drag =
         _ ->
             ( drag, [] )
                 |> logInvalidState drag msg
-
-
-distance : Position -> Position -> Delta
-distance p1 p2 =
-    { dx = p2.x - p1.x, dy = p2.y - p1.y }
 
 
 

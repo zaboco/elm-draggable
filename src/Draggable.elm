@@ -1,7 +1,6 @@
 module Draggable
     exposing
         ( Drag
-        , Delta
         , Msg
         , Config
         , basicConfig
@@ -24,7 +23,7 @@ Draggable
 @docs init, update, subscriptions
 
 # Opaque structures
-@docs Config, Drag, Msg, Delta
+@docs Config, Drag, Msg
 -}
 
 import Cmd.Extra
@@ -32,6 +31,7 @@ import Internal
 import Json.Decode
 import Mouse
 import VirtualDom
+import Draggable.Delta as Delta exposing (Delta)
 
 
 {-| Configuration of a draggable model
@@ -44,12 +44,6 @@ type Config msg
 -}
 type alias Drag =
     Internal.Drag
-
-
-{-|
--}
-type alias Delta =
-    Internal.Delta
 
 
 {-| Messages to be wrapped
@@ -117,7 +111,6 @@ subscriptions envelope drag =
 {-| DOM event handler to start dragging on mouse down.
 
     div [ triggerOnMouseDown DragMsg ] [ text "Drag me" ]
-
 -}
 triggerOnMouseDown : (Msg -> msg) -> VirtualDom.Property msg
 triggerOnMouseDown envelope =
