@@ -9,7 +9,6 @@
     ],
     "exposed-modules": [],
     "dependencies": {
-        "Fresheyeball/elm-return": "5.0.0 <= v < 6.0.0",
         "elm-community/elm-test": "2.0.0 <= v < 3.0.0",
         "elm-lang/core": "4.0.0 <= v < 5.0.0",
         "elm-lang/mouse": "1.0.0 <= v < 2.0.0",

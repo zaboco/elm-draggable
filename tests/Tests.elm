@@ -2,11 +2,9 @@ module Tests exposing (..)
 
 import Fuzz exposing (Fuzzer, int, list)
 import Mouse exposing (Position)
-import Return exposing (Return)
 import Test exposing (..)
 import Expect as Should exposing (Expectation)
-import Draggable as D
-import Types exposing (Model(..), Msg(..))
+import Internal exposing (Drag(..), Msg(..), Emit, updateAndEmit)
 
 
 all : Test
@@ -17,13 +15,13 @@ all =
         ]
 
 
-type alias Updater =
-    Msg -> Model -> Return Msg Model
+type alias UpdateEmitter =
+    Msg -> Drag -> Emit Msg Drag
 
 
-defaultUpdate : Updater
+defaultUpdate : UpdateEmitter
 defaultUpdate =
-    D.update
+    updateAndEmit
 
 
 updateResult : Test
@@ -64,7 +62,7 @@ updateResult =
                         Dragging lastPosition
                 in
                     NoDrag
-                        |> chainUpdate defaultUpdate msgs
+                        |> chainUpdateEmit defaultUpdate msgs
                         |> shouldYield expected
         , fuzz2 positionF dragsF "complete drag ends up in NoDrag" <|
             \firstPosition middleDrags ->
@@ -76,7 +74,7 @@ updateResult =
                         NoDrag
                 in
                     NoDrag
-                        |> chainUpdate defaultUpdate msgs
+                        |> chainUpdateEmit defaultUpdate msgs
                         |> shouldYield expected
         ]
 
@@ -104,7 +102,7 @@ positionF =
 -- Expectation Helpers
 
 
-shouldYield : model -> ( model, Cmd msg ) -> Expectation
+shouldYield : model -> ( model, x ) -> Expectation
 shouldYield expected ( actual, _ ) =
     Should.equal expected actual
 
@@ -113,11 +111,15 @@ shouldYield expected ( actual, _ ) =
 -- Return Helpers
 
 
-chainUpdate : Updater -> List Msg -> Model -> Return Msg Model
-chainUpdate update msgs model =
-    List.foldl (andThen << update) (Return.singleton model) msgs
+chainUpdateEmit : UpdateEmitter -> List Msg -> Drag -> Emit Msg Drag
+chainUpdateEmit update msgs model =
+    List.foldl (andThenEmit << update) ( model, [] ) msgs
 
 
-andThen : (a -> Return msg b) -> Return msg a -> Return msg b
-andThen =
-    flip Return.andThen
+andThenEmit : (a -> Emit msg a) -> Emit msg a -> Emit msg a
+andThenEmit f ( model, msgs ) =
+    let
+        ( newModel, newMsgs ) =
+            f model
+    in
+        ( newModel, msgs ++ newMsgs )

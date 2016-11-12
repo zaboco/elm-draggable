@@ -5,35 +5,18 @@ module Draggable
         )
 
 import Mouse exposing (Position)
-import Types exposing (Model(..), Msg(..))
+import Internal
+import Cmd.Extra
 
 
 type alias Drag =
-    Model
+    Internal.Drag
 
 
-update : Msg -> Drag -> ( Drag, Cmd msg )
+update : Internal.Msg -> Internal.Drag -> ( Internal.Drag, Cmd Internal.Msg )
 update msg drag =
-    case ( msg, drag ) of
-        ( DragStart initialPosition, NoDrag ) ->
-            ( TentativeDrag initialPosition, Cmd.none )
-
-        ( DragAt newPosition, TentativeDrag _ ) ->
-            ( Dragging newPosition, Cmd.none )
-
-        ( DragAt newPosition, Dragging _ ) ->
-            ( Dragging newPosition, Cmd.none )
-
-        ( DragEnd, TentativeDrag _ ) ->
-            ( NoDrag, Cmd.none )
-
-        ( DragEnd, Dragging _ ) ->
-            ( NoDrag, Cmd.none )
-
-        ( _, unknown ) ->
-            case unknown of
-                Invalid _ _ ->
-                    ( unknown, Cmd.none )
-
-                _ ->
-                    ( Invalid msg drag, Cmd.none )
+    let
+        ( newDrag, newMsgs ) =
+            Internal.updateAndEmit msg drag
+    in
+        ( newDrag, Cmd.Extra.multiMessage newMsgs )
