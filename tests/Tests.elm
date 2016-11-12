@@ -82,6 +82,7 @@ updateResult =
 type EmitMsg
     = OnDragStart
     | OnDragBy Delta
+    | OnDragEnd
 
 
 updateEvents : Test
@@ -117,6 +118,15 @@ updateEvents =
                     TentativeDrag p1
                         |> updateAndEmit config (DragAt p2)
                         |> shouldEmit [ OnDragBy delta ]
+        , fuzz positionF "emits DragEnd if it was Dragging" <|
+            \dragPosition ->
+                let
+                    config =
+                        { defaultConfig | onDragEnd = Just OnDragEnd }
+                in
+                    Dragging dragPosition
+                        |> updateAndEmit config DragEnd
+                        |> shouldEmit [ OnDragEnd ]
         ]
 
 

@@ -24,6 +24,7 @@ type alias Emit msg model =
 type alias Config msg =
     { onDragStart : Maybe msg
     , onDragBy : Delta -> Maybe msg
+    , onDragEnd : Maybe msg
     }
 
 
@@ -37,6 +38,7 @@ defaultConfig : Config msg
 defaultConfig =
     { onDragStart = Nothing
     , onDragBy = \_ -> Nothing
+    , onDragEnd = Nothing
     }
 
 
@@ -62,7 +64,7 @@ updateAndEmit config msg drag =
             ( NoDrag, [] )
 
         ( DragEnd, Dragging _ ) ->
-            ( NoDrag, [] )
+            ( NoDrag, maybeToList config.onDragEnd )
 
         ( _, unknown ) ->
             case unknown of
