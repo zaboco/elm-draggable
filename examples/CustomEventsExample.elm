@@ -1,6 +1,6 @@
-module BasicExample exposing (..)
+module CustomEventsExample exposing (..)
 
-import Draggable.Config exposing (DragConfig)
+import Draggable.Config exposing (DragConfig, onClick, onDragBy, onDragEnd, onDragStart)
 import Html exposing (Html)
 import Html.App
 import Html.Attributes as A
@@ -11,12 +11,17 @@ import Draggable.Delta as Delta exposing (Delta)
 
 type alias Model =
     { xy : Position
+    , clicks : Int
+    , dragging : Bool
     , drag : Draggable.Drag
     }
 
 
 type Msg
     = OnDragBy Delta
+    | OnDragStart
+    | OnDragEnd
+    | OnClick
     | DragMsg Draggable.Msg
 
 
@@ -32,14 +37,23 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { xy = Position 0 0, drag = Draggable.init }
+    ( { xy = Position 0 0
+      , drag = Draggable.init
+      , clicks = 0
+      , dragging = False
+      }
     , Cmd.none
     )
 
 
 dragConfig : DragConfig Msg
 dragConfig =
-    Draggable.basicConfig OnDragBy
+    Draggable.customConfig
+        [ onDragStart OnDragStart
+        , onDragEnd OnDragEnd
+        , onDragBy OnDragBy
+        , onClick OnClick
+        ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -49,6 +63,15 @@ update msg model =
             ( { model | xy = Delta.translate delta model.xy }
             , Cmd.none
             )
+
+        OnDragStart ->
+            ( { model | dragging = True }, Cmd.none )
+
+        OnDragEnd ->
+            ( { model | dragging = False }, Cmd.none )
+
+        OnClick ->
+            ( { model | clicks = model.clicks + 1 }, Cmd.none )
 
         DragMsg dragMsg ->
             Draggable.update dragConfig dragMsg model
@@ -60,7 +83,7 @@ subscriptions { drag } =
 
 
 view : Model -> Html Msg
-view { xy } =
+view { xy, dragging, clicks } =
     let
         translate =
             "translate(" ++ (toString xy.x) ++ "px, " ++ (toString xy.y) ++ "px)"
@@ -70,15 +93,25 @@ view { xy } =
             , "padding" => "16px"
             , "margin" => "32px"
             , "background-color" => "lightgray"
-            , "width" => "64px"
+            , "width" => "100px"
+            , "text-align" => "center"
             , "cursor" => "move"
             ]
+
+        status =
+            if dragging then
+                "Release me"
+            else
+                "Drag me"
     in
         Html.div
             [ A.style style
             , Draggable.triggerOnMouseDown DragMsg
             ]
-            [ Html.text "Drag me" ]
+            [ Html.text status
+            , Html.br [] []
+            , Html.text <| (toString clicks) ++ " clicks"
+            ]
 
 
 (=>) =

@@ -4,8 +4,9 @@ import Fuzz exposing (Fuzzer)
 import Mouse exposing (Position)
 import Test exposing (..)
 import Expect as Should exposing (Expectation)
-import Internal exposing (..)
+import Internal exposing (Drag(..), Msg(..), UpdateEmitter, Emit)
 import Draggable.Delta as Delta exposing (Delta)
+import Draggable.Config as Config exposing (DragConfig)
 import String
 
 
@@ -29,21 +30,21 @@ type EmitMsg
 
 updateWithEvents : UpdateEmitter EmitMsg
 updateWithEvents =
-    updateAndEmit fullConfig
+    Internal.updateAndEmit fullConfig
 
 
-fullConfig : Config EmitMsg
+fullConfig : DragConfig EmitMsg
 fullConfig =
-    { onDragStart = Just OnDragStart
-    , onDragBy = Just << OnDragBy
-    , onDragEnd = Just OnDragEnd
-    , onClick = Just OnClick
-    }
+    Config.defaultConfig
+        |> Config.onDragStart OnDragStart
+        |> Config.onDragBy OnDragBy
+        |> Config.onDragEnd OnDragEnd
+        |> Config.onClick OnClick
 
 
 defaultUpdate : UpdateEmitter ()
 defaultUpdate =
-    updateAndEmit defaultConfig
+    Internal.updateAndEmit Config.defaultConfig
 
 
 singleUpdateTests : List Test

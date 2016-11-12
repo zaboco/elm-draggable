@@ -2,8 +2,8 @@ module Draggable
     exposing
         ( Drag
         , Msg
-        , Config
         , basicConfig
+        , customConfig
         , init
         , update
         , subscriptions
@@ -14,7 +14,7 @@ module Draggable
 Draggable
 
 # Config
-@docs basicConfig
+@docs basicConfig, customConfig
 
 # DOM triggers
 @docs triggerOnMouseDown
@@ -23,21 +23,15 @@ Draggable
 @docs init, update, subscriptions
 
 # Opaque structures
-@docs Config, Drag, Msg
+@docs Drag, Msg
 -}
 
-import Cmd.Extra
 import Internal
 import Json.Decode
 import Mouse
 import VirtualDom
 import Draggable.Delta as Delta exposing (Delta)
-
-
-{-| Configuration of a draggable model
--}
-type Config msg
-    = Config (Internal.Config msg)
+import Draggable.Config as Config exposing (DragConfig)
 
 
 {-| Drag state to be included in model
@@ -53,14 +47,27 @@ type alias Msg =
 
 
 {-| Basic config
+
+    config = basicConfig OnDragBy
 -}
-basicConfig : (Delta -> msg) -> Config msg
+basicConfig : (Delta -> msg) -> DragConfig msg
 basicConfig onDragBy =
-    let
-        defaultConfig =
-            Internal.defaultConfig
-    in
-        Config { defaultConfig | onDragBy = Just << onDragBy }
+    Config.defaultConfig
+        |> Config.onDragBy onDragBy
+
+
+{-| Custom config, including arbitrary options. See `Config` module for the available `modifiers`.
+
+    config = customConfig
+        [ onDragBy OnDragBy
+        , onDragStart OnDragStart
+        , onDragEnd OnDragEnd
+        , onClick OnClick
+        ]
+-}
+customConfig : List (DragConfig msg -> DragConfig msg) -> DragConfig msg
+customConfig modifiers =
+    List.foldl (<|) Config.defaultConfig modifiers
 
 
 {-| Initial drag state
@@ -70,28 +77,19 @@ init =
     Internal.NoDrag
 
 
-{-| Handle update messages for the draggable model
+{-| Handle update messages for the draggable model. It assumes that the drag state will be stored under the key `drag`.
 -}
 update :
-    Config msg
+    DragConfig msg
     -> Msg
     -> { m | drag : Drag }
     -> ( { m | drag : Drag }, Cmd msg )
 update config msg model =
     let
         ( dragState, dragCmd ) =
-            updateDraggable config msg model.drag
+            Internal.updateDraggable config msg model.drag
     in
         { model | drag = dragState } ! [ dragCmd ]
-
-
-updateDraggable : Config msg -> Msg -> Drag -> ( Drag, Cmd msg )
-updateDraggable (Config config) msg drag =
-    let
-        ( newDrag, newMsgs ) =
-            Internal.updateAndEmit config msg drag
-    in
-        ( newDrag, Cmd.Extra.multiMessage newMsgs )
 
 
 {-| Handle mouse subscriptions used for dragging

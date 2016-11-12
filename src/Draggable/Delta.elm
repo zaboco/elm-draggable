@@ -1,4 +1,10 @@
-module Draggable.Delta exposing (Delta, fromDxDy, distanceTo, translate)
+module Draggable.Delta
+    exposing
+        ( Delta
+        , fromDxDy
+        , distanceTo
+        , translate
+        )
 
 {-| This module provides means of manipulationg the Delta value received on the
 `onDragBy` event.
@@ -10,7 +16,7 @@ module Draggable.Delta exposing (Delta, fromDxDy, distanceTo, translate)
 @docs fromDxDy
 
 # Utils
-@docs distance, translate
+@docs distanceTo, translate
 -}
 
 import Mouse exposing (Position)
