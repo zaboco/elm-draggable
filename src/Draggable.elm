@@ -1,6 +1,6 @@
 module Draggable
     exposing
-        ( Drag
+        ( State
         , Msg
         , Config
         , basicConfig
@@ -41,7 +41,7 @@ Optional listeners for the various events involved in dragging (`onDragBy`, `onD
 @docs onDragStart, onDragEnd, onDragBy, onClick
 
 # Definitions
-@docs Drag, Msg, Config
+@docs State, Msg, Config
 -}
 
 import Cmd.Extra
@@ -52,10 +52,10 @@ import Mouse
 import VirtualDom
 
 
-{-| Drag state to be included in model.
+{-| State state to be included in model.
 -}
-type Drag
-    = Drag Internal.Drag
+type State
+    = State Internal.State
 
 
 {-| A message type for updating the internal drag state.
@@ -66,9 +66,9 @@ type Msg
 
 {-| Initial drag state
 -}
-init : Drag
+init : State
 init =
-    Drag Internal.NoDrag
+    State Internal.NoDrag
 
 
 {-| Handle update messages for the draggable model. It assumes that the drag state will be stored under the key `drag`.
@@ -76,8 +76,8 @@ init =
 update :
     Config msg
     -> Msg
-    -> { m | drag : Drag }
-    -> ( { m | drag : Drag }, Cmd msg )
+    -> { m | drag : State }
+    -> ( { m | drag : State }, Cmd msg )
 update config msg model =
     let
         ( dragState, dragCmd ) =
@@ -86,19 +86,19 @@ update config msg model =
         { model | drag = dragState } ! [ dragCmd ]
 
 
-updateDraggable : Config msg -> Msg -> Drag -> ( Drag, Cmd msg )
-updateDraggable (Config config) (Msg msg) (Drag drag) =
+updateDraggable : Config msg -> Msg -> State -> ( State, Cmd msg )
+updateDraggable (Config config) (Msg msg) (State drag) =
     let
         ( newDrag, newMsgs ) =
             Internal.updateAndEmit config msg drag
     in
-        ( Drag newDrag, Cmd.Extra.multiMessage newMsgs )
+        ( State newDrag, Cmd.Extra.multiMessage newMsgs )
 
 
 {-| Handle mouse subscriptions used for dragging
 -}
-subscriptions : (Msg -> msg) -> Drag -> Sub msg
-subscriptions envelope (Drag drag) =
+subscriptions : (Msg -> msg) -> State -> Sub msg
+subscriptions envelope (State drag) =
     case drag of
         Internal.NoDrag ->
             Sub.none
@@ -111,7 +111,7 @@ subscriptions envelope (Drag drag) =
 
 {-| DOM event handler to start dragging on mouse down.
 
-    div [ triggerOnMouseDown DragMsg ] [ text "Drag me" ]
+    div [ triggerOnMouseDown DragMsg ] [ text "State me" ]
 -}
 triggerOnMouseDown : (Msg -> msg) -> VirtualDom.Property msg
 triggerOnMouseDown envelope =

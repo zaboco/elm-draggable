@@ -4,7 +4,7 @@ import Fuzz exposing (Fuzzer)
 import Mouse exposing (Position)
 import Test exposing (..)
 import Expect as Should exposing (Expectation)
-import Internal exposing (Drag(..), Msg(..))
+import Internal exposing (State(..), Msg(..))
 import Draggable.Delta as Delta exposing (Delta)
 import String
 
@@ -189,10 +189,10 @@ type alias Emit msg model =
 
 
 type alias UpdateEmitter msg =
-    Msg -> Drag -> Emit msg Drag
+    Msg -> State -> Emit msg State
 
 
-chainUpdate : UpdateEmitter msg -> List Msg -> Drag -> Emit msg Drag
+chainUpdate : UpdateEmitter msg -> List Msg -> State -> Emit msg State
 chainUpdate update msgs model =
     List.foldl (andThenEmit << update) ( model, [] ) msgs
 

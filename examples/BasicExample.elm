@@ -10,7 +10,7 @@ import Draggable.Delta as Delta exposing (Delta)
 
 type alias Model =
     { xy : Position
-    , drag : Draggable.Drag
+    , drag : Draggable.State
     }
 
 
