@@ -24,6 +24,7 @@ type alias Config msg =
     , onDragEnd : Maybe msg
     , onClick : Maybe msg
     , onMouseDown : Maybe msg
+    , onMouseUp : Maybe msg
     }
 
 
@@ -34,6 +35,7 @@ defaultConfig =
     , onDragEnd = Nothing
     , onClick = Nothing
     , onMouseDown = Nothing
+    , onMouseUp = Nothing
     }
 
 
@@ -57,10 +59,14 @@ updateAndEmit config msg drag =
             )
 
         ( DraggingTentative _, StopDragging ) ->
-            ( NotDragging, maybeToList config.onClick )
+            ( NotDragging
+            , List.concatMap maybeToList [ config.onClick, config.onMouseUp ]
+            )
 
         ( Dragging _, StopDragging ) ->
-            ( NotDragging, maybeToList config.onDragEnd )
+            ( NotDragging
+            , List.concatMap maybeToList [ config.onDragEnd, config.onMouseUp ]
+            )
 
         _ ->
             ( drag, [] )

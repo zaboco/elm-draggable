@@ -26,6 +26,7 @@ type EmitMsg
     | OnDragEnd
     | OnClick
     | OnMouseDown
+    | OnMouseUp
 
 
 updateWithEvents : UpdateEmitter EmitMsg
@@ -40,6 +41,7 @@ fullConfig =
     , onDragEnd = Just OnDragEnd
     , onClick = Just OnClick
     , onMouseDown = Just OnMouseDown
+    , onMouseUp = Just OnMouseUp
     }
 
 
@@ -73,16 +75,16 @@ singleUpdateTests =
             Dragging p1
                 |> updateWithEvents (DragAt p2)
                 |> Should.equal ( Dragging p2, [ OnDragBy (Delta.distanceTo p2 p1) ] )
-    , fuzz positionF "TentativeDrag -[DragEnd]-> NoDrag (onClick)" <|
+    , fuzz positionF "TentativeDrag -[DragEnd]-> NoDrag (onClick, onMouseUp)" <|
         \endPosition ->
             DraggingTentative endPosition
                 |> updateWithEvents StopDragging
-                |> Should.equal ( NotDragging, [ OnClick ] )
-    , fuzz positionF "Dragging -[DragEnd]-> NoDrag (onDragEnd)" <|
+                |> Should.equal ( NotDragging, [ OnClick, OnMouseUp ] )
+    , fuzz positionF "Dragging -[DragEnd]-> NoDrag (onDragEnd, onMouseUp)" <|
         \endPosition ->
             Dragging endPosition
                 |> updateWithEvents StopDragging
-                |> Should.equal ( NotDragging, [ OnDragEnd ] )
+                |> Should.equal ( NotDragging, [ OnDragEnd, OnMouseUp ] )
     ]
 
 
@@ -130,7 +132,7 @@ chainUpdateTests =
                     List.concat
                         [ [ OnMouseDown, OnDragStart ]
                         , List.map OnDragBy (deltas startPosition dragPositions)
-                        , [ OnDragEnd ]
+                        , [ OnDragEnd, OnMouseUp ]
                         ]
             in
                 NotDragging
@@ -144,7 +146,7 @@ chainUpdateTests =
 
                 expected =
                     ( NotDragging
-                    , [ OnMouseDown, OnClick ]
+                    , [ OnMouseDown, OnClick, OnMouseUp ]
                     )
             in
                 NotDragging
