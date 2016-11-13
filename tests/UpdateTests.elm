@@ -4,9 +4,8 @@ import Fuzz exposing (Fuzzer)
 import Mouse exposing (Position)
 import Test exposing (..)
 import Expect as Should exposing (Expectation)
-import Internal exposing (Drag(..), Msg(..), UpdateEmitter, Emit)
+import Internal exposing (Drag(..), Msg(..))
 import Draggable.Delta as Delta exposing (Delta)
-import Draggable.Config as Config exposing (DragConfig)
 import String
 
 
@@ -33,18 +32,18 @@ updateWithEvents =
     Internal.updateAndEmit fullConfig
 
 
-fullConfig : DragConfig EmitMsg
+fullConfig : Internal.Config EmitMsg
 fullConfig =
-    Config.defaultConfig
-        |> Config.onDragStart OnDragStart
-        |> Config.onDragBy OnDragBy
-        |> Config.onDragEnd OnDragEnd
-        |> Config.onClick OnClick
+    { onDragStart = Just OnDragStart
+    , onDragBy = Just << OnDragBy
+    , onDragEnd = Just OnDragEnd
+    , onClick = Just OnClick
+    }
 
 
 defaultUpdate : UpdateEmitter ()
 defaultUpdate =
-    Internal.updateAndEmit Config.defaultConfig
+    Internal.updateAndEmit Internal.defaultConfig
 
 
 singleUpdateTests : List Test
@@ -183,6 +182,14 @@ positionF =
 
 
 -- Update Helpers
+
+
+type alias Emit msg model =
+    ( model, List msg )
+
+
+type alias UpdateEmitter msg =
+    Msg -> Drag -> Emit msg Drag
 
 
 chainUpdate : UpdateEmitter msg -> List Msg -> Drag -> Emit msg Drag
