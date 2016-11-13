@@ -7,8 +7,8 @@ import String
 
 
 type State
-    = NoDrag
-    | TentativeDrag Position
+    = NotDragging
+    | DraggingTentative Position
     | Dragging Position
 
 
@@ -38,10 +38,10 @@ defaultConfig =
 updateAndEmit : Config msg -> Msg -> State -> ( State, List msg )
 updateAndEmit config msg drag =
     case ( msg, drag ) of
-        ( DragStart initialPosition, NoDrag ) ->
-            ( TentativeDrag initialPosition, [] )
+        ( DragStart initialPosition, NotDragging ) ->
+            ( DraggingTentative initialPosition, [] )
 
-        ( DragAt newPosition, TentativeDrag oldPosition ) ->
+        ( DragAt newPosition, DraggingTentative oldPosition ) ->
             ( Dragging newPosition
             , List.concatMap maybeToList
                 [ config.onDragStart
@@ -54,11 +54,11 @@ updateAndEmit config msg drag =
             , maybeToList (config.onDragBy (Delta.distanceTo newPosition oldPosition))
             )
 
-        ( DragEnd, TentativeDrag _ ) ->
-            ( NoDrag, maybeToList config.onClick )
+        ( DragEnd, DraggingTentative _ ) ->
+            ( NotDragging, maybeToList config.onClick )
 
         ( DragEnd, Dragging _ ) ->
-            ( NoDrag, maybeToList config.onDragEnd )
+            ( NotDragging, maybeToList config.onDragEnd )
 
         _ ->
             ( drag, [] )

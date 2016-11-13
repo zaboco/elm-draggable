@@ -50,12 +50,12 @@ singleUpdateTests : List Test
 singleUpdateTests =
     [ fuzz positionF "NoDrag -[DragStart]-> DragAttempt (onDragStart)" <|
         \startPosition ->
-            NoDrag
+            NotDragging
                 |> updateWithEvents (DragStart startPosition)
-                |> Should.equal ( TentativeDrag startPosition, [] )
+                |> Should.equal ( DraggingTentative startPosition, [] )
     , fuzz2 positionF positionF "TentativeDrag -[DragAt]-> Dragging (onDragBy)" <|
         \p1 p2 ->
-            TentativeDrag p1
+            DraggingTentative p1
                 |> updateWithEvents (DragAt p2)
                 |> Should.equal
                     ( Dragging p2
@@ -68,14 +68,14 @@ singleUpdateTests =
                 |> Should.equal ( Dragging p2, [ OnDragBy (Delta.distanceTo p2 p1) ] )
     , fuzz positionF "TentativeDrag -[DragEnd]-> NoDrag (onClick)" <|
         \endPosition ->
-            TentativeDrag endPosition
+            DraggingTentative endPosition
                 |> updateWithEvents DragEnd
-                |> Should.equal ( NoDrag, [ OnClick ] )
+                |> Should.equal ( NotDragging, [ OnClick ] )
     , fuzz positionF "Dragging -[DragEnd]-> NoDrag (onDragEnd)" <|
         \endPosition ->
             Dragging endPosition
                 |> updateWithEvents DragEnd
-                |> Should.equal ( NoDrag, [ OnDragEnd ] )
+                |> Should.equal ( NotDragging, [ OnDragEnd ] )
     ]
 
 
@@ -83,19 +83,19 @@ invalidUpdateTests : List Test
 invalidUpdateTests =
     [ fuzz positionF "Invalid DragAt from NoDrag" <|
         \position ->
-            NoDrag
+            NotDragging
                 |> updateWithEvents (DragAt position)
-                |> Should.equal ( NoDrag, [] )
+                |> Should.equal ( NotDragging, [] )
     , test "Invalid DragEnd from NoDrag" <|
         \() ->
-            NoDrag
+            NotDragging
                 |> updateWithEvents DragEnd
-                |> Should.equal ( NoDrag, [] )
+                |> Should.equal ( NotDragging, [] )
     , fuzz2 positionF positionF "Invalid DragStart from TentativeDrag" <|
         \position startPosition ->
-            TentativeDrag position
+            DraggingTentative position
                 |> updateWithEvents (DragStart startPosition)
-                |> Should.equal ( TentativeDrag position, [] )
+                |> Should.equal ( DraggingTentative position, [] )
     , fuzz2 positionF positionF "Invalid DragStart from Dragging" <|
         \position startPosition ->
             Dragging position
@@ -117,7 +117,7 @@ chainUpdateTests =
                         ]
 
                 expectedState =
-                    NoDrag
+                    NotDragging
 
                 expectedEvents =
                     List.concat
@@ -126,7 +126,7 @@ chainUpdateTests =
                         , [ OnDragEnd ]
                         ]
             in
-                NoDrag
+                NotDragging
                     |> chainUpdate updateWithEvents msgs
                     |> Should.equal ( expectedState, expectedEvents )
     , fuzz positionF "DragStart DragEnd" <|
@@ -136,9 +136,9 @@ chainUpdateTests =
                     [ DragStart startPosition, DragEnd ]
 
                 expected =
-                    ( NoDrag, [ OnClick ] )
+                    ( NotDragging, [ OnClick ] )
             in
-                NoDrag
+                NotDragging
                     |> chainUpdate updateWithEvents msgs
                     |> Should.equal expected
     , fuzz2 positionF positionF "no events if none configured" <|
@@ -153,9 +153,9 @@ chainUpdateTests =
                     ]
 
                 expected =
-                    ( NoDrag, [] )
+                    ( NotDragging, [] )
             in
-                NoDrag
+                NotDragging
                     |> chainUpdate defaultUpdate msgs
                     |> Should.equal expected
     ]

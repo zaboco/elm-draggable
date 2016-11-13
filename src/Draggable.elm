@@ -68,7 +68,7 @@ type Msg
 -}
 init : State
 init =
-    State Internal.NoDrag
+    State Internal.NotDragging
 
 
 {-| Handle update messages for the draggable model. It assumes that the drag state will be stored under the key `drag`.
@@ -100,7 +100,7 @@ updateDraggable (Config config) (Msg msg) (State drag) =
 subscriptions : (Msg -> msg) -> State -> Sub msg
 subscriptions envelope (State drag) =
     case drag of
-        Internal.NoDrag ->
+        Internal.NotDragging ->
             Sub.none
 
         _ ->
