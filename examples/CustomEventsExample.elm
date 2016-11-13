@@ -4,14 +4,15 @@ import Html exposing (Html)
 import Html.App
 import Html.Attributes as A
 import Mouse exposing (Position)
-import Draggable exposing (onClick, onDragBy, onDragEnd, onDragStart)
+import Draggable exposing (onClick, onDragBy, onDragEnd, onDragStart, onMouseDown, onMouseUp)
 import Draggable.Delta as Delta exposing (Delta)
 
 
 type alias Model =
     { xy : Position
-    , clicks : Int
-    , dragging : Bool
+    , clicksCount : Int
+    , isDragging : Bool
+    , isClicked : Bool
     , drag : Draggable.State
     }
 
@@ -20,7 +21,8 @@ type Msg
     = OnDragBy Delta
     | OnDragStart
     | OnDragEnd
-    | OnClick
+    | CountClick
+    | SetClicked Bool
     | DragMsg Draggable.Msg
 
 
@@ -38,8 +40,9 @@ init : ( Model, Cmd Msg )
 init =
     ( { xy = Position 0 0
       , drag = Draggable.init
-      , clicks = 0
-      , dragging = False
+      , clicksCount = 0
+      , isDragging = False
+      , isClicked = False
       }
     , Cmd.none
     )
@@ -51,7 +54,9 @@ dragConfig =
         [ onDragStart OnDragStart
         , onDragEnd OnDragEnd
         , onDragBy OnDragBy
-        , onClick OnClick
+        , onClick CountClick
+        , onMouseDown (SetClicked True)
+        , onMouseUp (SetClicked False)
         ]
 
 
@@ -64,13 +69,16 @@ update msg model =
             )
 
         OnDragStart ->
-            ( { model | dragging = True }, Cmd.none )
+            ( { model | isDragging = True }, Cmd.none )
 
         OnDragEnd ->
-            ( { model | dragging = False }, Cmd.none )
+            ( { model | isDragging = False }, Cmd.none )
 
-        OnClick ->
-            ( { model | clicks = model.clicks + 1 }, Cmd.none )
+        CountClick ->
+            ( { model | clicksCount = model.clicksCount + 1 }, Cmd.none )
+
+        SetClicked flag ->
+            ( { model | isClicked = flag }, Cmd.none )
 
         DragMsg dragMsg ->
             Draggable.update dragConfig dragMsg model
@@ -82,26 +90,32 @@ subscriptions { drag } =
 
 
 view : Model -> Html Msg
-view { xy, dragging, clicks } =
+view { xy, isDragging, isClicked, clicksCount } =
     let
         translate =
             "translate(" ++ (toString xy.x) ++ "px, " ++ (toString xy.y) ++ "px)"
+
+        status =
+            if isDragging then
+                "Release me"
+            else
+                "Drag me"
+
+        color =
+            if isClicked then
+                "limegreen"
+            else
+                "lightgray"
 
         style =
             [ "transform" => translate
             , "padding" => "16px"
             , "margin" => "32px"
-            , "background-color" => "lightgray"
+            , "background-color" => color
             , "width" => "100px"
             , "text-align" => "center"
             , "cursor" => "move"
             ]
-
-        status =
-            if dragging then
-                "Release me"
-            else
-                "Drag me"
     in
         Html.div
             [ A.style style
@@ -109,7 +123,7 @@ view { xy, dragging, clicks } =
             ]
             [ Html.text status
             , Html.br [] []
-            , Html.text <| (toString clicks) ++ " clicks"
+            , Html.text <| (toString clicksCount) ++ " clicks"
             ]
 
 
