@@ -4,7 +4,7 @@ import Fuzz exposing (Fuzzer)
 import Mouse exposing (Position)
 import Test exposing (..)
 import Expect as Should exposing (Expectation)
-import Internal exposing (Drag(..), Msg(..))
+import Internal exposing (State(..), Msg(..))
 import Draggable.Delta as Delta exposing (Delta)
 import String
 
@@ -50,12 +50,12 @@ singleUpdateTests : List Test
 singleUpdateTests =
     [ fuzz positionF "NoDrag -[DragStart]-> DragAttempt (onDragStart)" <|
         \startPosition ->
-            NoDrag
-                |> updateWithEvents (DragStart startPosition)
-                |> Should.equal ( TentativeDrag startPosition, [] )
+            NotDragging
+                |> updateWithEvents (StartDragging startPosition)
+                |> Should.equal ( DraggingTentative startPosition, [] )
     , fuzz2 positionF positionF "TentativeDrag -[DragAt]-> Dragging (onDragBy)" <|
         \p1 p2 ->
-            TentativeDrag p1
+            DraggingTentative p1
                 |> updateWithEvents (DragAt p2)
                 |> Should.equal
                     ( Dragging p2
@@ -68,14 +68,14 @@ singleUpdateTests =
                 |> Should.equal ( Dragging p2, [ OnDragBy (Delta.distanceTo p2 p1) ] )
     , fuzz positionF "TentativeDrag -[DragEnd]-> NoDrag (onClick)" <|
         \endPosition ->
-            TentativeDrag endPosition
-                |> updateWithEvents DragEnd
-                |> Should.equal ( NoDrag, [ OnClick ] )
+            DraggingTentative endPosition
+                |> updateWithEvents StopDragging
+                |> Should.equal ( NotDragging, [ OnClick ] )
     , fuzz positionF "Dragging -[DragEnd]-> NoDrag (onDragEnd)" <|
         \endPosition ->
             Dragging endPosition
-                |> updateWithEvents DragEnd
-                |> Should.equal ( NoDrag, [ OnDragEnd ] )
+                |> updateWithEvents StopDragging
+                |> Should.equal ( NotDragging, [ OnDragEnd ] )
     ]
 
 
@@ -83,23 +83,23 @@ invalidUpdateTests : List Test
 invalidUpdateTests =
     [ fuzz positionF "Invalid DragAt from NoDrag" <|
         \position ->
-            NoDrag
+            NotDragging
                 |> updateWithEvents (DragAt position)
-                |> Should.equal ( NoDrag, [] )
+                |> Should.equal ( NotDragging, [] )
     , test "Invalid DragEnd from NoDrag" <|
         \() ->
-            NoDrag
-                |> updateWithEvents DragEnd
-                |> Should.equal ( NoDrag, [] )
+            NotDragging
+                |> updateWithEvents StopDragging
+                |> Should.equal ( NotDragging, [] )
     , fuzz2 positionF positionF "Invalid DragStart from TentativeDrag" <|
         \position startPosition ->
-            TentativeDrag position
-                |> updateWithEvents (DragStart startPosition)
-                |> Should.equal ( TentativeDrag position, [] )
+            DraggingTentative position
+                |> updateWithEvents (StartDragging startPosition)
+                |> Should.equal ( DraggingTentative position, [] )
     , fuzz2 positionF positionF "Invalid DragStart from Dragging" <|
         \position startPosition ->
             Dragging position
-                |> updateWithEvents (DragStart startPosition)
+                |> updateWithEvents (StartDragging startPosition)
                 |> Should.equal ( Dragging position, [] )
     ]
 
@@ -111,13 +111,13 @@ chainUpdateTests =
             let
                 msgs =
                     List.concat
-                        [ [ DragStart startPosition ]
+                        [ [ StartDragging startPosition ]
                         , List.map DragAt dragPositions
-                        , [ DragEnd ]
+                        , [ StopDragging ]
                         ]
 
                 expectedState =
-                    NoDrag
+                    NotDragging
 
                 expectedEvents =
                     List.concat
@@ -126,36 +126,36 @@ chainUpdateTests =
                         , [ OnDragEnd ]
                         ]
             in
-                NoDrag
+                NotDragging
                     |> chainUpdate updateWithEvents msgs
                     |> Should.equal ( expectedState, expectedEvents )
     , fuzz positionF "DragStart DragEnd" <|
         \startPosition ->
             let
                 msgs =
-                    [ DragStart startPosition, DragEnd ]
+                    [ StartDragging startPosition, StopDragging ]
 
                 expected =
-                    ( NoDrag, [ OnClick ] )
+                    ( NotDragging, [ OnClick ] )
             in
-                NoDrag
+                NotDragging
                     |> chainUpdate updateWithEvents msgs
                     |> Should.equal expected
     , fuzz2 positionF positionF "no events if none configured" <|
         \startPosition endPosition ->
             let
                 msgs =
-                    [ DragStart startPosition
+                    [ StartDragging startPosition
                     , DragAt endPosition
-                    , DragEnd
-                    , DragStart endPosition
-                    , DragEnd
+                    , StopDragging
+                    , StartDragging endPosition
+                    , StopDragging
                     ]
 
                 expected =
-                    ( NoDrag, [] )
+                    ( NotDragging, [] )
             in
-                NoDrag
+                NotDragging
                     |> chainUpdate defaultUpdate msgs
                     |> Should.equal expected
     ]
@@ -189,10 +189,10 @@ type alias Emit msg model =
 
 
 type alias UpdateEmitter msg =
-    Msg -> Drag -> Emit msg Drag
+    Msg -> State -> Emit msg State
 
 
-chainUpdate : UpdateEmitter msg -> List Msg -> Drag -> Emit msg Drag
+chainUpdate : UpdateEmitter msg -> List Msg -> State -> Emit msg State
 chainUpdate update msgs model =
     List.foldl (andThenEmit << update) ( model, [] ) msgs
 

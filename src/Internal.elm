@@ -6,16 +6,16 @@ import Mouse exposing (Position)
 import String
 
 
-type Drag
-    = NoDrag
-    | TentativeDrag Position
+type State
+    = NotDragging
+    | DraggingTentative Position
     | Dragging Position
 
 
 type Msg
-    = DragStart Position
+    = StartDragging Position
     | DragAt Position
-    | DragEnd
+    | StopDragging
 
 
 type alias Config msg =
@@ -35,13 +35,13 @@ defaultConfig =
     }
 
 
-updateAndEmit : Config msg -> Msg -> Drag -> ( Drag, List msg )
+updateAndEmit : Config msg -> Msg -> State -> ( State, List msg )
 updateAndEmit config msg drag =
-    case ( msg, drag ) of
-        ( DragStart initialPosition, NoDrag ) ->
-            ( TentativeDrag initialPosition, [] )
+    case ( drag, msg ) of
+        ( NotDragging, StartDragging initialPosition ) ->
+            ( DraggingTentative initialPosition, [] )
 
-        ( DragAt newPosition, TentativeDrag oldPosition ) ->
+        ( DraggingTentative oldPosition, DragAt newPosition ) ->
             ( Dragging newPosition
             , List.concatMap maybeToList
                 [ config.onDragStart
@@ -49,16 +49,16 @@ updateAndEmit config msg drag =
                 ]
             )
 
-        ( DragAt newPosition, Dragging oldPosition ) ->
+        ( Dragging oldPosition, DragAt newPosition ) ->
             ( Dragging newPosition
             , maybeToList (config.onDragBy (Delta.distanceTo newPosition oldPosition))
             )
 
-        ( DragEnd, TentativeDrag _ ) ->
-            ( NoDrag, maybeToList config.onClick )
+        ( DraggingTentative _, StopDragging ) ->
+            ( NotDragging, maybeToList config.onClick )
 
-        ( DragEnd, Dragging _ ) ->
-            ( NoDrag, maybeToList config.onDragEnd )
+        ( Dragging _, StopDragging ) ->
+            ( NotDragging, maybeToList config.onDragEnd )
 
         _ ->
             ( drag, [] )
@@ -69,7 +69,7 @@ updateAndEmit config msg drag =
 -- utility
 
 
-logInvalidState : Drag -> Msg -> a -> a
+logInvalidState : State -> Msg -> a -> a
 logInvalidState drag msg result =
     let
         str =

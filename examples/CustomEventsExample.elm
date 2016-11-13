@@ -12,7 +12,7 @@ type alias Model =
     { xy : Position
     , clicks : Int
     , dragging : Bool
-    , drag : Draggable.Drag
+    , drag : Draggable.State
     }
 
 
