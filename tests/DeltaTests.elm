@@ -5,6 +5,7 @@ import Test exposing (..)
 import Expect as Should
 import Draggable.Delta as Delta exposing (..)
 import Mouse exposing (Position)
+import String
 
 
 all : Test
@@ -20,6 +21,11 @@ all =
                 start
                     |> distanceTo (translate delta start)
                     |> Should.equal delta
+        , fuzz3 (Fuzz.intRange 1 100) Fuzz.int Fuzz.int "scale dx dy" <|
+            \factor dx dy ->
+                fromDxDy dx dy
+                    |> scale (toFloat factor)
+                    |> Should.equal (fromDxDy (dx * factor) (dy * factor))
         ]
 
 
