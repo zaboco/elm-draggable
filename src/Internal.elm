@@ -37,11 +37,11 @@ defaultConfig =
 
 updateAndEmit : Config msg -> Msg -> State -> ( State, List msg )
 updateAndEmit config msg drag =
-    case ( msg, drag ) of
-        ( StartDragging initialPosition, NotDragging ) ->
+    case ( drag, msg ) of
+        ( NotDragging, StartDragging initialPosition ) ->
             ( DraggingTentative initialPosition, [] )
 
-        ( DragAt newPosition, DraggingTentative oldPosition ) ->
+        ( DraggingTentative oldPosition, DragAt newPosition ) ->
             ( Dragging newPosition
             , List.concatMap maybeToList
                 [ config.onDragStart
@@ -49,15 +49,15 @@ updateAndEmit config msg drag =
                 ]
             )
 
-        ( DragAt newPosition, Dragging oldPosition ) ->
+        ( Dragging oldPosition, DragAt newPosition ) ->
             ( Dragging newPosition
             , maybeToList (config.onDragBy (Delta.distanceTo newPosition oldPosition))
             )
 
-        ( StopDragging, DraggingTentative _ ) ->
+        ( DraggingTentative _, StopDragging ) ->
             ( NotDragging, maybeToList config.onClick )
 
-        ( StopDragging, Dragging _ ) ->
+        ( Dragging _, StopDragging ) ->
             ( NotDragging, maybeToList config.onDragEnd )
 
         _ ->
