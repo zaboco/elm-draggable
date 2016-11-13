@@ -104,7 +104,7 @@ subscriptions envelope (State drag) =
             Sub.none
 
         _ ->
-            [ Mouse.moves Internal.DragAt, Mouse.ups (\_ -> Internal.DragEnd) ]
+            [ Mouse.moves Internal.DragAt, Mouse.ups (\_ -> Internal.StopDragging) ]
                 |> Sub.batch
                 |> Sub.map (envelope << Msg)
 
@@ -121,7 +121,7 @@ triggerOnMouseDown envelope =
     in
         VirtualDom.onWithOptions "mousedown"
             ignoreDefaults
-            (Json.Decode.map (envelope << Msg << Internal.DragStart) Mouse.position)
+            (Json.Decode.map (envelope << Msg << Internal.StartDragging) Mouse.position)
 
 
 

@@ -13,9 +13,9 @@ type State
 
 
 type Msg
-    = DragStart Position
+    = StartDragging Position
     | DragAt Position
-    | DragEnd
+    | StopDragging
 
 
 type alias Config msg =
@@ -38,7 +38,7 @@ defaultConfig =
 updateAndEmit : Config msg -> Msg -> State -> ( State, List msg )
 updateAndEmit config msg drag =
     case ( msg, drag ) of
-        ( DragStart initialPosition, NotDragging ) ->
+        ( StartDragging initialPosition, NotDragging ) ->
             ( DraggingTentative initialPosition, [] )
 
         ( DragAt newPosition, DraggingTentative oldPosition ) ->
@@ -54,10 +54,10 @@ updateAndEmit config msg drag =
             , maybeToList (config.onDragBy (Delta.distanceTo newPosition oldPosition))
             )
 
-        ( DragEnd, DraggingTentative _ ) ->
+        ( StopDragging, DraggingTentative _ ) ->
             ( NotDragging, maybeToList config.onClick )
 
-        ( DragEnd, Dragging _ ) ->
+        ( StopDragging, Dragging _ ) ->
             ( NotDragging, maybeToList config.onDragEnd )
 
         _ ->

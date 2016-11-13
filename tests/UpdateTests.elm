@@ -51,7 +51,7 @@ singleUpdateTests =
     [ fuzz positionF "NoDrag -[DragStart]-> DragAttempt (onDragStart)" <|
         \startPosition ->
             NotDragging
-                |> updateWithEvents (DragStart startPosition)
+                |> updateWithEvents (StartDragging startPosition)
                 |> Should.equal ( DraggingTentative startPosition, [] )
     , fuzz2 positionF positionF "TentativeDrag -[DragAt]-> Dragging (onDragBy)" <|
         \p1 p2 ->
@@ -69,12 +69,12 @@ singleUpdateTests =
     , fuzz positionF "TentativeDrag -[DragEnd]-> NoDrag (onClick)" <|
         \endPosition ->
             DraggingTentative endPosition
-                |> updateWithEvents DragEnd
+                |> updateWithEvents StopDragging
                 |> Should.equal ( NotDragging, [ OnClick ] )
     , fuzz positionF "Dragging -[DragEnd]-> NoDrag (onDragEnd)" <|
         \endPosition ->
             Dragging endPosition
-                |> updateWithEvents DragEnd
+                |> updateWithEvents StopDragging
                 |> Should.equal ( NotDragging, [ OnDragEnd ] )
     ]
 
@@ -89,17 +89,17 @@ invalidUpdateTests =
     , test "Invalid DragEnd from NoDrag" <|
         \() ->
             NotDragging
-                |> updateWithEvents DragEnd
+                |> updateWithEvents StopDragging
                 |> Should.equal ( NotDragging, [] )
     , fuzz2 positionF positionF "Invalid DragStart from TentativeDrag" <|
         \position startPosition ->
             DraggingTentative position
-                |> updateWithEvents (DragStart startPosition)
+                |> updateWithEvents (StartDragging startPosition)
                 |> Should.equal ( DraggingTentative position, [] )
     , fuzz2 positionF positionF "Invalid DragStart from Dragging" <|
         \position startPosition ->
             Dragging position
-                |> updateWithEvents (DragStart startPosition)
+                |> updateWithEvents (StartDragging startPosition)
                 |> Should.equal ( Dragging position, [] )
     ]
 
@@ -111,9 +111,9 @@ chainUpdateTests =
             let
                 msgs =
                     List.concat
-                        [ [ DragStart startPosition ]
+                        [ [ StartDragging startPosition ]
                         , List.map DragAt dragPositions
-                        , [ DragEnd ]
+                        , [ StopDragging ]
                         ]
 
                 expectedState =
@@ -133,7 +133,7 @@ chainUpdateTests =
         \startPosition ->
             let
                 msgs =
-                    [ DragStart startPosition, DragEnd ]
+                    [ StartDragging startPosition, StopDragging ]
 
                 expected =
                     ( NotDragging, [ OnClick ] )
@@ -145,11 +145,11 @@ chainUpdateTests =
         \startPosition endPosition ->
             let
                 msgs =
-                    [ DragStart startPosition
+                    [ StartDragging startPosition
                     , DragAt endPosition
-                    , DragEnd
-                    , DragStart endPosition
-                    , DragEnd
+                    , StopDragging
+                    , StartDragging endPosition
+                    , StopDragging
                     ]
 
                 expected =
