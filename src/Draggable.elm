@@ -9,6 +9,8 @@ module Draggable
         , onDragBy
         , onDragEnd
         , onClick
+        , onMouseDown
+        , onMouseUp
         , triggerOnMouseDown
         , init
         , update
@@ -38,7 +40,8 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 
 # Config Modifiers
 Optional listeners for the various events involved in dragging (`onDragBy`, `onDragStart`, etc.). It can also handle `click` events when the mouse was not moved.
-@docs onDragStart, onDragEnd, onDragBy, onClick
+@docs onDragStart, onDragEnd, onDragBy
+@docs onClick, onMouseDown, onMouseUp
 
 # Definitions
 @docs State, Msg, Config
@@ -150,7 +153,6 @@ basicConfig onDragByListener =
         [ onDragBy OnDragBy
         , onDragStart OnDragStart
         , onDragEnd OnDragEnd
-        , onClick OnClick
         ]
 -}
 customConfig : List (Config msg -> Config msg) -> Config msg
@@ -188,6 +190,20 @@ onDragBy toMsg (Config config) =
 onClick : msg -> Config msg -> Config msg
 onClick toMsg (Config config) =
     Config { config | onClick = Just toMsg }
+
+
+{-| Register a `MouseDown` event listener. It will trigger whenever the mouse is pressed.
+-}
+onMouseDown : msg -> Config msg -> Config msg
+onMouseDown toMsg (Config config) =
+    Config { config | onMouseDown = Just toMsg }
+
+
+{-| Register a `MouseUp` event listener. It will trigger whenever the mouse is released.
+-}
+onMouseUp : msg -> Config msg -> Config msg
+onMouseUp toMsg (Config config) =
+    Config { config | onMouseUp = Just toMsg }
 
 
 defaultConfig : Config msg
