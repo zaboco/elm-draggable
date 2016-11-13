@@ -44,30 +44,31 @@ Optional listeners for the various events involved in dragging (`onDragBy`, `onD
 @docs Drag, Msg, Config
 -}
 
+import Cmd.Extra
+import Draggable.Delta as Delta exposing (Delta)
 import Internal
 import Json.Decode
 import Mouse
 import VirtualDom
-import Draggable.Delta as Delta exposing (Delta)
 
 
 {-| Drag state to be included in model.
 -}
-type alias Drag =
-    Internal.Drag
+type Drag
+    = Drag Internal.Drag
 
 
 {-| A message type for updating the internal drag state.
 -}
-type alias Msg =
-    Internal.Msg
+type Msg
+    = Msg Internal.Msg
 
 
 {-| Initial drag state
 -}
 init : Drag
 init =
-    Internal.NoDrag
+    Drag Internal.NoDrag
 
 
 {-| Handle update messages for the draggable model. It assumes that the drag state will be stored under the key `drag`.
@@ -77,18 +78,27 @@ update :
     -> Msg
     -> { m | drag : Drag }
     -> ( { m | drag : Drag }, Cmd msg )
-update (Config config) msg model =
+update config msg model =
     let
         ( dragState, dragCmd ) =
-            Internal.updateDraggable config msg model.drag
+            updateDraggable config msg model.drag
     in
         { model | drag = dragState } ! [ dragCmd ]
+
+
+updateDraggable : Config msg -> Msg -> Drag -> ( Drag, Cmd msg )
+updateDraggable (Config config) (Msg msg) (Drag drag) =
+    let
+        ( newDrag, newMsgs ) =
+            Internal.updateAndEmit config msg drag
+    in
+        ( Drag newDrag, Cmd.Extra.multiMessage newMsgs )
 
 
 {-| Handle mouse subscriptions used for dragging
 -}
 subscriptions : (Msg -> msg) -> Drag -> Sub msg
-subscriptions envelope drag =
+subscriptions envelope (Drag drag) =
     case drag of
         Internal.NoDrag ->
             Sub.none
@@ -96,7 +106,7 @@ subscriptions envelope drag =
         _ ->
             [ Mouse.moves Internal.DragAt, Mouse.ups (\_ -> Internal.DragEnd) ]
                 |> Sub.batch
-                |> Sub.map envelope
+                |> Sub.map (envelope << Msg)
 
 
 {-| DOM event handler to start dragging on mouse down.
@@ -111,7 +121,7 @@ triggerOnMouseDown envelope =
     in
         VirtualDom.onWithOptions "mousedown"
             ignoreDefaults
-            (Json.Decode.map (envelope << Internal.DragStart) Mouse.position)
+            (Json.Decode.map (envelope << Msg << Internal.DragStart) Mouse.position)
 
 
 

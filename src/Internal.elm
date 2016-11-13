@@ -1,6 +1,5 @@
 module Internal exposing (..)
 
-import Cmd.Extra
 import Draggable.Delta as Delta exposing (Delta)
 import Maybe.Extra exposing (maybeToList)
 import Mouse exposing (Position)
@@ -34,15 +33,6 @@ defaultConfig =
     , onDragEnd = Nothing
     , onClick = Nothing
     }
-
-
-updateDraggable : Config msg -> Msg -> Drag -> ( Drag, Cmd msg )
-updateDraggable config msg drag =
-    let
-        ( newDrag, newMsgs ) =
-            updateAndEmit config msg drag
-    in
-        ( newDrag, Cmd.Extra.multiMessage newMsgs )
 
 
 updateAndEmit : Config msg -> Msg -> Drag -> ( Drag, List msg )
