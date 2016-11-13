@@ -23,6 +23,7 @@ type alias Config msg =
     , onDragBy : Delta -> Maybe msg
     , onDragEnd : Maybe msg
     , onClick : Maybe msg
+    , onMouseDown : Maybe msg
     }
 
 
@@ -32,6 +33,7 @@ defaultConfig =
     , onDragBy = \_ -> Nothing
     , onDragEnd = Nothing
     , onClick = Nothing
+    , onMouseDown = Nothing
     }
 
 
@@ -39,7 +41,7 @@ updateAndEmit : Config msg -> Msg -> State -> ( State, List msg )
 updateAndEmit config msg drag =
     case ( drag, msg ) of
         ( NotDragging, StartDragging initialPosition ) ->
-            ( DraggingTentative initialPosition, [] )
+            ( DraggingTentative initialPosition, maybeToList config.onMouseDown )
 
         ( DraggingTentative oldPosition, DragAt newPosition ) ->
             ( Dragging newPosition

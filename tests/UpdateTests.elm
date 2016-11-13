@@ -25,6 +25,7 @@ type EmitMsg
     | OnDragBy Delta.Delta
     | OnDragEnd
     | OnClick
+    | OnMouseDown
 
 
 updateWithEvents : UpdateEmitter EmitMsg
@@ -38,6 +39,7 @@ fullConfig =
     , onDragBy = Just << OnDragBy
     , onDragEnd = Just OnDragEnd
     , onClick = Just OnClick
+    , onMouseDown = Just OnMouseDown
     }
 
 
@@ -48,19 +50,24 @@ defaultUpdate =
 
 singleUpdateTests : List Test
 singleUpdateTests =
-    [ fuzz positionF "NoDrag -[DragStart]-> DragAttempt (onDragStart)" <|
+    [ fuzz positionF "NoDrag -[DragStart]-> DragAttempt (onMouseDown)" <|
         \startPosition ->
             NotDragging
                 |> updateWithEvents (StartDragging startPosition)
-                |> Should.equal ( DraggingTentative startPosition, [] )
-    , fuzz2 positionF positionF "TentativeDrag -[DragAt]-> Dragging (onDragBy)" <|
-        \p1 p2 ->
+                |> Should.equal
+                    ( DraggingTentative startPosition
+                    , [ OnMouseDown ]
+                    )
+    , (fuzz2 positionF positionF)
+        "TentativeDrag -[DragAt]-> Dragging (onDragStart, onDragBy)"
+        (\p1 p2 ->
             DraggingTentative p1
                 |> updateWithEvents (DragAt p2)
                 |> Should.equal
                     ( Dragging p2
                     , [ OnDragStart, OnDragBy (Delta.distanceTo p2 p1) ]
                     )
+        )
     , fuzz2 positionF positionF "Dragging -[DragAt]-> Dragging (onDragBy)" <|
         \p1 p2 ->
             Dragging p1
@@ -121,7 +128,7 @@ chainUpdateTests =
 
                 expectedEvents =
                     List.concat
-                        [ [ OnDragStart ]
+                        [ [ OnMouseDown, OnDragStart ]
                         , List.map OnDragBy (deltas startPosition dragPositions)
                         , [ OnDragEnd ]
                         ]
@@ -136,7 +143,9 @@ chainUpdateTests =
                     [ StartDragging startPosition, StopDragging ]
 
                 expected =
-                    ( NotDragging, [ OnClick ] )
+                    ( NotDragging
+                    , [ OnMouseDown, OnClick ]
+                    )
             in
                 NotDragging
                     |> chainUpdate updateWithEvents msgs
