@@ -5,6 +5,7 @@ module Draggable.Delta
         , distanceTo
         , translate
         , scale
+        , reverse
         )
 
 {-| This module provides means of manipulationg the Delta value received on the
@@ -20,7 +21,7 @@ module Draggable.Delta
 @docs distanceTo, translate
 
 # Delta modifiers
-@docs scale
+@docs scale, reverse
 -}
 
 import Mouse exposing (Position)
@@ -78,3 +79,12 @@ scale factor (Delta { dx, dy }) =
                 |> ceiling
     in
         Delta { dx = scaleOne dx, dy = scaleOne dy }
+
+
+{-| Reverses a delta, basically by inverting the sign on both dimensions
+
+    reverse (fromDxDy -10 11) == fromDxDy 10 -11
+-}
+reverse : Delta -> Delta
+reverse =
+    scale -1

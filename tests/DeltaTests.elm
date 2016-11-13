@@ -26,6 +26,12 @@ all =
                 fromDxDy dx dy
                     |> scale (toFloat factor)
                     |> Should.equal (fromDxDy (dx * factor) (dy * factor))
+        , fuzz2 positionF positionF "reversed distance" <|
+            \start end ->
+                start
+                    |> distanceTo end
+                    |> reverse
+                    |> Should.equal (distanceTo start end)
         ]
 
 
