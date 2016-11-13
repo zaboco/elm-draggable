@@ -1,6 +1,5 @@
 module Internal exposing (..)
 
-import Cmd.Extra
 import Draggable.Delta as Delta exposing (Delta)
 import Maybe.Extra exposing (maybeToList)
 import Mouse exposing (Position)
@@ -19,44 +18,25 @@ type Msg
     | DragEnd
 
 
-type alias Emit msg model =
-    ( model, List msg )
-
-
-type alias UpdateEmitter msg =
-    Msg -> Drag -> Emit msg Drag
-
-
-type Config msg
-    = Config
-        { onDragStart : Maybe msg
-        , onDragBy : Delta -> Maybe msg
-        , onDragEnd : Maybe msg
-        , onClick : Maybe msg
-        }
+type alias Config msg =
+    { onDragStart : Maybe msg
+    , onDragBy : Delta -> Maybe msg
+    , onDragEnd : Maybe msg
+    , onClick : Maybe msg
+    }
 
 
 defaultConfig : Config msg
 defaultConfig =
-    Config
-        { onDragStart = Nothing
-        , onDragBy = \_ -> Nothing
-        , onDragEnd = Nothing
-        , onClick = Nothing
-        }
+    { onDragStart = Nothing
+    , onDragBy = \_ -> Nothing
+    , onDragEnd = Nothing
+    , onClick = Nothing
+    }
 
 
-updateDraggable : Config msg -> Msg -> Drag -> ( Drag, Cmd msg )
-updateDraggable config msg drag =
-    let
-        ( newDrag, newMsgs ) =
-            updateAndEmit config msg drag
-    in
-        ( newDrag, Cmd.Extra.multiMessage newMsgs )
-
-
-updateAndEmit : Config msg -> Msg -> Drag -> Emit msg Drag
-updateAndEmit (Config config) msg drag =
+updateAndEmit : Config msg -> Msg -> Drag -> ( Drag, List msg )
+updateAndEmit config msg drag =
     case ( msg, drag ) of
         ( DragStart initialPosition, NoDrag ) ->
             ( TentativeDrag initialPosition, [] )

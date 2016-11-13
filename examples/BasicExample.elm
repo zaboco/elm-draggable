@@ -1,6 +1,5 @@
 module BasicExample exposing (..)
 
-import Draggable.Config exposing (DragConfig)
 import Html exposing (Html)
 import Html.App
 import Html.Attributes as A
@@ -37,7 +36,7 @@ init =
     )
 
 
-dragConfig : DragConfig Msg
+dragConfig : Draggable.Config Msg
 dragConfig =
     Draggable.basicConfig OnDragBy
 

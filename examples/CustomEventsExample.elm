@@ -1,11 +1,10 @@
 module CustomEventsExample exposing (..)
 
-import Draggable.Config exposing (DragConfig, onClick, onDragBy, onDragEnd, onDragStart)
 import Html exposing (Html)
 import Html.App
 import Html.Attributes as A
 import Mouse exposing (Position)
-import Draggable
+import Draggable exposing (onClick, onDragBy, onDragEnd, onDragStart)
 import Draggable.Delta as Delta exposing (Delta)
 
 
@@ -46,7 +45,7 @@ init =
     )
 
 
-dragConfig : DragConfig Msg
+dragConfig : Draggable.Config Msg
 dragConfig =
     Draggable.customConfig
         [ onDragStart OnDragStart
