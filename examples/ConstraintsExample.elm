@@ -3,14 +3,13 @@ module ConstraintsExample exposing (..)
 import Draggable
 import Draggable.Vector as Vector exposing (Vector, getX, getY)
 import Html exposing (Html)
-import Html.App
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
 
 
-main : Program Never
+main : Program Never Model Msg
 main =
-    Html.App.program
+    Html.program
         { init = init
         , update = update
         , subscriptions = subscriptions
@@ -117,6 +116,7 @@ box position =
             , num Attr.height boxSize.height
             , num Attr.x x
             , num Attr.y y
+            , Attr.cursor "move"
             , Attr.fill "red"
             , Draggable.triggerOnMouseDown DragMsg
             ]
@@ -131,6 +131,7 @@ verticalGuideline y isEnabled =
         , num Attr.y1 y
         , num Attr.y2 y
         , Attr.stroke (guidelineColor isEnabled)
+        , Attr.strokeDasharray "5, 5"
         ]
         []
 
@@ -143,6 +144,7 @@ horizontalGuideline x isEnabled =
         , num Attr.y1 0
         , num Attr.y2 sceneSize.height
         , Attr.stroke (guidelineColor isEnabled)
+        , Attr.strokeDasharray "5, 5"
         ]
         []
 

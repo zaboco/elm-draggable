@@ -72,7 +72,7 @@ add (Vector first) (Vector second) =
 -}
 sub : Vector -> Vector -> Vector
 sub first second =
-    first `add` (scale -1 second)
+    add first (scale -1 second)
 
 
 {-| Scale a vector by a factor.

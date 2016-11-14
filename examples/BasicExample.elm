@@ -1,7 +1,6 @@
 module BasicExample exposing (..)
 
 import Html exposing (Html)
-import Html.App
 import Html.Attributes as A
 import Draggable
 import Draggable.Vector as Vector exposing (Vector, getX, getY)
@@ -18,9 +17,9 @@ type Msg
     | DragMsg Draggable.Msg
 
 
-main : Program Never
+main : Program Never Model Msg
 main =
-    Html.App.program
+    Html.program
         { init = init
         , update = update
         , subscriptions = subscriptions

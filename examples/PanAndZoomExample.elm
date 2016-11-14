@@ -2,17 +2,17 @@ module PanAndZoomExample exposing (..)
 
 import Draggable
 import Draggable.Vector as Vector exposing (Vector, getX, getY)
-import Json.Decode as Decode exposing ((:=))
+import Json.Decode as Decode
 import Html exposing (Html)
-import Html.App
+import Html
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
 import VirtualDom
 
 
-main : Program Never
+main : Program Never Model Msg
 main =
-    Html.App.program
+    Html.program
         { init = init
         , update = update
         , subscriptions = subscriptions
@@ -145,7 +145,10 @@ handleZoom onZoom =
         ignoreDefaults =
             VirtualDom.Options True True
     in
-        VirtualDom.onWithOptions "wheel" ignoreDefaults (Decode.map onZoom <| "deltaY" := Decode.float)
+        VirtualDom.onWithOptions
+            "wheel"
+            ignoreDefaults
+            (Decode.map onZoom <| Decode.field "deltaY" Decode.float)
 
 
 background : Svg Msg
