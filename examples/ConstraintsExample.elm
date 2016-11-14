@@ -1,7 +1,7 @@
 module ConstraintsExample exposing (..)
 
 import Char
-import Draggable
+import Draggable exposing (onDragBy, onDragEnd, onDragStart)
 import Draggable.Vector as Vector exposing (Vector, getX, getY)
 import Html exposing (Html)
 import Keyboard exposing (KeyCode)
@@ -24,6 +24,7 @@ type alias Model =
     , drag : Draggable.State
     , dragHorizontally : Bool
     , dragVertically : Bool
+    , isDragging : Bool
     }
 
 
@@ -33,6 +34,7 @@ type Msg
     | OnDragBy Vector
     | SetDragHorizontally Bool
     | SetDragVertically Bool
+    | SetDragging Bool
 
 
 init : ( Model, Cmd Msg )
@@ -41,6 +43,7 @@ init =
       , drag = Draggable.init
       , dragHorizontally = True
       , dragVertically = True
+      , isDragging = False
       }
     , Cmd.none
     )
@@ -48,7 +51,11 @@ init =
 
 dragConfig : Draggable.Config Msg
 dragConfig =
-    Draggable.basicConfig OnDragBy
+    Draggable.customConfig
+        [ onDragBy OnDragBy
+        , onDragStart (SetDragging True)
+        , onDragEnd (SetDragging False)
+        ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -85,6 +92,9 @@ update msg ({ position, dragVertically, dragHorizontally } as model) =
         SetDragVertically flag ->
             ( { model | dragVertically = flag }, Cmd.none )
 
+        SetDragging flag ->
+            ( { model | isDragging = flag }, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
@@ -98,10 +108,10 @@ subscriptions { drag } =
 handleKey : Bool -> Keyboard.KeyCode -> Msg
 handleKey pressed code =
     case (Char.fromCode code) of
-        'A' ->
+        'W' ->
             SetDragHorizontally (not pressed)
 
-        'W' ->
+        'A' ->
             SetDragVertically (not pressed)
 
         _ ->
@@ -118,7 +128,7 @@ type alias Size =
 
 sceneSize : Size
 sceneSize =
-    Size 400 400
+    Size 9999 9999
 
 
 boxSize : Size
@@ -127,20 +137,28 @@ boxSize =
 
 
 view : Model -> Html Msg
-view { position, dragHorizontally, dragVertically } =
-    Svg.svg
-        [ num Attr.width sceneSize.width
-        , num Attr.height sceneSize.height
-        ]
-        [ background
-        , horizontalGuideline (getY position) dragVertically
-        , verticalGuideline (getX position) dragHorizontally
-        , box position
-        ]
+view { position, dragHorizontally, dragVertically, isDragging } =
+    let
+        cursor =
+            if isDragging then
+                "none"
+            else
+                "default"
+    in
+        Svg.svg
+            [ Attr.width "100%"
+            , Attr.height "100%"
+            , Attr.cursor cursor
+            ]
+            [ background
+            , horizontalGuideline (getY position) dragVertically
+            , verticalGuideline (getX position) dragHorizontally
+            , box position isDragging
+            ]
 
 
-box : Vector -> Svg Msg
-box position =
+box : Vector -> Bool -> Svg Msg
+box position isDragging =
     let
         { width, height } =
             boxSize
@@ -149,13 +167,19 @@ box position =
             ( getX position - width / 2
             , getY position - height / 2
             )
+
+        cursor =
+            if isDragging then
+                "none"
+            else
+                "move"
     in
         Svg.rect
             [ num Attr.width boxSize.width
             , num Attr.height boxSize.height
             , num Attr.x x
             , num Attr.y y
-            , Attr.cursor "move"
+            , Attr.cursor cursor
             , Attr.fill "red"
             , Draggable.triggerOnMouseDown DragMsg
             ]
