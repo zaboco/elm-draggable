@@ -30,7 +30,6 @@ module Draggable.Vector
 -}
 
 import Mouse exposing (Position)
-import String
 
 
 {-| Two dimensional vector type.
