@@ -1,8 +1,10 @@
 module ConstraintsExample exposing (..)
 
+import Char
 import Draggable
 import Draggable.Vector as Vector exposing (Vector, getX, getY)
 import Html exposing (Html)
+import Keyboard exposing (KeyCode)
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
 
@@ -20,24 +22,25 @@ main =
 type alias Model =
     { position : Vector
     , drag : Draggable.State
-    , isDraggingX : Bool
-    , isDraggingY : Bool
+    , dragHorizontally : Bool
+    , dragVertically : Bool
     }
 
 
 type Msg
-    = DragMsg Draggable.Msg
+    = NoOp
+    | DragMsg Draggable.Msg
     | OnDragBy Vector
-    | SetDraggingX Bool
-    | SetDraggingY Bool
+    | SetDragHorizontally Bool
+    | SetDragVertically Bool
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { position = Vector.init 100 100
       , drag = Draggable.init
-      , isDraggingX = True
-      , isDraggingY = True
+      , dragHorizontally = True
+      , dragVertically = True
       }
     , Cmd.none
     )
@@ -49,24 +52,60 @@ dragConfig =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({ position } as model) =
+update msg ({ position, dragVertically, dragHorizontally } as model) =
     case msg of
-        OnDragBy delta ->
-            ( { model | position = Vector.add delta position }, Cmd.none )
+        NoOp ->
+            ( model, Cmd.none )
+
+        OnDragBy rawDelta ->
+            let
+                dx =
+                    if dragVertically then
+                        getX rawDelta
+                    else
+                        0
+
+                dy =
+                    if dragHorizontally then
+                        getY rawDelta
+                    else
+                        0
+
+                delta =
+                    Vector.init dx dy
+            in
+                ( { model | position = Vector.add delta position }, Cmd.none )
 
         DragMsg dragMsg ->
             Draggable.update dragConfig dragMsg model
 
-        SetDraggingX flag ->
-            ( { model | isDraggingX = flag }, Cmd.none )
+        SetDragHorizontally flag ->
+            ( { model | dragHorizontally = flag }, Cmd.none )
 
-        SetDraggingY flag ->
-            ( { model | isDraggingY = flag }, Cmd.none )
+        SetDragVertically flag ->
+            ( { model | dragVertically = flag }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.subscriptions DragMsg drag
+    Sub.batch
+        [ Keyboard.downs (handleKey True)
+        , Keyboard.ups (handleKey False)
+        , Draggable.subscriptions DragMsg drag
+        ]
+
+
+handleKey : Bool -> Keyboard.KeyCode -> Msg
+handleKey pressed code =
+    case (Char.fromCode code) of
+        'A' ->
+            SetDragHorizontally (not pressed)
+
+        'W' ->
+            SetDragVertically (not pressed)
+
+        _ ->
+            NoOp
 
 
 
@@ -88,14 +127,14 @@ boxSize =
 
 
 view : Model -> Html Msg
-view { position, isDraggingX, isDraggingY } =
+view { position, dragHorizontally, dragVertically } =
     Svg.svg
         [ num Attr.width sceneSize.width
         , num Attr.height sceneSize.height
         ]
         [ background
-        , verticalGuideline (getY position) isDraggingY
-        , horizontalGuideline (getX position) isDraggingX
+        , horizontalGuideline (getY position) dragVertically
+        , verticalGuideline (getX position) dragHorizontally
         , box position
         ]
 
@@ -123,38 +162,64 @@ box position =
             []
 
 
-verticalGuideline : Float -> Bool -> Svg Msg
-verticalGuideline y isEnabled =
-    Svg.line
-        [ num Attr.x1 0
-        , num Attr.x2 sceneSize.width
-        , num Attr.y1 y
-        , num Attr.y2 y
-        , Attr.stroke (guidelineColor isEnabled)
-        , Attr.strokeDasharray "5, 5"
-        ]
-        []
-
-
 horizontalGuideline : Float -> Bool -> Svg Msg
-horizontalGuideline x isEnabled =
-    Svg.line
-        [ num Attr.x1 x
-        , num Attr.x2 x
-        , num Attr.y1 0
-        , num Attr.y2 sceneSize.height
-        , Attr.stroke (guidelineColor isEnabled)
-        , Attr.strokeDasharray "5, 5"
+horizontalGuideline y isEnabled =
+    Svg.g [] <|
+        [ Svg.text_
+            [ num Attr.x 20
+            , num Attr.y y
+            , Attr.textAnchor "end"
+            , Attr.alignmentBaseline "middle"
+            ]
+            [ Svg.text "A" ]
+        , Svg.line
+            (guidelineStyle isEnabled
+                [ num Attr.x1 25
+                , num Attr.x2 sceneSize.width
+                , num Attr.y1 y
+                , num Attr.y2 y
+                ]
+            )
+            []
         ]
-        []
 
 
-guidelineColor : Bool -> String
-guidelineColor isEnabled =
-    if isEnabled then
-        "black"
-    else
-        "gray"
+verticalGuideline : Float -> Bool -> Svg Msg
+verticalGuideline x isEnabled =
+    Svg.g [] <|
+        [ Svg.text_
+            [ num Attr.x x
+            , num Attr.y 20
+            , Attr.textAnchor "middle"
+            ]
+            [ Svg.text "W" ]
+        , Svg.line
+            ([ num Attr.x1 x
+             , num Attr.x2 x
+             , num Attr.y1 25
+             , num Attr.y2 sceneSize.height
+             ]
+                |> guidelineStyle isEnabled
+            )
+            []
+        ]
+
+
+guidelineStyle : Bool -> List (Svg.Attribute msg) -> List (Svg.Attribute msg)
+guidelineStyle isEnabled otherAttributes =
+    let
+        color =
+            if isEnabled then
+                "black"
+            else
+                "#ccc"
+
+        attributes =
+            [ Attr.stroke color
+            , Attr.strokeDasharray "10, 10"
+            ]
+    in
+        otherAttributes ++ attributes
 
 
 background : Svg msg
