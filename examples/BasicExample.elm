@@ -3,19 +3,18 @@ module BasicExample exposing (..)
 import Html exposing (Html)
 import Html.App
 import Html.Attributes as A
-import Mouse exposing (Position)
 import Draggable
-import Draggable.Delta as Delta exposing (Delta)
+import Draggable.Vector as Vector exposing (Vector, getX, getY)
 
 
 type alias Model =
-    { xy : Position
+    { xy : Vector
     , drag : Draggable.State
     }
 
 
 type Msg
-    = OnDragBy Delta
+    = OnDragBy Vector
     | DragMsg Draggable.Msg
 
 
@@ -31,7 +30,7 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { xy = Position 0 0, drag = Draggable.init }
+    ( { xy = Vector.init 32 32, drag = Draggable.init }
     , Cmd.none
     )
 
@@ -45,7 +44,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         OnDragBy delta ->
-            ( { model | xy = Delta.translate delta model.xy }
+            ( { model | xy = Vector.add delta model.xy }
             , Cmd.none
             )
 
@@ -62,12 +61,11 @@ view : Model -> Html Msg
 view { xy } =
     let
         translate =
-            "translate(" ++ (toString xy.x) ++ "px, " ++ (toString xy.y) ++ "px)"
+            "translate(" ++ (toString <| getX xy) ++ "px, " ++ (toString <| getY xy) ++ "px)"
 
         style =
             [ "transform" => translate
             , "padding" => "16px"
-            , "margin" => "32px"
             , "background-color" => "lightgray"
             , "width" => "64px"
             , "cursor" => "move"

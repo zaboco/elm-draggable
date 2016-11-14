@@ -5,7 +5,7 @@ import Mouse exposing (Position)
 import Test exposing (..)
 import Expect as Should exposing (Expectation)
 import Internal exposing (State(..), Msg(..))
-import Draggable.Delta as Delta exposing (Delta)
+import Draggable.Vector as Vector exposing (Vector)
 import String
 
 
@@ -22,7 +22,7 @@ all =
 
 type EmitMsg
     = OnDragStart
-    | OnDragBy Delta.Delta
+    | OnDragBy Vector
     | OnDragEnd
     | OnClick
     | OnMouseDown
@@ -67,14 +67,14 @@ singleUpdateTests =
                 |> updateWithEvents (DragAt p2)
                 |> Should.equal
                     ( Dragging p2
-                    , [ OnDragStart, OnDragBy (Delta.distanceTo p2 p1) ]
+                    , [ OnDragStart, OnDragBy (Internal.distanceTo p2 p1) ]
                     )
         )
     , fuzz2 positionF positionF "Dragging -[DragAt]-> Dragging (onDragBy)" <|
         \p1 p2 ->
             Dragging p1
                 |> updateWithEvents (DragAt p2)
-                |> Should.equal ( Dragging p2, [ OnDragBy (Delta.distanceTo p2 p1) ] )
+                |> Should.equal ( Dragging p2, [ OnDragBy (Internal.distanceTo p2 p1) ] )
     , fuzz positionF "TentativeDrag -[DragEnd]-> NoDrag (onClick, onMouseUp)" <|
         \endPosition ->
             DraggingTentative endPosition
@@ -172,9 +172,9 @@ chainUpdateTests =
     ]
 
 
-deltas : Position -> List Position -> List Delta
+deltas : Position -> List Position -> List Vector
 deltas first rest =
-    List.map2 Delta.distanceTo rest (first :: rest)
+    List.map2 Internal.distanceTo rest (first :: rest)
 
 
 

@@ -2,12 +2,12 @@ module Tests exposing (..)
 
 import Test exposing (Test)
 import UpdateTests
-import DeltaTests
+import VectorTests
 
 
 all : Test
 all =
     Test.concat
         [ UpdateTests.all
-        , DeltaTests.all
+        , VectorTests.all
         ]

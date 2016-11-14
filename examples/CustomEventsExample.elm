@@ -3,13 +3,12 @@ module CustomEventsExample exposing (..)
 import Html exposing (Html)
 import Html.App
 import Html.Attributes as A
-import Mouse exposing (Position)
 import Draggable exposing (onClick, onDragBy, onDragEnd, onDragStart, onMouseDown, onMouseUp)
-import Draggable.Delta as Delta exposing (Delta)
+import Draggable.Vector as Vector exposing (Vector, getX, getY)
 
 
 type alias Model =
-    { xy : Position
+    { xy : Vector
     , clicksCount : Int
     , isDragging : Bool
     , isClicked : Bool
@@ -18,7 +17,7 @@ type alias Model =
 
 
 type Msg
-    = OnDragBy Delta
+    = OnDragBy Vector
     | OnDragStart
     | OnDragEnd
     | CountClick
@@ -38,7 +37,7 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { xy = Position 0 0
+    ( { xy = Vector.init 32 32
       , drag = Draggable.init
       , clicksCount = 0
       , isDragging = False
@@ -64,7 +63,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         OnDragBy delta ->
-            ( { model | xy = Delta.translate delta model.xy }
+            ( { model | xy = Vector.add delta model.xy }
             , Cmd.none
             )
 
@@ -93,7 +92,7 @@ view : Model -> Html Msg
 view { xy, isDragging, isClicked, clicksCount } =
     let
         translate =
-            "translate(" ++ (toString xy.x) ++ "px, " ++ (toString xy.y) ++ "px)"
+            "translate(" ++ (toString <| getX xy) ++ "px, " ++ (toString <| getY xy) ++ "px)"
 
         status =
             if isDragging then
@@ -110,7 +109,6 @@ view { xy, isDragging, isClicked, clicksCount } =
         style =
             [ "transform" => translate
             , "padding" => "16px"
-            , "margin" => "32px"
             , "background-color" => color
             , "width" => "100px"
             , "text-align" => "center"

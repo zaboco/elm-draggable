@@ -1,6 +1,6 @@
 module Internal exposing (..)
 
-import Draggable.Delta as Delta exposing (Delta)
+import Draggable.Vector as Vector exposing (Vector)
 import Maybe.Extra exposing (maybeToList)
 import Mouse exposing (Position)
 import String
@@ -20,7 +20,7 @@ type Msg
 
 type alias Config msg =
     { onDragStart : Maybe msg
-    , onDragBy : Delta -> Maybe msg
+    , onDragBy : Vector -> Maybe msg
     , onDragEnd : Maybe msg
     , onClick : Maybe msg
     , onMouseDown : Maybe msg
@@ -49,13 +49,13 @@ updateAndEmit config msg drag =
             ( Dragging newPosition
             , List.concatMap maybeToList
                 [ config.onDragStart
-                , config.onDragBy (Delta.distanceTo newPosition oldPosition)
+                , config.onDragBy (distanceTo newPosition oldPosition)
                 ]
             )
 
         ( Dragging oldPosition, DragAt newPosition ) ->
             ( Dragging newPosition
-            , maybeToList (config.onDragBy (Delta.distanceTo newPosition oldPosition))
+            , maybeToList (config.onDragBy (distanceTo newPosition oldPosition))
             )
 
         ( DraggingTentative _, StopDragging ) ->
@@ -75,6 +75,13 @@ updateAndEmit config msg drag =
 
 
 -- utility
+
+
+distanceTo : Position -> Position -> Vector
+distanceTo end start =
+    Vector.sub
+        (Vector.fromPosition end)
+        (Vector.fromPosition start)
 
 
 logInvalidState : State -> Msg -> a -> a

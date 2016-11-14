@@ -12,3 +12,6 @@ A minimal example of a Draggable element. It only registers an `onDragBy` event 
 
 ### Custom Events Example
 A showcase of the other supported events: `onDragStart`, `onDragEnd`, `onClick`, `onMouseDown`, `onMouseUp`
+
+### Pan And Zoom Example
+A use case for using `Vector.scale` on delta

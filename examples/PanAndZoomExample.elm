@@ -1,12 +1,13 @@
 module PanAndZoomExample exposing (..)
 
 import Draggable
-import Draggable.Delta as Delta exposing (Delta)
+import Draggable.Vector as Vector exposing (Vector, getX, getY)
+import Json.Decode as Decode exposing ((:=))
 import Html exposing (Html)
 import Html.App
-import Mouse exposing (Position)
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
+import VirtualDom
 
 
 main : Program Never
@@ -27,7 +28,7 @@ type alias Size num =
 
 type alias Model =
     { zoom : Float
-    , center : Position
+    , center : Vector
     , size : Size Float
     , drag : Draggable.State
     }
@@ -35,13 +36,14 @@ type alias Model =
 
 type Msg
     = DragMsg Draggable.Msg
-    | OnDragBy Delta
+    | OnDragBy Vector
+    | Zoom Float
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { zoom = 1
-      , center = Position 0 0
+      , center = Vector.init 0 0
       , size = Size 300 300
       , drag = Draggable.init
       }
@@ -60,9 +62,19 @@ update msg ({ center, zoom } as model) =
         OnDragBy rawDelta ->
             let
                 delta =
-                    rawDelta |> Delta.scale (-zoom)
+                    rawDelta
+                        |> Vector.scale (-1 / zoom)
             in
-                ( { model | center = center |> Delta.translate delta }, Cmd.none )
+                ( { model | center = center |> Vector.add delta }, Cmd.none )
+
+        Zoom factor ->
+            let
+                newZoom =
+                    zoom
+                        |> (+) (factor * 0.05)
+                        |> clamp 0.5 5
+            in
+                ( { model | zoom = newZoom }, Cmd.none )
 
         DragMsg dragMsg ->
             Draggable.update dragConfig dragMsg model
@@ -74,28 +86,32 @@ subscriptions { drag } =
 
 
 view : Model -> Html Msg
-view { center, size } =
+view { center, size, zoom } =
     let
         ( cx, cy ) =
-            ( toFloat center.x, toFloat center.y )
+            ( getX center, getY center )
 
         ( halfWidth, halfHeight ) =
-            ( size.width / 2, size.height / 2 )
+            ( size.width / zoom / 2, size.height / zoom / 2 )
 
         ( top, left, bottom, right ) =
             ( cy - halfHeight, cx - halfWidth, cy + halfHeight, cx + halfWidth )
 
         panning =
-            "translate(" ++ toString (-left) ++ ", " ++ toString (-top) ++ ")"
+            "translate(" ++ toString -left ++ ", " ++ toString -top ++ ")"
+
+        zooming =
+            "scale(" ++ toString zoom ++ ")"
     in
         Svg.svg
             [ num Attr.width size.width
             , num Attr.height size.height
+            , handleZoom Zoom
             , Draggable.triggerOnMouseDown DragMsg
             ]
             [ background
             , Svg.g
-                [ Attr.transform panning
+                [ Attr.transform (zooming ++ " " ++ panning)
                 , Attr.stroke "black"
                 , Attr.fill "none"
                 ]
@@ -121,6 +137,15 @@ view { center, size } =
                     []
                 ]
             ]
+
+
+handleZoom : (Float -> msg) -> Svg.Attribute msg
+handleZoom onZoom =
+    let
+        ignoreDefaults =
+            VirtualDom.Options True True
+    in
+        VirtualDom.onWithOptions "wheel" ignoreDefaults (Decode.map onZoom <| "deltaY" := Decode.float)
 
 
 background : Svg Msg
