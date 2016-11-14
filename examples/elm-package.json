@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "summary": "helpful summary of your project, less than 80 characters",
+    "summary": "Use cases for Draggable elements",
     "repository": "https://github.com/user/project.git",
     "license": "BSD3",
     "source-directories": [
@@ -9,10 +9,11 @@
     ],
     "exposed-modules": [],
     "dependencies": {
+        "elm-community/maybe-extra": "2.0.0 <= v < 3.0.0",
         "elm-lang/core": "4.0.5 <= v < 5.0.0",
         "elm-lang/html": "1.1.0 <= v < 2.0.0",
         "elm-lang/mouse": "1.0.0 <= v < 2.0.0",
-        "elm-community/maybe-extra": "2.0.0 <= v < 3.0.0",
+        "elm-lang/svg": "1.1.1 <= v < 2.0.0",
         "elm-lang/virtual-dom": "1.1.1 <= v < 2.0.0"
     },
     "elm-version": "0.17.1 <= v < 0.18.0"

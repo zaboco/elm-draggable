@@ -48,14 +48,14 @@ Optional listeners for the various events involved in dragging (`onDragBy`, `onD
 -}
 
 import Cmd.Extra
-import Draggable.Delta as Delta exposing (Delta)
+import Draggable.Vector as Vector exposing (Vector)
 import Internal
 import Json.Decode
 import Mouse
 import VirtualDom
 
 
-{-| State state to be included in model.
+{-| Drag state to be included in model.
 -}
 type State
     = State Internal.State
@@ -114,7 +114,7 @@ subscriptions envelope (State drag) =
 
 {-| DOM event handler to start dragging on mouse down.
 
-    div [ triggerOnMouseDown DragMsg ] [ text "State me" ]
+    div [ triggerOnMouseDown DragMsg ] [ text "Drag me" ]
 -}
 triggerOnMouseDown : (Msg -> msg) -> VirtualDom.Property msg
 triggerOnMouseDown envelope =
@@ -141,7 +141,7 @@ type Config msg
 
     config = basicConfig OnDragBy
 -}
-basicConfig : (Delta -> msg) -> Config msg
+basicConfig : (Vector -> msg) -> Config msg
 basicConfig onDragByListener =
     defaultConfig
         |> onDragBy onDragByListener
@@ -180,7 +180,7 @@ onDragEnd toMsg (Config config) =
         OnDragBy delta ->
             { model | point = Delta.translate delta model.point }
 -}
-onDragBy : (Delta -> msg) -> Config msg -> Config msg
+onDragBy : (Vector -> msg) -> Config msg -> Config msg
 onDragBy toMsg (Config config) =
     Config { config | onDragBy = Just << toMsg }
 
