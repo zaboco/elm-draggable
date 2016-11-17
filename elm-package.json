@@ -7,8 +7,7 @@
         "src"
     ],
     "exposed-modules": [
-        "Draggable",
-        "Draggable.Vector"
+        "Draggable"
     ],
     "dependencies": {
         "elm-community/maybe-extra": "3.0.0 <= v < 4.0.0",

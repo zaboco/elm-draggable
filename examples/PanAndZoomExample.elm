@@ -1,10 +1,10 @@
 module PanAndZoomExample exposing (..)
 
 import Draggable
-import Draggable.Vector as Vector exposing (Vector, getX, getY)
 import Json.Decode as Decode
 import Html exposing (Html)
 import Html
+import Math.Vector2 as Vector2 exposing (Vec2, getX, getY)
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
 import VirtualDom
@@ -28,7 +28,7 @@ type alias Size num =
 
 type alias Model =
     { zoom : Float
-    , center : Vector
+    , center : Vec2
     , size : Size Float
     , drag : Draggable.State
     }
@@ -36,14 +36,14 @@ type alias Model =
 
 type Msg
     = DragMsg Draggable.Msg
-    | OnDragBy Vector
+    | OnDragBy Vec2
     | Zoom Float
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { zoom = 1
-      , center = Vector.init 0 0
+      , center = Vector2.vec2 0 0
       , size = Size 300 300
       , drag = Draggable.init
       }
@@ -53,7 +53,7 @@ init =
 
 dragConfig : Draggable.Config Msg
 dragConfig =
-    Draggable.basicConfig OnDragBy
+    Draggable.basicConfig (OnDragBy << Vector2.fromTuple)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -63,9 +63,9 @@ update msg ({ center, zoom } as model) =
             let
                 delta =
                     rawDelta
-                        |> Vector.scale (-1 / zoom)
+                        |> Vector2.scale (-1 / zoom)
             in
-                ( { model | center = center |> Vector.add delta }, Cmd.none )
+                ( { model | center = center |> Vector2.add delta }, Cmd.none )
 
         Zoom factor ->
             let
