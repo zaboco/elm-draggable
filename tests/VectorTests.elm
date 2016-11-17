@@ -12,10 +12,10 @@ all =
     describe "Vector"
         [ fuzz2 vectorF vectorF "subtracting and then adding the same value" <|
             \start end ->
-                end `sub` start `add` start |> shouldAlmostEqual end
+                add (sub end start) start |> shouldAlmostEqual end
         , fuzz2 vectorF vectorF "adding and then subtracting the same value" <|
             \start delta ->
-                start `add` delta `sub` delta |> shouldAlmostEqual start
+                sub (add start delta) delta |> shouldAlmostEqual start
         , fuzz2 (Fuzz.floatRange 0.01 100) vectorF "scale in and out" <|
             \factor vector ->
                 vector

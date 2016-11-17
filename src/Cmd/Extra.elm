@@ -5,7 +5,7 @@ import Task
 
 message : msg -> Cmd msg
 message x =
-    Task.perform identity identity (Task.succeed x)
+    Task.perform identity (Task.succeed x)
 
 
 multiMessage : List msg -> Cmd msg
