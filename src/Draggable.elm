@@ -2,9 +2,11 @@ module Draggable
     exposing
         ( State
         , Msg
+        , Delta
         , Config
         , basicConfig
         , customConfig
+        , deltaToPosition
         , onDragStart
         , onDragBy
         , onDragEnd
@@ -43,16 +45,24 @@ Optional listeners for the various events involved in dragging (`onDragBy`, `onD
 @docs onDragStart, onDragEnd, onDragBy
 @docs onClick, onMouseDown, onMouseUp
 
+# Helpers
+@docs deltaToPosition
+
 # Definitions
-@docs State, Msg, Config
+@docs Delta, State, Msg, Config
 -}
 
 import Cmd.Extra
-import Draggable.Vector as Vector exposing (Vector)
 import Internal
 import Json.Decode
-import Mouse
+import Mouse exposing (Position)
 import VirtualDom
+
+
+{-| A type alias representing the distance between two drag points.
+-}
+type alias Delta =
+    ( Float, Float )
 
 
 {-| Drag state to be included in model.
@@ -128,6 +138,22 @@ triggerOnMouseDown envelope =
 
 
 
+-- HELPERS
+
+
+{-| Converts a `Delta` to a `Mouse.Position`. Can be used to change the argument to `DragBy` messages:
+
+    dragConfig =
+        Draggable.basicConfig (OnDragBy << Draggable.deltaToPosition)
+
+See [BasicExample](https://github.com/zaboco/elm-draggable/blob/master/examples/BasicExample.elm)
+-}
+deltaToPosition : Delta -> Position
+deltaToPosition ( dx, dy ) =
+    Position (round dx) (round dy)
+
+
+
 -- CONFIG
 
 
@@ -141,7 +167,7 @@ type Config msg
 
     config = basicConfig OnDragBy
 -}
-basicConfig : (Vector -> msg) -> Config msg
+basicConfig : (Delta -> msg) -> Config msg
 basicConfig onDragByListener =
     defaultConfig
         |> onDragBy onDragByListener
@@ -180,7 +206,7 @@ onDragEnd toMsg (Config config) =
         OnDragBy delta ->
             { model | point = Delta.translate delta model.point }
 -}
-onDragBy : (Vector -> msg) -> Config msg -> Config msg
+onDragBy : (Delta -> msg) -> Config msg -> Config msg
 onDragBy toMsg (Config config) =
     Config { config | onDragBy = Just << toMsg }
 

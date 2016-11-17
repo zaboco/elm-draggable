@@ -3,11 +3,11 @@ module CustomEventsExample exposing (..)
 import Html exposing (Html)
 import Html.Attributes as A
 import Draggable exposing (onClick, onDragBy, onDragEnd, onDragStart, onMouseDown, onMouseUp)
-import Draggable.Vector as Vector exposing (Vector, getX, getY)
+import Mouse exposing (Position)
 
 
 type alias Model =
-    { xy : Vector
+    { xy : Position
     , clicksCount : Int
     , isDragging : Bool
     , isClicked : Bool
@@ -16,7 +16,7 @@ type alias Model =
 
 
 type Msg
-    = OnDragBy Vector
+    = OnDragBy Position
     | OnDragStart
     | OnDragEnd
     | CountClick
@@ -36,7 +36,7 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { xy = Vector.init 32 32
+    ( { xy = Position 32 32
       , drag = Draggable.init
       , clicksCount = 0
       , isDragging = False
@@ -51,7 +51,7 @@ dragConfig =
     Draggable.customConfig
         [ onDragStart OnDragStart
         , onDragEnd OnDragEnd
-        , onDragBy OnDragBy
+        , onDragBy (OnDragBy << Draggable.deltaToPosition)
         , onClick CountClick
         , onMouseDown (SetClicked True)
         , onMouseUp (SetClicked False)
@@ -59,10 +59,10 @@ dragConfig =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update msg ({ xy } as model) =
     case msg of
-        OnDragBy delta ->
-            ( { model | xy = Vector.add delta model.xy }
+        OnDragBy { x, y } ->
+            ( { model | xy = Position (xy.x + x) (xy.y + y) }
             , Cmd.none
             )
 
@@ -91,7 +91,7 @@ view : Model -> Html Msg
 view { xy, isDragging, isClicked, clicksCount } =
     let
         translate =
-            "translate(" ++ (toString <| getX xy) ++ "px, " ++ (toString <| getY xy) ++ "px)"
+            "translate(" ++ (toString xy.x) ++ "px, " ++ (toString xy.y) ++ "px)"
 
         status =
             if isDragging then

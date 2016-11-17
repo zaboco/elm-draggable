@@ -2,9 +2,9 @@ module ConstraintsExample exposing (..)
 
 import Char
 import Draggable exposing (onDragBy, onDragEnd, onDragStart)
-import Draggable.Vector as Vector exposing (Vector, getX, getY)
 import Html exposing (Html)
 import Keyboard exposing (KeyCode)
+import Mouse exposing (Position)
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
 
@@ -20,7 +20,7 @@ main =
 
 
 type alias Model =
-    { position : Vector
+    { position : Position
     , drag : Draggable.State
     , dragHorizontally : Bool
     , dragVertically : Bool
@@ -31,7 +31,7 @@ type alias Model =
 type Msg
     = NoOp
     | DragMsg Draggable.Msg
-    | OnDragBy Vector
+    | OnDragBy Position
     | SetDragHorizontally Bool
     | SetDragVertically Bool
     | SetDragging Bool
@@ -39,7 +39,7 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( { position = Vector.init 100 100
+    ( { position = Position 100 100
       , drag = Draggable.init
       , dragHorizontally = True
       , dragVertically = True
@@ -52,7 +52,7 @@ init =
 dragConfig : Draggable.Config Msg
 dragConfig =
     Draggable.customConfig
-        [ onDragBy OnDragBy
+        [ onDragBy (OnDragBy << Draggable.deltaToPosition)
         , onDragStart (SetDragging True)
         , onDragEnd (SetDragging False)
         ]
@@ -64,24 +64,19 @@ update msg ({ position, dragVertically, dragHorizontally } as model) =
         NoOp ->
             ( model, Cmd.none )
 
-        OnDragBy rawDelta ->
+        OnDragBy { x, y } ->
             let
-                dx =
-                    if dragVertically then
-                        getX rawDelta
-                    else
-                        0
+                ( fx, fy ) =
+                    ( boolToInt dragHorizontally
+                    , boolToInt dragVertically
+                    )
 
-                dy =
-                    if dragHorizontally then
-                        getY rawDelta
-                    else
-                        0
-
-                delta =
-                    Vector.init dx dy
+                newPosition =
+                    Position
+                        (position.x + x * fx)
+                        (position.y + y * fy)
             in
-                ( { model | position = Vector.add delta position }, Cmd.none )
+                ( { model | position = newPosition }, Cmd.none )
 
         DragMsg dragMsg ->
             Draggable.update dragConfig dragMsg model
@@ -96,6 +91,14 @@ update msg ({ position, dragVertically, dragHorizontally } as model) =
             ( { model | isDragging = flag }, Cmd.none )
 
 
+boolToInt : Bool -> Int
+boolToInt bool =
+    if bool then
+        1
+    else
+        0
+
+
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
     Sub.batch
@@ -108,10 +111,10 @@ subscriptions { drag } =
 handleKey : Bool -> Keyboard.KeyCode -> Msg
 handleKey pressed code =
     case (Char.fromCode code) of
-        'W' ->
+        'A' ->
             SetDragHorizontally (not pressed)
 
-        'A' ->
+        'W' ->
             SetDragVertically (not pressed)
 
         _ ->
@@ -123,7 +126,7 @@ handleKey pressed code =
 
 
 type alias Size =
-    { width : Float, height : Float }
+    { width : Int, height : Int }
 
 
 sceneSize : Size
@@ -151,21 +154,21 @@ view { position, dragHorizontally, dragVertically, isDragging } =
             , Attr.cursor cursor
             ]
             [ background
-            , horizontalGuideline (getY position) dragVertically
-            , verticalGuideline (getX position) dragHorizontally
+            , verticalGuideline position.x dragVertically
+            , horizontalGuideline position.y dragHorizontally
             , box position isDragging
             ]
 
 
-box : Vector -> Bool -> Svg Msg
+box : Position -> Bool -> Svg Msg
 box position isDragging =
     let
         { width, height } =
             boxSize
 
         ( x, y ) =
-            ( getX position - width / 2
-            , getY position - height / 2
+            ( position.x - width // 2
+            , position.y - height // 2
             )
 
         cursor =
@@ -186,7 +189,7 @@ box position isDragging =
             []
 
 
-horizontalGuideline : Float -> Bool -> Svg Msg
+horizontalGuideline : Int -> Bool -> Svg Msg
 horizontalGuideline y isEnabled =
     Svg.g [] <|
         [ Svg.text_
@@ -208,7 +211,7 @@ horizontalGuideline y isEnabled =
         ]
 
 
-verticalGuideline : Float -> Bool -> Svg Msg
+verticalGuideline : Int -> Bool -> Svg Msg
 verticalGuideline x isEnabled =
     Svg.g [] <|
         [ Svg.text_

@@ -1,6 +1,5 @@
 module Internal exposing (..)
 
-import Draggable.Vector as Vector exposing (Vector)
 import Maybe.Extra exposing (maybeToList)
 import Mouse exposing (Position)
 import String
@@ -18,9 +17,13 @@ type Msg
     | StopDragging
 
 
+type alias Delta =
+    ( Float, Float )
+
+
 type alias Config msg =
     { onDragStart : Maybe msg
-    , onDragBy : Vector -> Maybe msg
+    , onDragBy : Delta -> Maybe msg
     , onDragEnd : Maybe msg
     , onClick : Maybe msg
     , onMouseDown : Maybe msg
@@ -77,11 +80,11 @@ updateAndEmit config msg drag =
 -- utility
 
 
-distanceTo : Position -> Position -> Vector
+distanceTo : Position -> Position -> Delta
 distanceTo end start =
-    Vector.sub
-        (Vector.fromPosition end)
-        (Vector.fromPosition start)
+    ( end.x - start.x, end.y - start.y )
+        |> Tuple.mapFirst toFloat
+        |> Tuple.mapSecond toFloat
 
 
 logInvalidState : State -> Msg -> a -> a
