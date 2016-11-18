@@ -4,15 +4,10 @@ module Draggable
         , Msg
         , Delta
         , Config
+        , Event
         , basicConfig
         , customConfig
         , deltaToPosition
-        , onDragStart
-        , onDragBy
-        , onDragEnd
-        , onClick
-        , onMouseDown
-        , onMouseUp
         , triggerOnMouseDown
         , init
         , update
@@ -40,16 +35,11 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 # DOM trigger
 @docs triggerOnMouseDown
 
-# Config Modifiers
-Optional listeners for the various events involved in dragging (`onDragBy`, `onDragStart`, etc.). It can also handle `click` events when the mouse was not moved.
-@docs onDragStart, onDragEnd, onDragBy
-@docs onClick, onMouseDown, onMouseUp
-
 # Helpers
 @docs deltaToPosition
 
 # Definitions
-@docs Delta, State, Msg, Config
+@docs Delta, State, Msg, Config, Event
 -}
 
 import Cmd.Extra
@@ -75,6 +65,12 @@ type State
 -}
 type Msg
     = Msg Internal.Msg
+
+
+{-| An event declaration for the draggable config
+-}
+type alias Event msg =
+    Internal.Event msg
 
 
 {-| Initial drag state
@@ -169,11 +165,14 @@ type Config msg
 -}
 basicConfig : (Delta -> msg) -> Config msg
 basicConfig onDragByListener =
-    defaultConfig
-        |> onDragBy onDragByListener
+    let
+        defaultConfig =
+            Internal.defaultConfig
+    in
+        Config { defaultConfig | onDragBy = Just << onDragByListener }
 
 
-{-| Custom config, including arbitrary options. See below the available `Modifiers`.
+{-| Custom config, including arbitrary options. See [`Events`](#Draggable-Events).
 
     config = customConfig
         [ onDragBy OnDragBy
@@ -181,59 +180,6 @@ basicConfig onDragByListener =
         , onDragEnd OnDragEnd
         ]
 -}
-customConfig : List (Config msg -> Config msg) -> Config msg
-customConfig modifiers =
-    List.foldl (<|) defaultConfig modifiers
-
-
-{-| Register a `DragStart` event listener. It will not trigger if the mouse has not moved while it was pressed.
--}
-onDragStart : msg -> Config msg -> Config msg
-onDragStart toMsg (Config config) =
-    Config { config | onDragStart = Just toMsg }
-
-
-{-| Register a `DragEnd` event listener. It will not trigger if the mouse has not moved while it was pressed.
--}
-onDragEnd : msg -> Config msg -> Config msg
-onDragEnd toMsg (Config config) =
-    Config { config | onDragEnd = Just toMsg }
-
-
-{-| Register a `DragBy` event listener. It will trigger every time the mouse is moved. The sent message will contain a `Delta`, which is the distance between the current position and the previous one.
-
-**Note** The delta values are `Float`, so the code bellow assumes that the `point` is of type `{ x: Float, y: Float }`. If you want to use a `Mouse.Position` instead (which has `Int` coordinates), you might want to convert the `Delta` to a `Position`, using [`deltaToPosition`](#deltaToPosition)
-
-    case Msg of
-        OnDragBy (dx, dy) ->
-            { model | point = { x = point.x + dx, y = point.y + dy } }
--}
-onDragBy : (Delta -> msg) -> Config msg -> Config msg
-onDragBy toMsg (Config config) =
-    Config { config | onDragBy = Just << toMsg }
-
-
-{-| Register a `Click` event listener. It will trigger if the mouse is pressed and immediately release, without any move.
--}
-onClick : msg -> Config msg -> Config msg
-onClick toMsg (Config config) =
-    Config { config | onClick = Just toMsg }
-
-
-{-| Register a `MouseDown` event listener. It will trigger whenever the mouse is pressed.
--}
-onMouseDown : msg -> Config msg -> Config msg
-onMouseDown toMsg (Config config) =
-    Config { config | onMouseDown = Just toMsg }
-
-
-{-| Register a `MouseUp` event listener. It will trigger whenever the mouse is released.
--}
-onMouseUp : msg -> Config msg -> Config msg
-onMouseUp toMsg (Config config) =
-    Config { config | onMouseUp = Just toMsg }
-
-
-defaultConfig : Config msg
-defaultConfig =
-    Config Internal.defaultConfig
+customConfig : List (Event msg) -> Config msg
+customConfig events =
+    Config <| List.foldl (<|) Internal.defaultConfig events

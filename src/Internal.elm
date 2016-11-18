@@ -31,6 +31,10 @@ type alias Config msg =
     }
 
 
+type alias Event msg =
+    Config msg -> Config msg
+
+
 defaultConfig : Config msg
 defaultConfig =
     { onDragStart = Nothing
