@@ -32,7 +32,7 @@ type alias Model =
 type Msg
     = NoOp
     | DragMsg Draggable.Msg
-    | OnDragBy Position
+    | OnDragBy Draggable.Delta
     | SetDragHorizontally Bool
     | SetDragVertically Bool
     | SetDragging Bool
@@ -53,7 +53,7 @@ init =
 dragConfig : Draggable.Config Msg
 dragConfig =
     Draggable.customConfig
-        [ onDragBy (OnDragBy << Draggable.deltaToPosition)
+        [ onDragBy (OnDragBy)
         , onDragStart (SetDragging True)
         , onDragEnd (SetDragging False)
         ]
@@ -65,7 +65,7 @@ update msg ({ position, dragVertically, dragHorizontally } as model) =
         NoOp ->
             ( model, Cmd.none )
 
-        OnDragBy { x, y } ->
+        OnDragBy ( dx, dy ) ->
             let
                 ( fx, fy ) =
                     ( boolToInt dragHorizontally
@@ -74,8 +74,8 @@ update msg ({ position, dragVertically, dragHorizontally } as model) =
 
                 newPosition =
                     Position
-                        (position.x + x * fx)
-                        (position.y + y * fy)
+                        (position.x + dx * fx)
+                        (position.y + dy * fy)
             in
                 ( { model | position = newPosition }, Cmd.none )
 

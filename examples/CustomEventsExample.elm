@@ -17,7 +17,7 @@ type alias Model =
 
 
 type Msg
-    = OnDragBy Position
+    = OnDragBy Draggable.Delta
     | OnDragStart
     | OnDragEnd
     | CountClick
@@ -52,7 +52,7 @@ dragConfig =
     Draggable.customConfig
         [ onDragStart OnDragStart
         , onDragEnd OnDragEnd
-        , onDragBy (OnDragBy << Draggable.deltaToPosition)
+        , onDragBy (OnDragBy)
         , onClick CountClick
         , onMouseDown (SetClicked True)
         , onMouseUp (SetClicked False)
@@ -62,8 +62,8 @@ dragConfig =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ xy } as model) =
     case msg of
-        OnDragBy { x, y } ->
-            ( { model | xy = Position (xy.x + x) (xy.y + y) }
+        OnDragBy ( dx, dy ) ->
+            ( { model | xy = Position (xy.x + dx) (xy.y + dy) }
             , Cmd.none
             )
 

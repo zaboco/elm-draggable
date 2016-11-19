@@ -18,7 +18,7 @@ type Msg
 
 
 type alias Delta =
-    ( Float, Float )
+    ( Int, Int )
 
 
 type alias Config msg =
@@ -87,8 +87,6 @@ updateAndEmit config msg drag =
 distanceTo : Position -> Position -> Delta
 distanceTo end start =
     ( end.x - start.x, end.y - start.y )
-        |> Tuple.mapFirst toFloat
-        |> Tuple.mapSecond toFloat
 
 
 logInvalidState : State -> Msg -> a -> a
