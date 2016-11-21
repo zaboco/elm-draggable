@@ -4,15 +4,10 @@ module Draggable
         , Msg
         , Delta
         , Config
+        , Event
         , basicConfig
         , customConfig
-        , deltaToPosition
-        , onDragStart
-        , onDragBy
-        , onDragEnd
-        , onClick
-        , onMouseDown
-        , onMouseUp
+        , deltaToFloats
         , triggerOnMouseDown
         , init
         , update
@@ -40,16 +35,11 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 # DOM trigger
 @docs triggerOnMouseDown
 
-# Config Modifiers
-Optional listeners for the various events involved in dragging (`onDragBy`, `onDragStart`, etc.). It can also handle `click` events when the mouse was not moved.
-@docs onDragStart, onDragEnd, onDragBy
-@docs onClick, onMouseDown, onMouseUp
-
 # Helpers
-@docs deltaToPosition
+@docs deltaToFloats
 
 # Definitions
-@docs Delta, State, Msg, Config
+@docs Delta, State, Msg, Config, Event
 -}
 
 import Cmd.Extra
@@ -62,7 +52,7 @@ import VirtualDom
 {-| A type alias representing the distance between two drag points.
 -}
 type alias Delta =
-    ( Float, Float )
+    ( Int, Int )
 
 
 {-| Drag state to be included in model.
@@ -75,6 +65,12 @@ type State
 -}
 type Msg
     = Msg Internal.Msg
+
+
+{-| An event declaration for the draggable config
+-}
+type alias Event msg =
+    Internal.Event msg
 
 
 {-| Initial drag state
@@ -141,16 +137,23 @@ triggerOnMouseDown envelope =
 -- HELPERS
 
 
-{-| Converts a `Delta` to a `Mouse.Position`. Can be used to change the argument to `DragBy` messages:
+{-| Converts a `Delta` to a tuple of `Float`s. Can be used to change the argument to `DragBy` messages, when float operations are needed:
 
     dragConfig =
-        Draggable.basicConfig (OnDragBy << Draggable.deltaToPosition)
+        Draggable.basicConfig (OnDragBy << Draggable.deltaToFloats)
 
-See [BasicExample](https://github.com/zaboco/elm-draggable/blob/master/examples/BasicExample.elm)
+A use case for that could be converting the `Delta` to a `Vector` type (e.g. [`Math.Vector2.Vec2` from `linear-algebra`][vec2])
+
+    dragConfig =
+        Draggable.basicConfig (OnDragBy << Vector2.fromTuple << Draggable.deltaToFloats)
+
+See [PanAndZoomExample](https://github.com/zaboco/elm-draggable/blob/master/examples/PanAndZoomExample.elm)
+
+[vec2]: http://package.elm-lang.org/packages/elm-community/linear-algebra/1.0.0/Math-Vector2#Vec2
 -}
-deltaToPosition : Delta -> Position
-deltaToPosition ( dx, dy ) =
-    Position (round dx) (round dy)
+deltaToFloats : Delta -> ( Float, Float )
+deltaToFloats ( dx, dy ) =
+    ( toFloat dx, toFloat dy )
 
 
 
@@ -169,11 +172,14 @@ type Config msg
 -}
 basicConfig : (Delta -> msg) -> Config msg
 basicConfig onDragByListener =
-    defaultConfig
-        |> onDragBy onDragByListener
+    let
+        defaultConfig =
+            Internal.defaultConfig
+    in
+        Config { defaultConfig | onDragBy = Just << onDragByListener }
 
 
-{-| Custom config, including arbitrary options. See below the available `Modifiers`.
+{-| Custom config, including arbitrary options. See [`Events`](#Draggable-Events).
 
     config = customConfig
         [ onDragBy OnDragBy
@@ -181,57 +187,6 @@ basicConfig onDragByListener =
         , onDragEnd OnDragEnd
         ]
 -}
-customConfig : List (Config msg -> Config msg) -> Config msg
-customConfig modifiers =
-    List.foldl (<|) defaultConfig modifiers
-
-
-{-| Register a `DragStart` event listener. It will not trigger if the mouse has not moved while it was pressed.
--}
-onDragStart : msg -> Config msg -> Config msg
-onDragStart toMsg (Config config) =
-    Config { config | onDragStart = Just toMsg }
-
-
-{-| Register a `DragEnd` event listener. It will not trigger if the mouse has not moved while it was pressed.
--}
-onDragEnd : msg -> Config msg -> Config msg
-onDragEnd toMsg (Config config) =
-    Config { config | onDragEnd = Just toMsg }
-
-
-{-| Register a `DragBy` event listener. It will trigger every time the mouse is moved. The sent message will contain a `Delta`, which is the distance between the current position and the previous one. When handling this message you will have to call a variation of `Delta.translate` to update the tracked position:
-
-    case Msg of
-        OnDragBy delta ->
-            { model | point = Delta.translate delta model.point }
--}
-onDragBy : (Delta -> msg) -> Config msg -> Config msg
-onDragBy toMsg (Config config) =
-    Config { config | onDragBy = Just << toMsg }
-
-
-{-| Register a `Click` event listener. It will trigger if the mouse is pressed and immediately release, without any move.
--}
-onClick : msg -> Config msg -> Config msg
-onClick toMsg (Config config) =
-    Config { config | onClick = Just toMsg }
-
-
-{-| Register a `MouseDown` event listener. It will trigger whenever the mouse is pressed.
--}
-onMouseDown : msg -> Config msg -> Config msg
-onMouseDown toMsg (Config config) =
-    Config { config | onMouseDown = Just toMsg }
-
-
-{-| Register a `MouseUp` event listener. It will trigger whenever the mouse is released.
--}
-onMouseUp : msg -> Config msg -> Config msg
-onMouseUp toMsg (Config config) =
-    Config { config | onMouseUp = Just toMsg }
-
-
-defaultConfig : Config msg
-defaultConfig =
-    Config Internal.defaultConfig
+customConfig : List (Event msg) -> Config msg
+customConfig events =
+    Config <| List.foldl (<|) Internal.defaultConfig events

@@ -13,7 +13,7 @@ type alias Model =
 
 
 type Msg
-    = OnDragBy Position
+    = OnDragBy Draggable.Delta
     | DragMsg Draggable.Msg
 
 
@@ -36,14 +36,14 @@ init =
 
 dragConfig : Draggable.Config Msg
 dragConfig =
-    Draggable.basicConfig (OnDragBy << Draggable.deltaToPosition)
+    Draggable.basicConfig OnDragBy
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ xy } as model) =
     case msg of
-        OnDragBy { x, y } ->
-            ( { model | xy = Position (xy.x + x) (xy.y + y) }
+        OnDragBy ( dx, dy ) ->
+            ( { model | xy = Position (xy.x + dx) (xy.y + dy) }
             , Cmd.none
             )
 

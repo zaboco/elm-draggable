@@ -2,7 +2,8 @@ module CustomEventsExample exposing (..)
 
 import Html exposing (Html)
 import Html.Attributes as A
-import Draggable exposing (onClick, onDragBy, onDragEnd, onDragStart, onMouseDown, onMouseUp)
+import Draggable
+import Draggable.Events exposing (onClick, onDragBy, onDragEnd, onDragStart, onMouseDown, onMouseUp)
 import Mouse exposing (Position)
 
 
@@ -16,7 +17,7 @@ type alias Model =
 
 
 type Msg
-    = OnDragBy Position
+    = OnDragBy Draggable.Delta
     | OnDragStart
     | OnDragEnd
     | CountClick
@@ -51,7 +52,7 @@ dragConfig =
     Draggable.customConfig
         [ onDragStart OnDragStart
         , onDragEnd OnDragEnd
-        , onDragBy (OnDragBy << Draggable.deltaToPosition)
+        , onDragBy OnDragBy
         , onClick CountClick
         , onMouseDown (SetClicked True)
         , onMouseUp (SetClicked False)
@@ -61,8 +62,8 @@ dragConfig =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ xy } as model) =
     case msg of
-        OnDragBy { x, y } ->
-            ( { model | xy = Position (xy.x + x) (xy.y + y) }
+        OnDragBy ( dx, dy ) ->
+            ( { model | xy = Position (xy.x + dx) (xy.y + dy) }
             , Cmd.none
             )
 
