@@ -52,7 +52,7 @@ dragConfig =
     Draggable.customConfig
         [ onDragStart OnDragStart
         , onDragEnd OnDragEnd
-        , onDragBy (OnDragBy)
+        , onDragBy OnDragBy
         , onClick CountClick
         , onMouseDown (SetClicked True)
         , onMouseUp (SetClicked False)
