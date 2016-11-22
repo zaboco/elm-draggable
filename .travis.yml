@@ -1,0 +1,15 @@
+language: node_js
+branches:
+  only:
+    - master
+cache:
+  directories:
+    - tests/elm-stuff/build-artifacts
+    - $(npm config get prefix)/bin
+    - $(npm root -g)
+node_js:
+  - "6.9"
+install:
+  - npm install -g elm elm-test
+script:
+  - elm-test
