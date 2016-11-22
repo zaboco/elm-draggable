@@ -2,7 +2,7 @@
 An easy way to make DOM elements draggable
 
 [![elm version](https://img.shields.io/badge/elm-v0.18-blue.svg?style=flat-square)](http://elm-lang.org)
-[![elm package](https://img.shields.io/badge/elm%20package-v1.0.2-brightgreen.svg?style=flat-square)](http://package.elm-lang.org/packages/zaboco/elm-draggable/latest)
+[![Build Status](https://travis-ci.org/zaboco/elm-draggable.svg?branch=master)](https://travis-ci.org/zaboco/elm-draggable)
 
 ## Install
 Have [elm installed](https://guide.elm-lang.org/install.html).
