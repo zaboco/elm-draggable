@@ -1,4 +1,7 @@
 language: node_js
+branches:
+  only:
+    - master
 cache:
   directories:
     - tests/elm-stuff/build-artifacts
