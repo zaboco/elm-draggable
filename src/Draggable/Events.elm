@@ -33,11 +33,9 @@ onDragEnd toMsg config =
 
 {-| Register a `DragBy` event listener. It will trigger every time the mouse is moved. The sent message will contain a `Delta`, which is the distance between the current position and the previous one.
 
-**Note** The delta values are `Float`, so the code bellow assumes that the `point` is of type `{ x: Float, y: Float }`. If you want to use a `Mouse.Position` instead (which has `Int` coordinates), you might want to convert the `Delta` to a `Position`, using [`deltaToPosition`](#deltaToPosition)
-
     case Msg of
         OnDragBy (dx, dy) ->
-            { model | point = { x = point.x + dx, y = point.y + dy } }
+            { model | position = { x = position.x + dx, y = position.y + dy } }
 -}
 onDragBy : (Delta -> msg) -> Event msg
 onDragBy toMsg config =
