@@ -40,13 +40,13 @@ type alias Model =
 initModel : Model
 initModel =
     { position = ( 0, 0 )
-    , drag = Draggable.init 
+    , drag = Draggable.init
     }
 ```
 
 #### 4. Define the message types that will be handled by your application
 - `OnDragBy` is for actually updating the position, taking a `Draggable.Delta` as an argument. `Delta` is just an alias for a tuple of `(Int, Int)` and it represents the distance between two consecutive drag points.
-- `DragMsg` is for handling internal `Drag` state updates. 
+- `DragMsg` is for handling internal `Drag` state updates.
 ```elm
 type Msg
     = OnDragBy Draggable.Delta
@@ -69,7 +69,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ position } as model) =
     case msg of
         OnDragBy ( dx, dy ) ->
-            let 
+            let
                 ( x, y ) =
                     position
             in
@@ -114,7 +114,7 @@ So, the mouse events are:
 - `onDragEnd` - it was released after dragging.
 - `onMouseUp` - it was released, either after dragging or not.
 - `onClick` - it was pressed and immediately released, without moving.
-  
+
 All of these events are optional, and can be provided to `Draggable.customConfig` using an API similar to the one used by `VirtualDom.node` to specify the `Attribute`s. For example, if we want to handle all the events, we define the `config` like:
 ```elm
 import Draggable
@@ -134,7 +134,7 @@ dragConfig =
 See [the full example](https://github.com/zaboco/elm-draggable/blob/master/examples/CustomEventsExample.elm)
 
 #### Custom Delta
-By default, `OnDragBy` message will have a `Draggable.Delta` parameter, which, as we saw, is just an alias for `(Int, Int)`. However, there are situations when we would like some other data type for representing our `delta`. 
+By default, `OnDragBy` message will have a `Draggable.Delta` parameter, which, as we saw, is just an alias for `(Int, Int)`. However, there are situations when we would like some other data type for representing our `delta`.
 
 Luckily, that's pretty easy using function composition. And the library provides a helper function for a simple (yet useful) transformation: `deltaToFloats`. It just converts the delta to a `(Float, Float)` which can be useful when operations such as scaling are required:
 
