@@ -8,10 +8,13 @@ $ open http://localhost:8000/
 ## Examples
 
 ### Basic Example
-A minimal example of a Draggable element. It only registers an `onDragBy` event which translates the element's position
+A minimal example of a Draggable element. It only registers an `onDragBy` event which translates the element's position.
 
 ### Custom Events Example
-A showcase of the other supported events: `onDragStart`, `onDragEnd`, `onClick`, `onMouseDown`, `onMouseUp`
+A showcase of the other supported events: `onDragStart`, `onDragEnd`, `onClick`, `onMouseDown`, `onMouseUp`.
+
+### Constraints Examples
+Controlling dragging directions using the keyboard.
 
 ### Pan And Zoom Example
-A use case for using `Vector.scale` on delta
+Dragging on a scaled viewport.

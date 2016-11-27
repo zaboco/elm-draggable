@@ -11,6 +11,12 @@ Have [elm installed](https://guide.elm-lang.org/install.html).
 elm package install --yes zaboco/elm-draggable
 ```
 
+## Live examples
+- [Basic](https://zaboco.github.io/elm-draggable/basic.html) / [Code](https://github.com/zaboco/elm-draggable/blob/master/examples/BasicExample.elm)
+- [Custom events](https://zaboco.github.io/elm-draggable/custom.html) / [Code](https://github.com/zaboco/elm-draggable/blob/master/examples/CustomEventsExample.elm)
+- [Constraints - restrict dragging to one axis at a time](https://zaboco.github.io/elm-draggable/constraints.html) / [Code](https://github.com/zaboco/elm-draggable/blob/master/examples/ConstraintsExample.elm)
+- [Pan & Zoom - drag to pan & scroll to zoom](https://zaboco.github.io/elm-draggable/pan-and-zoom.html) / [Code](https://github.com/zaboco/elm-draggable/blob/master/examples/PanAndZoomExample.elm)
+
 ## Usage
 
 This library is meant to be easy to use, by keeping its internal details hidden and only communicating to the parent application by emitting [`Event` messages](http://faq.elm-community.org/#how-do-i-generate-a-new-message-as-a-command). So, each time the internals change and something relevant happens (such as "started dragging", "dragged at", etc.), a new message is sent as a `Cmd` and handled in the main `update` function. To better understand how this works, see the snippets below and also the [working examples](https://github.com/zaboco/elm-draggable/blob/master/examples/).
