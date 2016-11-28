@@ -8,6 +8,8 @@ import Html exposing (Html)
 import Math.Vector2 as Vector2 exposing (Vec2, getX, getY)
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
+import Svg.Keyed
+import Svg.Lazy exposing (lazy)
 
 
 main : Program Never Model Msg
@@ -108,9 +110,17 @@ type Msg
     | StopDragging
 
 
+boxPositions =
+    let
+        indexToPosition =
+            toFloat >> ((*) 60) >> ((+) 10) >> (Vector2.vec2 10)
+    in
+        List.range 0 10 |> List.map indexToPosition
+
+
 init : ( Model, Cmd Msg )
 init =
-    ( { boxGroup = boxGroup [ Vector2.vec2 10 10, Vector2.vec2 70 10 ]
+    ( { boxGroup = boxGroup boxPositions
       , drag = Draggable.init
       }
     , Cmd.none
@@ -164,9 +174,23 @@ view { boxGroup } =
         [ Attr.width "100%"
         , Attr.height "100%"
         ]
-    <|
-        background
-            :: (boxGroup |> allBoxes |> List.map boxView)
+        [ background
+        , boxesView boxGroup
+        ]
+
+
+boxesView : BoxGroup -> Svg Msg
+boxesView boxGroup =
+    boxGroup
+        |> allBoxes
+        |> List.reverse
+        |> List.map boxKeyedView
+        |> Svg.Keyed.node "g" []
+
+
+boxKeyedView : Box -> ( String, Svg Msg )
+boxKeyedView box =
+    ( toString box.id, lazy boxView box )
 
 
 boxView : Box -> Svg Msg
@@ -177,6 +201,7 @@ boxView { id, position } =
         , num Attr.x (getX position)
         , num Attr.y (getY position)
         , Attr.fill "red"
+        , Attr.stroke "black"
         , Attr.cursor "move"
         , Draggable.triggerOnMouseDown (StartDragging id)
         ]
