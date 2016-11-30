@@ -3,7 +3,7 @@ module MultipleTargetsExample exposing (..)
 import Char
 import Cmd.Extra exposing (message)
 import Draggable
-import Draggable.Events exposing (onDragBy, onMouseUp)
+import Draggable.Events exposing (onDragBy, onMouseDownKeyed, onMouseUp)
 import Html exposing (Html)
 import Math.Vector2 as Vector2 exposing (Vec2, getX, getY)
 import Svg exposing (Svg)
@@ -23,9 +23,13 @@ main =
 
 
 type alias Box =
-    { id : Int
+    { id : Id
     , position : Vec2
     }
+
+
+type alias Id =
+    String
 
 
 dragBoxBy : Vec2 -> Box -> Box
@@ -53,7 +57,7 @@ emptyGroup =
 addBox : Vec2 -> BoxGroup -> BoxGroup
 addBox position ({ uid, idleBoxes } as group) =
     { group
-        | idleBoxes = (Box uid position) :: idleBoxes
+        | idleBoxes = (Box (toString uid) position) :: idleBoxes
         , uid = uid + 1
     }
 
@@ -71,7 +75,7 @@ allBoxes { movingBox, idleBoxes } =
         |> Maybe.withDefault idleBoxes
 
 
-startDragging : Int -> BoxGroup -> BoxGroup
+startDragging : Id -> BoxGroup -> BoxGroup
 startDragging id ({ idleBoxes, movingBox } as group) =
     let
         ( targetAsList, others ) =
@@ -106,7 +110,7 @@ type Msg
     = NoOp
     | DragMsg Draggable.Msg
     | OnDragBy Vec2
-    | StartDragging Int Draggable.Msg
+    | StartDragging String
     | StopDragging
 
 
@@ -131,6 +135,7 @@ dragConfig : Draggable.Config Msg
 dragConfig =
     Draggable.customConfig
         [ onDragBy (Draggable.deltaToFloats >> Vector2.fromTuple >> OnDragBy)
+        , onMouseDownKeyed StartDragging
         , onMouseUp StopDragging
         ]
 
@@ -144,8 +149,8 @@ update msg ({ boxGroup } as model) =
         OnDragBy delta ->
             ( { model | boxGroup = boxGroup |> dragActiveBy delta }, Cmd.none )
 
-        StartDragging id dragMsg ->
-            ( { model | boxGroup = boxGroup |> startDragging id }, message <| DragMsg dragMsg )
+        StartDragging id ->
+            ( { model | boxGroup = boxGroup |> startDragging id }, Cmd.none )
 
         StopDragging ->
             ( { model | boxGroup = boxGroup |> stopDragging }, Cmd.none )
@@ -190,7 +195,7 @@ boxesView boxGroup =
 
 boxKeyedView : Box -> ( String, Svg Msg )
 boxKeyedView box =
-    ( toString box.id, lazy boxView box )
+    ( box.id, lazy boxView box )
 
 
 boxView : Box -> Svg Msg
@@ -200,10 +205,10 @@ boxView { id, position } =
         , num Attr.height <| getY boxSize
         , num Attr.x (getX position)
         , num Attr.y (getY position)
-        , Attr.fill "red"
+        , Attr.fill "lightblue"
         , Attr.stroke "black"
         , Attr.cursor "move"
-        , Draggable.triggerOnMouseDown (StartDragging id)
+        , Draggable.mouseTrigger id DragMsg
         ]
         []
 

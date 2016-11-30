@@ -9,6 +9,7 @@ module Draggable
         , customConfig
         , deltaToFloats
         , triggerOnMouseDown
+        , mouseTrigger
         , init
         , update
         , subscriptions
@@ -33,7 +34,7 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 @docs update, subscriptions
 
 # DOM trigger
-@docs triggerOnMouseDown
+@docs mouseTrigger, triggerOnMouseDown
 
 # Helpers
 @docs deltaToFloats
@@ -118,19 +119,30 @@ subscriptions envelope (State drag) =
                 |> Sub.map (envelope << Msg)
 
 
-{-| DOM event handler to start dragging on mouse down.
+{-| __DEPRECATED__: Use [`mouseTrigger`](#mouseTrigger) instead
+
+DOM event handler to start dragging on mouse down.
 
     div [ triggerOnMouseDown DragMsg ] [ text "Drag me" ]
 -}
 triggerOnMouseDown : (Msg -> msg) -> VirtualDom.Property msg
-triggerOnMouseDown envelope =
+triggerOnMouseDown =
+    mouseTrigger ""
+
+
+{-| DOM event handler to start dragging on mouse down. It requires a `String` key for the element, in order to provide support for multiple drag targets sharing the same drag state. Of course, if only one element is draggable, it can have any value, including `""`.
+
+    div [ mouseTrigger "element-id" DragMsg ] [ text "Drag me" ]
+-}
+mouseTrigger : String -> (Msg -> msg) -> VirtualDom.Property msg
+mouseTrigger key envelope =
     let
         ignoreDefaults =
             VirtualDom.Options True True
     in
         VirtualDom.onWithOptions "mousedown"
             ignoreDefaults
-            (Json.Decode.map (envelope << Msg << Internal.StartDragging) Mouse.position)
+            (Json.Decode.map (envelope << Msg << Internal.StartDragging key) Mouse.position)
 
 
 
