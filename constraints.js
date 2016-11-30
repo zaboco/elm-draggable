@@ -9299,7 +9299,9 @@ var _user$project$Internal$defaultConfig = {
 	},
 	onDragEnd: _elm_lang$core$Maybe$Nothing,
 	onClick: _elm_lang$core$Maybe$Nothing,
-	onMouseDown: _elm_lang$core$Maybe$Nothing,
+	onMouseDown: function (_p2) {
+		return _elm_lang$core$Maybe$Nothing;
+	},
 	onMouseUp: _elm_lang$core$Maybe$Nothing
 };
 var _user$project$Internal$Config = F6(
@@ -9315,28 +9317,29 @@ var _user$project$Internal$DraggingTentative = function (a) {
 var _user$project$Internal$NotDragging = {ctor: 'NotDragging'};
 var _user$project$Internal$updateAndEmit = F3(
 	function (config, msg, drag) {
-		var _p2 = {ctor: '_Tuple2', _0: drag, _1: msg};
+		var _p3 = {ctor: '_Tuple2', _0: drag, _1: msg};
 		_v0_5:
 		do {
-			if (_p2.ctor === '_Tuple2') {
-				switch (_p2._0.ctor) {
+			if (_p3.ctor === '_Tuple2') {
+				switch (_p3._0.ctor) {
 					case 'NotDragging':
-						if (_p2._1.ctor === 'StartDragging') {
+						if (_p3._1.ctor === 'StartDragging') {
 							return {
 								ctor: '_Tuple2',
-								_0: _user$project$Internal$DraggingTentative(_p2._1._0),
-								_1: _elm_community$maybe_extra$Maybe_Extra$maybeToList(config.onMouseDown)
+								_0: _user$project$Internal$DraggingTentative(_p3._1._1),
+								_1: _elm_community$maybe_extra$Maybe_Extra$maybeToList(
+									config.onMouseDown(_p3._1._0))
 							};
 						} else {
 							break _v0_5;
 						}
 					case 'DraggingTentative':
-						switch (_p2._1.ctor) {
+						switch (_p3._1.ctor) {
 							case 'DragAt':
-								var _p3 = _p2._1._0;
+								var _p4 = _p3._1._0;
 								return {
 									ctor: '_Tuple2',
-									_0: _user$project$Internal$Dragging(_p3),
+									_0: _user$project$Internal$Dragging(_p4),
 									_1: A2(
 										_elm_lang$core$List$concatMap,
 										_elm_community$maybe_extra$Maybe_Extra$maybeToList,
@@ -9346,7 +9349,7 @@ var _user$project$Internal$updateAndEmit = F3(
 											_1: {
 												ctor: '::',
 												_0: config.onDragBy(
-													A2(_user$project$Internal$distanceTo, _p3, _p2._0._0)),
+													A2(_user$project$Internal$distanceTo, _p4, _p3._0._0)),
 												_1: {ctor: '[]'}
 											}
 										})
@@ -9372,15 +9375,15 @@ var _user$project$Internal$updateAndEmit = F3(
 								break _v0_5;
 						}
 					default:
-						switch (_p2._1.ctor) {
+						switch (_p3._1.ctor) {
 							case 'DragAt':
-								var _p4 = _p2._1._0;
+								var _p5 = _p3._1._0;
 								return {
 									ctor: '_Tuple2',
-									_0: _user$project$Internal$Dragging(_p4),
+									_0: _user$project$Internal$Dragging(_p5),
 									_1: _elm_community$maybe_extra$Maybe_Extra$maybeToList(
 										config.onDragBy(
-											A2(_user$project$Internal$distanceTo, _p4, _p2._0._0)))
+											A2(_user$project$Internal$distanceTo, _p5, _p3._0._0)))
 								};
 							case 'StopDragging':
 								return {
@@ -9421,9 +9424,10 @@ var _user$project$Internal$StopDragging = {ctor: 'StopDragging'};
 var _user$project$Internal$DragAt = function (a) {
 	return {ctor: 'DragAt', _0: a};
 };
-var _user$project$Internal$StartDragging = function (a) {
-	return {ctor: 'StartDragging', _0: a};
-};
+var _user$project$Internal$StartDragging = F2(
+	function (a, b) {
+		return {ctor: 'StartDragging', _0: a, _1: b};
+	});
 
 var _user$project$Draggable$deltaToFloats = function (_p0) {
 	var _p1 = _p0;
@@ -9498,21 +9502,23 @@ var _user$project$Draggable$subscriptions = F2(
 					}));
 		}
 	});
-var _user$project$Draggable$triggerOnMouseDown = function (envelope) {
-	var ignoreDefaults = A2(_elm_lang$virtual_dom$VirtualDom$Options, true, true);
-	return A3(
-		_elm_lang$virtual_dom$VirtualDom$onWithOptions,
-		'mousedown',
-		ignoreDefaults,
-		A2(
-			_elm_lang$core$Json_Decode$map,
-			function (_p15) {
-				return envelope(
-					_user$project$Draggable$Msg(
-						_user$project$Internal$StartDragging(_p15)));
-			},
-			_elm_lang$mouse$Mouse$position));
-};
+var _user$project$Draggable$mouseTrigger = F2(
+	function (key, envelope) {
+		var ignoreDefaults = A2(_elm_lang$virtual_dom$VirtualDom$Options, true, true);
+		return A3(
+			_elm_lang$virtual_dom$VirtualDom$onWithOptions,
+			'mousedown',
+			ignoreDefaults,
+			A2(
+				_elm_lang$core$Json_Decode$map,
+				function (_p15) {
+					return envelope(
+						_user$project$Draggable$Msg(
+							A2(_user$project$Internal$StartDragging, key, _p15)));
+				},
+				_elm_lang$mouse$Mouse$position));
+	});
+var _user$project$Draggable$triggerOnMouseDown = _user$project$Draggable$mouseTrigger('');
 var _user$project$Draggable$Config = function (a) {
 	return {ctor: 'Config', _0: a};
 };
@@ -9548,12 +9554,25 @@ var _user$project$Draggable_Events$onMouseUp = F2(
 				onMouseUp: _elm_lang$core$Maybe$Just(toMsg)
 			});
 	});
+var _user$project$Draggable_Events$onMouseDownKeyed = F2(
+	function (toMsg, config) {
+		return _elm_lang$core$Native_Utils.update(
+			config,
+			{
+				onMouseDown: function (_p0) {
+					return _elm_lang$core$Maybe$Just(
+						toMsg(_p0));
+				}
+			});
+	});
 var _user$project$Draggable_Events$onMouseDown = F2(
 	function (toMsg, config) {
 		return _elm_lang$core$Native_Utils.update(
 			config,
 			{
-				onMouseDown: _elm_lang$core$Maybe$Just(toMsg)
+				onMouseDown: function (_p1) {
+					return _elm_lang$core$Maybe$Just(toMsg);
+				}
 			});
 	});
 var _user$project$Draggable_Events$onClick = F2(
@@ -9569,9 +9588,9 @@ var _user$project$Draggable_Events$onDragBy = F2(
 		return _elm_lang$core$Native_Utils.update(
 			config,
 			{
-				onDragBy: function (_p0) {
+				onDragBy: function (_p2) {
 					return _elm_lang$core$Maybe$Just(
-						toMsg(_p0));
+						toMsg(_p2));
 				}
 			});
 	});
