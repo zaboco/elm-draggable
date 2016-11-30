@@ -185,7 +185,7 @@ box position isDragging =
             , num Attr.y y
             , Attr.cursor cursor
             , Attr.fill "red"
-            , Draggable.triggerOnMouseDown DragMsg
+            , Draggable.mouseTrigger "" DragMsg
             ]
             []
 

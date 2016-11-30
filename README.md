@@ -16,6 +16,7 @@ elm package install --yes zaboco/elm-draggable
 - [Custom events](https://zaboco.github.io/elm-draggable/custom.html) / [Code](https://github.com/zaboco/elm-draggable/blob/master/examples/CustomEventsExample.elm)
 - [Constraints - restrict dragging to one axis at a time](https://zaboco.github.io/elm-draggable/constraints.html) / [Code](https://github.com/zaboco/elm-draggable/blob/master/examples/ConstraintsExample.elm)
 - [Pan & Zoom - drag to pan & scroll to zoom](https://zaboco.github.io/elm-draggable/pan-and-zoom.html) / [Code](https://github.com/zaboco/elm-draggable/blob/master/examples/PanAndZoomExample.elm)
+- [Multiple Targets](https://zaboco.github.io/elm-draggable/multiple.html) / [Code](https://github.com/zaboco/elm-draggable/blob/master/examples/MultipleTargetsExample.elm)
 
 ## Usage
 
@@ -93,18 +94,20 @@ subscriptions { drag } =
 ```
 
 #### 8. Triggering drag
-Finally, inside your `view` function, you must somehow make the element draggable. You do that by adding a trigger for the `mousedown` event. Of course, you'll also have to style your DOM element such that it reflects its moving position (with `top: x; left: y` or [`transform: translate`](http://www.w3schools.com/css/css3_2dtransforms.asp))
+Finally, inside your `view` function, you must somehow make the element draggable. You do that by adding a trigger for the `mousedown` event. You must also specify a `String` `key` for that element. This is useful when there are multiple drag targets in the same view. 
+
+Of course, you'll also have to style your DOM element such that it reflects its moving position (with `top: x; left: y` or [`transform: translate`](http://www.w3schools.com/css/css3_2dtransforms.asp))
 ```elm
 view : Model -> Html Msg
 view { position } =
     Html.div
-        [ Draggable.triggerOnMouseDown DragMsg
+        [ Draggable.mouseTrigger "my-element" DragMsg
         -- , Html.Attributes.style (someStyleThatSetsPosition position)
         ]
         [ Html.text "Drag me" ]
 ```
 
-For a working demo, see the [basic example](https://github.com/zaboco/elm-draggable/blob/master/examples/BasicExample.elm)
+For working demos, see the [basic example](https://github.com/zaboco/elm-draggable/blob/master/examples/BasicExample.elm) or the [examples with multiple targets](https://github.com/zaboco/elm-draggable/blob/master/examples/MultipleTargetsExample.elm) 
 
 ### Advanced
 

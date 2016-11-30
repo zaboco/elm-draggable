@@ -51,6 +51,8 @@ onClick toMsg config =
 
 
 {-| Register a `MouseDown` event listener. It will trigger whenever the mouse is pressed.
+
+__Note__ This event ignores the key of the dragged element. If that is needed, you should use [`onMouseDownKeyed`](#onMouseDownKeyed).
 -}
 onMouseDown : msg -> Event msg
 onMouseDown toMsg config =

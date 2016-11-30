@@ -107,7 +107,7 @@ view { center, size, zoom } =
             [ num Attr.width size.width
             , num Attr.height size.height
             , handleZoom Zoom
-            , Draggable.triggerOnMouseDown DragMsg
+            , Draggable.mouseTrigger "" DragMsg
             ]
             [ background
             , Svg.g
