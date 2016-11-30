@@ -4,7 +4,7 @@ import Fuzz exposing (Fuzzer)
 import Mouse exposing (Position)
 import Test exposing (..)
 import Expect as Should exposing (Expectation)
-import Internal exposing (State(..), Msg(..), Delta)
+import Internal exposing (Delta, Msg(..), State(..))
 import String
 
 
@@ -24,7 +24,7 @@ type EmitMsg
     | OnDragBy Delta
     | OnDragEnd
     | OnClick
-    | OnMouseDown
+    | OnMouseDown String
     | OnMouseUp
 
 
@@ -39,7 +39,7 @@ fullConfig =
     , onDragBy = Just << OnDragBy
     , onDragEnd = Just OnDragEnd
     , onClick = Just OnClick
-    , onMouseDown = Just OnMouseDown
+    , onMouseDown = Just << OnMouseDown
     , onMouseUp = Just OnMouseUp
     }
 
@@ -49,15 +49,25 @@ defaultUpdate =
     Internal.updateAndEmit Internal.defaultConfig
 
 
+defaultKey : String
+defaultKey =
+    "defaultKey"
+
+
+startDragging : Position -> Msg
+startDragging =
+    StartDragging defaultKey
+
+
 singleUpdateTests : List Test
 singleUpdateTests =
     [ fuzz positionF "NoDrag -[DragStart]-> DragAttempt (onMouseDown)" <|
         \startPosition ->
             NotDragging
-                |> updateWithEvents (StartDragging startPosition)
+                |> updateWithEvents (startDragging startPosition)
                 |> Should.equal
                     ( DraggingTentative startPosition
-                    , [ OnMouseDown ]
+                    , [ OnMouseDown defaultKey ]
                     )
     , (fuzz2 positionF positionF)
         "TentativeDrag -[DragAt]-> Dragging (onDragStart, onDragBy)"
@@ -102,12 +112,12 @@ invalidUpdateTests =
     , fuzz2 positionF positionF "Invalid DragStart from TentativeDrag" <|
         \position startPosition ->
             DraggingTentative position
-                |> updateWithEvents (StartDragging startPosition)
+                |> updateWithEvents (startDragging startPosition)
                 |> Should.equal ( DraggingTentative position, [] )
     , fuzz2 positionF positionF "Invalid DragStart from Dragging" <|
         \position startPosition ->
             Dragging position
-                |> updateWithEvents (StartDragging startPosition)
+                |> updateWithEvents (startDragging startPosition)
                 |> Should.equal ( Dragging position, [] )
     ]
 
@@ -119,7 +129,7 @@ chainUpdateTests =
             let
                 msgs =
                     List.concat
-                        [ [ StartDragging startPosition ]
+                        [ [ startDragging startPosition ]
                         , List.map DragAt dragPositions
                         , [ StopDragging ]
                         ]
@@ -129,7 +139,7 @@ chainUpdateTests =
 
                 expectedEvents =
                     List.concat
-                        [ [ OnMouseDown, OnDragStart ]
+                        [ [ OnMouseDown defaultKey, OnDragStart ]
                         , List.map OnDragBy (deltas startPosition dragPositions)
                         , [ OnDragEnd, OnMouseUp ]
                         ]
@@ -141,11 +151,11 @@ chainUpdateTests =
         \startPosition ->
             let
                 msgs =
-                    [ StartDragging startPosition, StopDragging ]
+                    [ startDragging startPosition, StopDragging ]
 
                 expected =
                     ( NotDragging
-                    , [ OnMouseDown, OnClick, OnMouseUp ]
+                    , [ OnMouseDown defaultKey, OnClick, OnMouseUp ]
                     )
             in
                 NotDragging
@@ -155,10 +165,10 @@ chainUpdateTests =
         \startPosition endPosition ->
             let
                 msgs =
-                    [ StartDragging startPosition
+                    [ startDragging startPosition
                     , DragAt endPosition
                     , StopDragging
-                    , StartDragging endPosition
+                    , startDragging endPosition
                     , StopDragging
                     ]
 
