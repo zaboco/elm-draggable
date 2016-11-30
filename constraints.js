@@ -9909,7 +9909,7 @@ var _user$project$ConstraintsExample$box = F2(
 									_0: _elm_lang$svg$Svg_Attributes$fill('red'),
 									_1: {
 										ctor: '::',
-										_0: _user$project$Draggable$triggerOnMouseDown(_user$project$ConstraintsExample$DragMsg),
+										_0: A2(_user$project$Draggable$mouseTrigger, '', _user$project$ConstraintsExample$DragMsg),
 										_1: {ctor: '[]'}
 									}
 								}
