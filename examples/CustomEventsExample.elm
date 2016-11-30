@@ -117,7 +117,7 @@ view { xy, isDragging, isClicked, clicksCount } =
     in
         Html.div
             [ A.style style
-            , Draggable.triggerOnMouseDown DragMsg
+            , Draggable.mouseTrigger "" DragMsg
             ]
             [ Html.text status
             , Html.br [] []
