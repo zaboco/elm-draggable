@@ -1,7 +1,5 @@
-module MultipleTargetsExample exposing (..)
+module MultipleTargetsExample exposing (main)
 
-import Char
-import Cmd.Extra exposing (message)
 import Draggable
 import Draggable.Events exposing (onDragBy, onMouseDownKeyed, onMouseUp)
 import Html exposing (Html)
@@ -35,11 +33,6 @@ type alias Id =
 dragBoxBy : Vec2 -> Box -> Box
 dragBoxBy delta box =
     { box | position = box.position |> Vector2.add delta }
-
-
-isMovingIn : BoxGroup -> Box -> Bool
-isMovingIn { movingBox } box =
-    movingBox == Just box
 
 
 type alias BoxGroup =
@@ -114,6 +107,7 @@ type Msg
     | StopDragging
 
 
+boxPositions : List Vec2
 boxPositions =
     let
         indexToPosition =
