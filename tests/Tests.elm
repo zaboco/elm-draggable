@@ -5,17 +5,16 @@ import Mouse exposing (Position)
 import Test exposing (..)
 import Expect as Should exposing (Expectation)
 import Internal exposing (Delta, Msg(..), State(..))
-import String
 
 
 all : Test
 all =
     describe "update"
-        [ describe "single update" singleUpdateTests
-        , describe "chain update" chainUpdateTests
+        [ describe "single update" updateTests
         , describe
             "invalid updates leave the state unchanged"
             invalidUpdateTests
+        , noEventsTest
         ]
 
 
@@ -28,7 +27,6 @@ type EmitMsg
     | OnMouseUp
 
 
-updateWithEvents : UpdateEmitter EmitMsg
 updateWithEvents =
     Internal.updateAndEmit fullConfig
 
@@ -44,7 +42,6 @@ fullConfig =
     }
 
 
-defaultUpdate : UpdateEmitter ()
 defaultUpdate =
     Internal.updateAndEmit Internal.defaultConfig
 
@@ -59,9 +56,9 @@ startDragging =
     StartDragging defaultKey
 
 
-singleUpdateTests : List Test
-singleUpdateTests =
-    [ fuzz positionF "NoDrag -[DragStart]-> DragAttempt (onMouseDown)" <|
+updateTests : List Test
+updateTests =
+    [ fuzz positionF "NoDrag -[DragStart]-> DraggingTentative (onMouseDown)" <|
         \startPosition ->
             NotDragging
                 |> updateWithEvents (startDragging startPosition)
@@ -122,77 +119,25 @@ invalidUpdateTests =
     ]
 
 
-chainUpdateTests : List Test
-chainUpdateTests =
-    [ fuzz2 positionF positionsStrictF "DragStart DragAt+ DragEnd" <|
-        \startPosition dragPositions ->
-            let
-                msgs =
-                    List.concat
-                        [ [ startDragging startPosition ]
-                        , List.map DragAt dragPositions
-                        , [ StopDragging ]
-                        ]
-
-                expectedState =
-                    NotDragging
-
-                expectedEvents =
-                    List.concat
-                        [ [ OnMouseDown defaultKey, OnDragStart ]
-                        , List.map OnDragBy (deltas startPosition dragPositions)
-                        , [ OnDragEnd, OnMouseUp ]
-                        ]
-            in
-                NotDragging
-                    |> chainUpdate updateWithEvents msgs
-                    |> Should.equal ( expectedState, expectedEvents )
-    , fuzz positionF "DragStart DragEnd" <|
-        \startPosition ->
-            let
-                msgs =
-                    [ startDragging startPosition, StopDragging ]
-
-                expected =
-                    ( NotDragging
-                    , [ OnMouseDown defaultKey, OnClick, OnMouseUp ]
-                    )
-            in
-                NotDragging
-                    |> chainUpdate updateWithEvents msgs
-                    |> Should.equal expected
-    , fuzz2 positionF positionF "no events if none configured" <|
+noEventsTest : Test
+noEventsTest =
+    fuzz2 positionF positionF "no events if none configured" <|
         \startPosition endPosition ->
             let
-                msgs =
-                    [ startDragging startPosition
-                    , DragAt endPosition
-                    , StopDragging
-                    , startDragging endPosition
-                    , StopDragging
-                    ]
-
-                expected =
-                    ( NotDragging, [] )
+                andUpdate =
+                    andThen << defaultUpdate
             in
                 NotDragging
-                    |> chainUpdate defaultUpdate msgs
-                    |> Should.equal expected
-    ]
-
-
-deltas : Position -> List Position -> List Delta
-deltas first rest =
-    List.map2 Internal.distanceTo rest (first :: rest)
+                    |> defaultUpdate (startDragging startPosition)
+                    |> andUpdate (DragAt endPosition)
+                    |> andUpdate StopDragging
+                    |> andUpdate (startDragging startPosition)
+                    |> andUpdate StopDragging
+                    |> Should.equal ( NotDragging, [] )
 
 
 
 -- Fuzzers
-
-
-positionsStrictF : Fuzzer (List Position)
-positionsStrictF =
-    Fuzz.map2 (::) positionF (Fuzz.list positionF)
 
 
 positionF : Fuzzer Position
@@ -208,17 +153,8 @@ type alias Emit msg model =
     ( model, List msg )
 
 
-type alias UpdateEmitter msg =
-    Msg -> State -> Emit msg State
-
-
-chainUpdate : UpdateEmitter msg -> List Msg -> State -> Emit msg State
-chainUpdate update msgs model =
-    List.foldl (andThenEmit << update) ( model, [] ) msgs
-
-
-andThenEmit : (a -> Emit msg a) -> Emit msg a -> Emit msg a
-andThenEmit f ( model, msgs ) =
+andThen : (a -> Emit msg a) -> Emit msg a -> Emit msg a
+andThen f ( model, msgs ) =
     let
         ( newModel, newMsgs ) =
             f model
