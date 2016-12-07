@@ -62,7 +62,7 @@ updateTests =
                 |> updateWithEvents (StartDragging key startPosition)
                 |> Should.equal
                     ( DraggingTentative key startPosition
-                    , [ OnMouseDown key ]
+                    , Just (OnMouseDown key)
                     )
     , (fuzz3 keyF positionF positionF)
         "DraggingTentative -[DragAt]-> Dragging (onDragStart key)"
@@ -71,24 +71,24 @@ updateTests =
                 |> updateWithEvents (DragAt p2)
                 |> Should.equal
                     ( Dragging p1
-                    , [ OnDragStart key ]
+                    , Just (OnDragStart key)
                     )
         )
     , fuzz2 positionF positionF "Dragging -[DragAt]-> Dragging (onDragBy)" <|
         \p1 p2 ->
             Dragging p1
                 |> updateWithEvents (DragAt p2)
-                |> Should.equal ( Dragging p2, [ OnDragBy (Internal.distanceTo p2 p1) ] )
+                |> Should.equal ( Dragging p2, Just <| OnDragBy (Internal.distanceTo p2 p1) )
     , fuzz2 keyF positionF "DraggingTentative -[DragEnd]-> NoDrag (onClick, onMouseUp)" <|
         \key endPosition ->
             DraggingTentative key endPosition
                 |> updateWithEvents StopDragging
-                |> Should.equal ( NotDragging, [ OnClick ] )
+                |> Should.equal ( NotDragging, Just OnClick )
     , fuzz positionF "Dragging -[DragEnd]-> NoDrag (onDragEnd, onMouseUp)" <|
         \endPosition ->
             Dragging endPosition
                 |> updateWithEvents StopDragging
-                |> Should.equal ( NotDragging, [ OnDragEnd ] )
+                |> Should.equal ( NotDragging, Just OnDragEnd )
     ]
 
 
@@ -98,22 +98,22 @@ invalidUpdateTests =
         \position ->
             NotDragging
                 |> updateWithEvents (DragAt position)
-                |> Should.equal ( NotDragging, [] )
+                |> Should.equal ( NotDragging, Nothing )
     , test "Invalid DragEnd from NoDrag" <|
         \() ->
             NotDragging
                 |> updateWithEvents StopDragging
-                |> Should.equal ( NotDragging, [] )
+                |> Should.equal ( NotDragging, Nothing )
     , fuzz3 keyF positionF positionF "Invalid DragStart from DraggingTentative" <|
         \key position startPosition ->
             DraggingTentative key position
                 |> updateWithEvents (startDragging startPosition)
-                |> Should.equal ( DraggingTentative key position, [] )
+                |> Should.equal ( DraggingTentative key position, Nothing )
     , fuzz2 positionF positionF "Invalid DragStart from Dragging" <|
         \position startPosition ->
             Dragging position
                 |> updateWithEvents (startDragging startPosition)
-                |> Should.equal ( Dragging position, [] )
+                |> Should.equal ( Dragging position, Nothing )
     ]
 
 
@@ -131,7 +131,7 @@ noEventsTest =
                     |> andUpdate StopDragging
                     |> andUpdate (startDragging startPosition)
                     |> andUpdate StopDragging
-                    |> Should.equal ( NotDragging, [] )
+                    |> Should.equal ( NotDragging, Nothing )
 
 
 
@@ -153,13 +153,13 @@ keyF =
 
 
 type alias Emit msg model =
-    ( model, List msg )
+    ( model, Maybe msg )
 
 
 andThen : (a -> Emit msg a) -> Emit msg a -> Emit msg a
-andThen f ( model, msgs ) =
+andThen f ( model, msgMaybe ) =
     let
-        ( newModel, newMsgs ) =
+        ( newModel, newMsgMaybe ) =
             f model
     in
-        ( newModel, msgs ++ newMsgs )
+        ( newModel, msgMaybe |> Maybe.andThen (\_ -> newMsgMaybe) )

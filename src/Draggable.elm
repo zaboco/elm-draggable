@@ -98,10 +98,10 @@ update config msg model =
 updateDraggable : Config msg -> Msg -> State -> ( State, Cmd msg )
 updateDraggable (Config config) (Msg msg) (State drag) =
     let
-        ( newDrag, newMsgs ) =
+        ( newDrag, newMsgMaybe ) =
             Internal.updateAndEmit config msg drag
     in
-        ( State newDrag, Cmd.Extra.multiMessage newMsgs )
+        ( State newDrag, Cmd.Extra.optionalMessage newMsgMaybe )
 
 
 {-| Handle mouse subscriptions used for dragging

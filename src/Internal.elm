@@ -1,6 +1,5 @@
 module Internal exposing (..)
 
-import Maybe.Extra exposing (maybeToList)
 import Mouse exposing (Position)
 
 
@@ -47,34 +46,34 @@ defaultConfig =
     }
 
 
-updateAndEmit : Config msg -> Msg -> State -> ( State, List msg )
+updateAndEmit : Config msg -> Msg -> State -> ( State, Maybe msg )
 updateAndEmit config msg drag =
     case ( drag, msg ) of
         ( NotDragging, StartDragging key initialPosition ) ->
-            ( DraggingTentative key initialPosition, maybeToList <| config.onMouseDown key )
+            ( DraggingTentative key initialPosition, config.onMouseDown key )
 
         ( DraggingTentative key oldPosition, DragAt _ ) ->
             ( Dragging oldPosition
-            , maybeToList (config.onDragStart key)
+            , config.onDragStart key
             )
 
         ( Dragging oldPosition, DragAt newPosition ) ->
             ( Dragging newPosition
-            , maybeToList (config.onDragBy (distanceTo newPosition oldPosition))
+            , config.onDragBy (distanceTo newPosition oldPosition)
             )
 
         ( DraggingTentative key _, StopDragging ) ->
             ( NotDragging
-            , maybeToList config.onClick
+            , config.onClick
             )
 
         ( Dragging _, StopDragging ) ->
             ( NotDragging
-            , maybeToList config.onDragEnd
+            , config.onDragEnd
             )
 
         _ ->
-            ( drag, [] )
+            ( drag, Nothing )
                 |> logInvalidState drag msg
 
 
