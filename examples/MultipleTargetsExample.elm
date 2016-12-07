@@ -1,7 +1,7 @@
 module MultipleTargetsExample exposing (main)
 
 import Draggable
-import Draggable.Events exposing (onDragBy, onMouseDownKeyed)
+import Draggable.Events exposing (onDragBy, onDragStart)
 import Html exposing (Html)
 import Math.Vector2 as Vector2 exposing (Vec2, getX, getY)
 import Svg exposing (Svg)
@@ -130,7 +130,7 @@ dragConfig : Draggable.Config Msg
 dragConfig =
     Draggable.customConfig
         [ onDragBy (Draggable.deltaToFloats >> Vector2.fromTuple >> OnDragBy)
-        , onMouseDownKeyed StartDragging
+        , onDragStart StartDragging
         ]
 
 

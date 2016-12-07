@@ -19,11 +19,11 @@ all =
 
 
 type EmitMsg
-    = OnDragStart
+    = OnDragStart Key
     | OnDragBy Delta
     | OnDragEnd
     | OnClick
-    | OnMouseDown String
+    | OnMouseDown Key
 
 
 updateWithEvents =
@@ -32,7 +32,7 @@ updateWithEvents =
 
 fullConfig : Internal.Config EmitMsg
 fullConfig =
-    { onDragStart = Just OnDragStart
+    { onDragStart = Just << OnDragStart
     , onDragBy = Just << OnDragBy
     , onDragEnd = Just OnDragEnd
     , onClick = Just OnClick
@@ -65,13 +65,13 @@ updateTests =
                     , [ OnMouseDown key ]
                     )
     , (fuzz3 keyF positionF positionF)
-        "TentativeDrag -[DragAt]-> Dragging (onDragStart, onDragBy)"
+        "DraggingTentative -[DragAt]-> Dragging (onDragStart key, onDragBy)"
         (\key p1 p2 ->
             DraggingTentative key p1
                 |> updateWithEvents (DragAt p2)
                 |> Should.equal
                     ( Dragging p2
-                    , [ OnDragStart, OnDragBy (Internal.distanceTo p2 p1) ]
+                    , [ OnDragStart key, OnDragBy (Internal.distanceTo p2 p1) ]
                     )
         )
     , fuzz2 positionF positionF "Dragging -[DragAt]-> Dragging (onDragBy)" <|
@@ -79,7 +79,7 @@ updateTests =
             Dragging p1
                 |> updateWithEvents (DragAt p2)
                 |> Should.equal ( Dragging p2, [ OnDragBy (Internal.distanceTo p2 p1) ] )
-    , fuzz2 keyF positionF "TentativeDrag -[DragEnd]-> NoDrag (onClick, onMouseUp)" <|
+    , fuzz2 keyF positionF "DraggingTentative -[DragEnd]-> NoDrag (onClick, onMouseUp)" <|
         \key endPosition ->
             DraggingTentative key endPosition
                 |> updateWithEvents StopDragging
@@ -104,7 +104,7 @@ invalidUpdateTests =
             NotDragging
                 |> updateWithEvents StopDragging
                 |> Should.equal ( NotDragging, [] )
-    , fuzz3 keyF positionF positionF "Invalid DragStart from TentativeDrag" <|
+    , fuzz3 keyF positionF positionF "Invalid DragStart from DraggingTentative" <|
         \key position startPosition ->
             DraggingTentative key position
                 |> updateWithEvents (startDragging startPosition)

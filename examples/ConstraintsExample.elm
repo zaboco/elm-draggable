@@ -54,7 +54,7 @@ dragConfig : Draggable.Config Msg
 dragConfig =
     Draggable.customConfig
         [ onDragBy (OnDragBy)
-        , onDragStart (SetDragging True)
+        , onDragStart (\_ -> SetDragging True)
         , onDragEnd (SetDragging False)
         ]
 

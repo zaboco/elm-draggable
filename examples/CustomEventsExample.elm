@@ -51,7 +51,7 @@ init =
 dragConfig : Draggable.Config Msg
 dragConfig =
     Draggable.customConfig
-        [ onDragStart OnDragStart
+        [ onDragStart (\_ -> OnDragStart)
         , onDragEnd OnDragEnd
         , onDragBy OnDragBy
         , onClick CountClick

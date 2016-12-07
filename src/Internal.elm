@@ -25,7 +25,7 @@ type alias Delta =
 
 
 type alias Config msg =
-    { onDragStart : Maybe msg
+    { onDragStart : Key -> Maybe msg
     , onDragBy : Delta -> Maybe msg
     , onDragEnd : Maybe msg
     , onClick : Maybe msg
@@ -39,7 +39,7 @@ type alias Event msg =
 
 defaultConfig : Config msg
 defaultConfig =
-    { onDragStart = Nothing
+    { onDragStart = \_ -> Nothing
     , onDragBy = \_ -> Nothing
     , onDragEnd = Nothing
     , onClick = Nothing
@@ -56,7 +56,7 @@ updateAndEmit config msg drag =
         ( DraggingTentative key oldPosition, DragAt newPosition ) ->
             ( Dragging newPosition
             , List.concatMap maybeToList
-                [ config.onDragStart
+                [ config.onDragStart key
                 , config.onDragBy (distanceTo newPosition oldPosition)
                 ]
             )
