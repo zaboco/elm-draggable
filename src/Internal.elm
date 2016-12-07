@@ -53,12 +53,9 @@ updateAndEmit config msg drag =
         ( NotDragging, StartDragging key initialPosition ) ->
             ( DraggingTentative key initialPosition, maybeToList <| config.onMouseDown key )
 
-        ( DraggingTentative key oldPosition, DragAt newPosition ) ->
-            ( Dragging newPosition
-            , List.concatMap maybeToList
-                [ config.onDragStart key
-                , config.onDragBy (distanceTo newPosition oldPosition)
-                ]
+        ( DraggingTentative key oldPosition, DragAt _ ) ->
+            ( Dragging oldPosition
+            , maybeToList (config.onDragStart key)
             )
 
         ( Dragging oldPosition, DragAt newPosition ) ->

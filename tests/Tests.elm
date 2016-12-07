@@ -65,13 +65,13 @@ updateTests =
                     , [ OnMouseDown key ]
                     )
     , (fuzz3 keyF positionF positionF)
-        "DraggingTentative -[DragAt]-> Dragging (onDragStart key, onDragBy)"
+        "DraggingTentative -[DragAt]-> Dragging (onDragStart key)"
         (\key p1 p2 ->
             DraggingTentative key p1
                 |> updateWithEvents (DragAt p2)
                 |> Should.equal
-                    ( Dragging p2
-                    , [ OnDragStart key, OnDragBy (Internal.distanceTo p2 p1) ]
+                    ( Dragging p1
+                    , [ OnDragStart key ]
                     )
         )
     , fuzz2 positionF positionF "Dragging -[DragAt]-> Dragging (onDragBy)" <|
