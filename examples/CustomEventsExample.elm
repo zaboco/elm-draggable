@@ -55,7 +55,7 @@ dragConfig =
         , onDragEnd OnDragEnd
         , onDragBy OnDragBy
         , onClick CountClick
-        , Draggable.Events.onMouseDown (SetClicked True)
+        , Draggable.Events.onMouseDown (\_ -> SetClicked True)
         ]
 
 
@@ -126,5 +126,6 @@ view { xy, isDragging, isClicked, clicksCount } =
             ]
 
 
+(=>) : a -> b -> ( a, b )
 (=>) =
     (,)

@@ -5,12 +5,11 @@ module Draggable.Events
         , onDragEnd
         , onClick
         , onMouseDown
-        , onMouseDownKeyed
         )
 
 {-| Listeners for the various events involved in dragging (`onDragBy`, `onDragStart`, etc.). Also handles `click` events when the mouse was not moved.
 @docs onDragStart, onDragEnd, onDragBy
-@docs onClick, onMouseDown, onMouseDownKeyed
+@docs onClick, onMouseDown
 -}
 
 import Internal exposing (Config, Delta, Key)
@@ -49,17 +48,8 @@ onClick toMsg config =
     { config | onClick = Just toMsg }
 
 
-{-| Register a `MouseDown` event listener. It will trigger whenever the mouse is pressed.
-
-__Note__ This event ignores the key of the dragged element. If that is needed, you should use [`onMouseDownKeyed`](#onMouseDownKeyed).
+{-| Register a `MouseDown` event listener. It will trigger whenever the mouse is pressed and will indicate the target element by the given `String` key.
 -}
-onMouseDown : msg -> Event msg
+onMouseDown : (Key -> msg) -> Event msg
 onMouseDown toMsg config =
-    { config | onMouseDown = \_ -> Just toMsg }
-
-
-{-| Register a keyed `MouseDown` event listener. It will trigger whenever the mouse is pressed and will indicate the target element by the given `String` key.
--}
-onMouseDownKeyed : (Key -> msg) -> Event msg
-onMouseDownKeyed toMsg config =
     { config | onMouseDown = Just << toMsg }
