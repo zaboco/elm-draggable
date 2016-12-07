@@ -6,12 +6,11 @@ module Draggable.Events
         , onClick
         , onMouseDown
         , onMouseDownKeyed
-        , onMouseUp
         )
 
 {-| Listeners for the various events involved in dragging (`onDragBy`, `onDragStart`, etc.). Also handles `click` events when the mouse was not moved.
 @docs onDragStart, onDragEnd, onDragBy
-@docs onClick, onMouseDown, onMouseDownKeyed, onMouseUp
+@docs onClick, onMouseDown, onMouseDownKeyed
 -}
 
 import Internal exposing (Config, Delta)
@@ -64,10 +63,3 @@ onMouseDown toMsg config =
 onMouseDownKeyed : (String -> msg) -> Event msg
 onMouseDownKeyed toMsg config =
     { config | onMouseDown = Just << toMsg }
-
-
-{-| Register a `MouseUp` event listener. It will trigger whenever the mouse is released.
--}
-onMouseUp : msg -> Event msg
-onMouseUp toMsg config =
-    { config | onMouseUp = Just toMsg }

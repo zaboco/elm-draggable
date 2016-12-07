@@ -1,11 +1,12 @@
 module MultipleTargetsExample exposing (main)
 
 import Draggable
-import Draggable.Events exposing (onDragBy, onMouseDownKeyed, onMouseUp)
+import Draggable.Events exposing (onDragBy, onMouseDownKeyed)
 import Html exposing (Html)
 import Math.Vector2 as Vector2 exposing (Vec2, getX, getY)
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
+import Svg.Events exposing (onMouseUp)
 import Svg.Keyed
 import Svg.Lazy exposing (lazy)
 
@@ -130,7 +131,6 @@ dragConfig =
     Draggable.customConfig
         [ onDragBy (Draggable.deltaToFloats >> Vector2.fromTuple >> OnDragBy)
         , onMouseDownKeyed StartDragging
-        , onMouseUp StopDragging
         ]
 
 
@@ -203,6 +203,7 @@ boxView { id, position } =
         , Attr.stroke "black"
         , Attr.cursor "move"
         , Draggable.mouseTrigger id DragMsg
+        , onMouseUp StopDragging
         ]
         []
 

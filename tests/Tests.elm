@@ -24,7 +24,6 @@ type EmitMsg
     | OnDragEnd
     | OnClick
     | OnMouseDown String
-    | OnMouseUp
 
 
 updateWithEvents =
@@ -38,7 +37,6 @@ fullConfig =
     , onDragEnd = Just OnDragEnd
     , onClick = Just OnClick
     , onMouseDown = Just << OnMouseDown
-    , onMouseUp = Just OnMouseUp
     }
 
 
@@ -85,12 +83,12 @@ updateTests =
         \endPosition ->
             DraggingTentative endPosition
                 |> updateWithEvents StopDragging
-                |> Should.equal ( NotDragging, [ OnClick, OnMouseUp ] )
+                |> Should.equal ( NotDragging, [ OnClick ] )
     , fuzz positionF "Dragging -[DragEnd]-> NoDrag (onDragEnd, onMouseUp)" <|
         \endPosition ->
             Dragging endPosition
                 |> updateWithEvents StopDragging
-                |> Should.equal ( NotDragging, [ OnDragEnd, OnMouseUp ] )
+                |> Should.equal ( NotDragging, [ OnDragEnd ] )
     ]
 
 
