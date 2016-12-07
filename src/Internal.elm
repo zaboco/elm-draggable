@@ -2,17 +2,20 @@ module Internal exposing (..)
 
 import Maybe.Extra exposing (maybeToList)
 import Mouse exposing (Position)
-import String
+
+
+type alias Key =
+    String
 
 
 type State
     = NotDragging
-    | DraggingTentative Position
+    | DraggingTentative Key Position
     | Dragging Position
 
 
 type Msg
-    = StartDragging String Position
+    = StartDragging Key Position
     | DragAt Position
     | StopDragging
 
@@ -26,7 +29,7 @@ type alias Config msg =
     , onDragBy : Delta -> Maybe msg
     , onDragEnd : Maybe msg
     , onClick : Maybe msg
-    , onMouseDown : String -> Maybe msg
+    , onMouseDown : Key -> Maybe msg
     }
 
 
@@ -48,9 +51,9 @@ updateAndEmit : Config msg -> Msg -> State -> ( State, List msg )
 updateAndEmit config msg drag =
     case ( drag, msg ) of
         ( NotDragging, StartDragging key initialPosition ) ->
-            ( DraggingTentative initialPosition, maybeToList <| config.onMouseDown key )
+            ( DraggingTentative key initialPosition, maybeToList <| config.onMouseDown key )
 
-        ( DraggingTentative oldPosition, DragAt newPosition ) ->
+        ( DraggingTentative key oldPosition, DragAt newPosition ) ->
             ( Dragging newPosition
             , List.concatMap maybeToList
                 [ config.onDragStart
@@ -63,7 +66,7 @@ updateAndEmit config msg drag =
             , maybeToList (config.onDragBy (distanceTo newPosition oldPosition))
             )
 
-        ( DraggingTentative _, StopDragging ) ->
+        ( DraggingTentative key _, StopDragging ) ->
             ( NotDragging
             , maybeToList config.onClick
             )

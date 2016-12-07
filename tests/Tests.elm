@@ -4,7 +4,7 @@ import Fuzz exposing (Fuzzer)
 import Mouse exposing (Position)
 import Test exposing (..)
 import Expect as Should exposing (Expectation)
-import Internal exposing (Delta, Msg(..), State(..))
+import Internal exposing (Delta, Key, Msg(..), State(..))
 
 
 all : Test
@@ -56,18 +56,18 @@ startDragging =
 
 updateTests : List Test
 updateTests =
-    [ fuzz positionF "NoDrag -[DragStart]-> DraggingTentative (onMouseDown)" <|
-        \startPosition ->
+    [ fuzz2 keyF positionF "NoDrag -[DragStart]-> DraggingTentative (onMouseDown)" <|
+        \key startPosition ->
             NotDragging
-                |> updateWithEvents (startDragging startPosition)
+                |> updateWithEvents (StartDragging key startPosition)
                 |> Should.equal
-                    ( DraggingTentative startPosition
-                    , [ OnMouseDown defaultKey ]
+                    ( DraggingTentative key startPosition
+                    , [ OnMouseDown key ]
                     )
-    , (fuzz2 positionF positionF)
+    , (fuzz3 keyF positionF positionF)
         "TentativeDrag -[DragAt]-> Dragging (onDragStart, onDragBy)"
-        (\p1 p2 ->
-            DraggingTentative p1
+        (\key p1 p2 ->
+            DraggingTentative key p1
                 |> updateWithEvents (DragAt p2)
                 |> Should.equal
                     ( Dragging p2
@@ -79,9 +79,9 @@ updateTests =
             Dragging p1
                 |> updateWithEvents (DragAt p2)
                 |> Should.equal ( Dragging p2, [ OnDragBy (Internal.distanceTo p2 p1) ] )
-    , fuzz positionF "TentativeDrag -[DragEnd]-> NoDrag (onClick, onMouseUp)" <|
-        \endPosition ->
-            DraggingTentative endPosition
+    , fuzz2 keyF positionF "TentativeDrag -[DragEnd]-> NoDrag (onClick, onMouseUp)" <|
+        \key endPosition ->
+            DraggingTentative key endPosition
                 |> updateWithEvents StopDragging
                 |> Should.equal ( NotDragging, [ OnClick ] )
     , fuzz positionF "Dragging -[DragEnd]-> NoDrag (onDragEnd, onMouseUp)" <|
@@ -104,11 +104,11 @@ invalidUpdateTests =
             NotDragging
                 |> updateWithEvents StopDragging
                 |> Should.equal ( NotDragging, [] )
-    , fuzz2 positionF positionF "Invalid DragStart from TentativeDrag" <|
-        \position startPosition ->
-            DraggingTentative position
+    , fuzz3 keyF positionF positionF "Invalid DragStart from TentativeDrag" <|
+        \key position startPosition ->
+            DraggingTentative key position
                 |> updateWithEvents (startDragging startPosition)
-                |> Should.equal ( DraggingTentative position, [] )
+                |> Should.equal ( DraggingTentative key position, [] )
     , fuzz2 positionF positionF "Invalid DragStart from Dragging" <|
         \position startPosition ->
             Dragging position
@@ -141,6 +141,11 @@ noEventsTest =
 positionF : Fuzzer Position
 positionF =
     Fuzz.map2 Position Fuzz.int Fuzz.int
+
+
+keyF : Fuzzer Key
+keyF =
+    Fuzz.string
 
 
 
