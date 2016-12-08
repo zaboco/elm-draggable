@@ -112,22 +112,21 @@ For working demos, see the [basic example](https://github.com/zaboco/elm-draggab
 ### Advanced
 
 #### Custom config
-Besides tracking the mouse moves, this library can also track all the other associated events related to dragging. But, before enumerating these events, it's import to note that an element it's not considered to be dragging if the mouse was simply clicked (without moving). That allows tracking both `click` and `drag` events:
+Besides tracking the mouse moves, this library can also track all the other associated events related to dragging. But, before enumerating these events, it's import to note that an element is not considered to be dragging if the mouse was simply clicked (without moving). That allows tracking both `click` and `drag` events:
 - "mouse down" + "mouse up" = "click"
 - "mouse down" + "mouse moves" + "mouse up" = "drag"
 
 So, the mouse events are:
-- `onMouseDown` - it was pressed.
-- `onDragStart` - it was first moved while being pressed.
-- `onDragBy` - it was moved while being pressed.
-- `onDragEnd` - it was released after dragging.
-- `onMouseUp` - it was released, either after dragging or not.
-- `onClick` - it was pressed and immediately released, without moving.
+- `onMouseDown` - on mouse press.
+- `onDragStart` - on the first mouse move after pressing.
+- `onDragBy` - on every mouse move.
+- `onDragEnd` - on releasing the mouse after dragging.
+- `onClick` - on releasing the mouse without dragging.
 
 All of these events are optional, and can be provided to `Draggable.customConfig` using an API similar to the one used by `VirtualDom.node` to specify the `Attribute`s. For example, if we want to handle all the events, we define the `config` like:
 ```elm
 import Draggable
-import Draggable.Events exposing (onClick, onDragBy, onDragEnd, onDragStart, onMouseDown, onMouseUp)
+import Draggable.Events exposing (onClick, onDragBy, onDragEnd, onDragStart, onMouseDown)
 
 dragConfig : Draggable.Config Msg
 dragConfig =
@@ -137,9 +136,11 @@ dragConfig =
         , onDragBy OnDragBy
         , onClick CountClick
         , onMouseDown (SetClicked True)
-        , onMouseUp (SetClicked False)
         ]
 ```
+
+__Note__: If we need to handle `mouseup` after either a `drag` or a `click`, we can use the `DOM` event handler `onMouseUp` from `Html.Events` or `Svg.Events`.
+
 See [the full example](https://github.com/zaboco/elm-draggable/blob/master/examples/CustomEventsExample.elm)
 
 #### Custom Delta

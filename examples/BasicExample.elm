@@ -77,5 +77,6 @@ view { xy } =
             [ Html.text "Drag me" ]
 
 
+(=>) : a -> b -> ( a, b )
 (=>) =
     (,)

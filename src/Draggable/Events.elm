@@ -5,24 +5,22 @@ module Draggable.Events
         , onDragEnd
         , onClick
         , onMouseDown
-        , onMouseDownKeyed
-        , onMouseUp
         )
 
 {-| Listeners for the various events involved in dragging (`onDragBy`, `onDragStart`, etc.). Also handles `click` events when the mouse was not moved.
 @docs onDragStart, onDragEnd, onDragBy
-@docs onClick, onMouseDown, onMouseDownKeyed, onMouseUp
+@docs onClick, onMouseDown
 -}
 
-import Internal exposing (Config, Delta)
+import Internal exposing (Config, Delta, Key)
 import Draggable exposing (Event)
 
 
-{-| Register a `DragStart` event listener. It will not trigger if the mouse has not moved while it was pressed.
+{-| Register a `DragStart` event listener. It will not trigger if the mouse has not moved while it was pressed. It receives the element key.
 -}
-onDragStart : msg -> Event msg
+onDragStart : (Key -> msg) -> Event msg
 onDragStart toMsg config =
-    { config | onDragStart = Just toMsg }
+    { config | onDragStart = Just << toMsg }
 
 
 {-| Register a `DragEnd` event listener. It will not trigger if the mouse has not moved while it was pressed.
@@ -43,31 +41,15 @@ onDragBy toMsg config =
     { config | onDragBy = Just << toMsg }
 
 
-{-| Register a `Click` event listener. It will trigger if the mouse is pressed and immediately release, without any move.
+{-| Register a `Click` event listener. It will trigger if the mouse is pressed and immediately release, without any move. It receives the element key.
 -}
-onClick : msg -> Event msg
+onClick : (Key -> msg) -> Event msg
 onClick toMsg config =
-    { config | onClick = Just toMsg }
+    { config | onClick = Just << toMsg }
 
 
-{-| Register a `MouseDown` event listener. It will trigger whenever the mouse is pressed.
-
-__Note__ This event ignores the key of the dragged element. If that is needed, you should use [`onMouseDownKeyed`](#onMouseDownKeyed).
+{-| Register a `MouseDown` event listener. It will trigger whenever the mouse is pressed and will indicate the target element by the given `String` key.
 -}
-onMouseDown : msg -> Event msg
+onMouseDown : (Key -> msg) -> Event msg
 onMouseDown toMsg config =
-    { config | onMouseDown = \_ -> Just toMsg }
-
-
-{-| Register a keyed `MouseDown` event listener. It will trigger whenever the mouse is pressed and will indicate the target element by the given `String` key.
--}
-onMouseDownKeyed : (String -> msg) -> Event msg
-onMouseDownKeyed toMsg config =
     { config | onMouseDown = Just << toMsg }
-
-
-{-| Register a `MouseUp` event listener. It will trigger whenever the mouse is released.
--}
-onMouseUp : msg -> Event msg
-onMouseUp toMsg config =
-    { config | onMouseUp = Just toMsg }

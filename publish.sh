@@ -4,6 +4,12 @@ function getVersion() {
     echo `cat elm-package.json | perl -n -e'/\"version\": \"(.+)\"/ && print $1'`
 }
 
+./smoke-test.sh
+if [[ $? > 0 ]]; then
+    echo "Smoke test failed. Not publishing."
+    exit 1;
+fi
+
 OLD_VERSION=$(getVersion)
 
 elm package diff
@@ -23,5 +29,3 @@ git tag -a $NEW_VERSION -m "release version $NEW_VERSION"
 git push origin $NEW_VERSION
 
 elm package publish
-
-

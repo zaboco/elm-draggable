@@ -1,18 +1,20 @@
 module Internal exposing (..)
 
-import Maybe.Extra exposing (maybeToList)
 import Mouse exposing (Position)
-import String
+
+
+type alias Key =
+    String
 
 
 type State
     = NotDragging
-    | DraggingTentative Position
+    | DraggingTentative Key Position
     | Dragging Position
 
 
 type Msg
-    = StartDragging String Position
+    = StartDragging Key Position
     | DragAt Position
     | StopDragging
 
@@ -22,12 +24,11 @@ type alias Delta =
 
 
 type alias Config msg =
-    { onDragStart : Maybe msg
+    { onDragStart : Key -> Maybe msg
     , onDragBy : Delta -> Maybe msg
     , onDragEnd : Maybe msg
-    , onClick : Maybe msg
-    , onMouseDown : String -> Maybe msg
-    , onMouseUp : Maybe msg
+    , onClick : Key -> Maybe msg
+    , onMouseDown : Key -> Maybe msg
     }
 
 
@@ -37,46 +38,42 @@ type alias Event msg =
 
 defaultConfig : Config msg
 defaultConfig =
-    { onDragStart = Nothing
+    { onDragStart = \_ -> Nothing
     , onDragBy = \_ -> Nothing
     , onDragEnd = Nothing
-    , onClick = Nothing
+    , onClick = \_ -> Nothing
     , onMouseDown = \_ -> Nothing
-    , onMouseUp = Nothing
     }
 
 
-updateAndEmit : Config msg -> Msg -> State -> ( State, List msg )
+updateAndEmit : Config msg -> Msg -> State -> ( State, Maybe msg )
 updateAndEmit config msg drag =
     case ( drag, msg ) of
         ( NotDragging, StartDragging key initialPosition ) ->
-            ( DraggingTentative initialPosition, maybeToList <| config.onMouseDown key )
+            ( DraggingTentative key initialPosition, config.onMouseDown key )
 
-        ( DraggingTentative oldPosition, DragAt newPosition ) ->
-            ( Dragging newPosition
-            , List.concatMap maybeToList
-                [ config.onDragStart
-                , config.onDragBy (distanceTo newPosition oldPosition)
-                ]
+        ( DraggingTentative key oldPosition, DragAt _ ) ->
+            ( Dragging oldPosition
+            , config.onDragStart key
             )
 
         ( Dragging oldPosition, DragAt newPosition ) ->
             ( Dragging newPosition
-            , maybeToList (config.onDragBy (distanceTo newPosition oldPosition))
+            , config.onDragBy (distanceTo newPosition oldPosition)
             )
 
-        ( DraggingTentative _, StopDragging ) ->
+        ( DraggingTentative key _, StopDragging ) ->
             ( NotDragging
-            , List.concatMap maybeToList [ config.onClick, config.onMouseUp ]
+            , config.onClick key
             )
 
         ( Dragging _, StopDragging ) ->
             ( NotDragging
-            , List.concatMap maybeToList [ config.onDragEnd, config.onMouseUp ]
+            , config.onDragEnd
             )
 
         _ ->
-            ( drag, [] )
+            ( drag, Nothing )
                 |> logInvalidState drag msg
 
 

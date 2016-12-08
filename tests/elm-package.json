@@ -10,7 +10,6 @@
     "exposed-modules": [],
     "dependencies": {
         "elm-community/elm-test": "3.0.0 <= v < 4.0.0",
-        "elm-community/maybe-extra": "3.0.0 <= v < 4.0.0",
         "elm-lang/core": "5.0.0 <= v < 6.0.0",
         "elm-lang/mouse": "1.0.1 <= v < 2.0.0",
         "elm-lang/virtual-dom": "2.0.0 <= v < 3.0.0",

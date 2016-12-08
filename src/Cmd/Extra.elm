@@ -1,4 +1,9 @@
-module Cmd.Extra exposing (..)
+module Cmd.Extra
+    exposing
+        ( message
+        , multiMessage
+        , optionalMessage
+        )
 
 import Task
 
@@ -13,3 +18,10 @@ multiMessage xs =
     xs
         |> List.map message
         |> Cmd.batch
+
+
+optionalMessage : Maybe msg -> Cmd msg
+optionalMessage msgMaybe =
+    msgMaybe
+        |> Maybe.map message
+        |> Maybe.withDefault Cmd.none
