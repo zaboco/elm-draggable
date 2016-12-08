@@ -54,7 +54,7 @@ dragConfig =
         [ onDragStart (\_ -> OnDragStart)
         , onDragEnd OnDragEnd
         , onDragBy OnDragBy
-        , onClick CountClick
+        , onClick (\_ -> CountClick)
         , Draggable.Events.onMouseDown (\_ -> SetClicked True)
         ]
 

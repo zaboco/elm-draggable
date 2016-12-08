@@ -27,7 +27,7 @@ type alias Config msg =
     { onDragStart : Key -> Maybe msg
     , onDragBy : Delta -> Maybe msg
     , onDragEnd : Maybe msg
-    , onClick : Maybe msg
+    , onClick : Key -> Maybe msg
     , onMouseDown : Key -> Maybe msg
     }
 
@@ -41,7 +41,7 @@ defaultConfig =
     { onDragStart = \_ -> Nothing
     , onDragBy = \_ -> Nothing
     , onDragEnd = Nothing
-    , onClick = Nothing
+    , onClick = \_ -> Nothing
     , onMouseDown = \_ -> Nothing
     }
 
@@ -64,7 +64,7 @@ updateAndEmit config msg drag =
 
         ( DraggingTentative key _, StopDragging ) ->
             ( NotDragging
-            , config.onClick
+            , config.onClick key
             )
 
         ( Dragging _, StopDragging ) ->

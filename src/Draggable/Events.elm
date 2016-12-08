@@ -41,11 +41,11 @@ onDragBy toMsg config =
     { config | onDragBy = Just << toMsg }
 
 
-{-| Register a `Click` event listener. It will trigger if the mouse is pressed and immediately release, without any move.
+{-| Register a `Click` event listener. It will trigger if the mouse is pressed and immediately release, without any move. It receives the element key.
 -}
-onClick : msg -> Event msg
+onClick : (Key -> msg) -> Event msg
 onClick toMsg config =
-    { config | onClick = Just toMsg }
+    { config | onClick = Just << toMsg }
 
 
 {-| Register a `MouseDown` event listener. It will trigger whenever the mouse is pressed and will indicate the target element by the given `String` key.

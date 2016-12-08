@@ -22,7 +22,7 @@ type EmitMsg
     = OnDragStart Key
     | OnDragBy Delta
     | OnDragEnd
-    | OnClick
+    | OnClick Key
     | OnMouseDown Key
 
 
@@ -35,7 +35,7 @@ fullConfig =
     { onDragStart = Just << OnDragStart
     , onDragBy = Just << OnDragBy
     , onDragEnd = Just OnDragEnd
-    , onClick = Just OnClick
+    , onClick = Just << OnClick
     , onMouseDown = Just << OnMouseDown
     }
 
@@ -56,7 +56,7 @@ startDragging =
 
 updateTests : List Test
 updateTests =
-    [ fuzz2 keyF positionF "NoDrag -[DragStart]-> DraggingTentative (onMouseDown)" <|
+    [ fuzz2 keyF positionF "NoDrag -[DragStart]-> DraggingTentative (onMouseDown key)" <|
         \key startPosition ->
             NotDragging
                 |> updateWithEvents (StartDragging key startPosition)
@@ -74,17 +74,17 @@ updateTests =
                     , Just (OnDragStart key)
                     )
         )
-    , fuzz2 positionF positionF "Dragging -[DragAt]-> Dragging (onDragBy)" <|
+    , fuzz2 positionF positionF "Dragging -[DragAt]-> Dragging (onDragBy delta)" <|
         \p1 p2 ->
             Dragging p1
                 |> updateWithEvents (DragAt p2)
                 |> Should.equal ( Dragging p2, Just <| OnDragBy (Internal.distanceTo p2 p1) )
-    , fuzz2 keyF positionF "DraggingTentative -[DragEnd]-> NoDrag (onClick, onMouseUp)" <|
+    , fuzz2 keyF positionF "DraggingTentative -[StopDragging]-> NotDragging (onClick key)" <|
         \key endPosition ->
             DraggingTentative key endPosition
                 |> updateWithEvents StopDragging
-                |> Should.equal ( NotDragging, Just OnClick )
-    , fuzz positionF "Dragging -[DragEnd]-> NoDrag (onDragEnd, onMouseUp)" <|
+                |> Should.equal ( NotDragging, Just (OnClick key) )
+    , fuzz positionF "Dragging -[StopDragging]-> NotDragging (onDragEnd)" <|
         \endPosition ->
             Dragging endPosition
                 |> updateWithEvents StopDragging
