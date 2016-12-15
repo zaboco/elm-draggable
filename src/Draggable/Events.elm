@@ -5,15 +5,23 @@ module Draggable.Events
         , onDragEnd
         , onClick
         , onMouseDown
+        , Key
         )
 
 {-| Listeners for the various events involved in dragging (`onDragBy`, `onDragStart`, etc.). Also handles `click` events when the mouse was not moved.
 @docs onDragStart, onDragEnd, onDragBy
 @docs onClick, onMouseDown
+@docs Key
 -}
 
-import Internal exposing (Config, Delta, Key)
+import Internal exposing (Config, Delta)
 import Draggable exposing (Event)
+
+
+{-| Type representing a key used for targeting draggable elements.
+-}
+type alias Key =
+    String
 
 
 {-| Register a `DragStart` event listener. It will not trigger if the mouse has not moved while it was pressed. It receives the element key.
