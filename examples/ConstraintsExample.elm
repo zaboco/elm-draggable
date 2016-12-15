@@ -5,7 +5,6 @@ import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import Html exposing (Html)
 import Keyboard exposing (KeyCode)
-import Mouse exposing (Position)
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
 
@@ -18,6 +17,12 @@ main =
         , subscriptions = subscriptions
         , view = view
         }
+
+
+type alias Position =
+    { x : Float
+    , y : Float
+    }
 
 
 type alias Model =
@@ -68,8 +73,8 @@ update msg ({ position, dragVertically, dragHorizontally } as model) =
         OnDragBy ( dx, dy ) ->
             let
                 ( fx, fy ) =
-                    ( boolToInt dragHorizontally
-                    , boolToInt dragVertically
+                    ( boolToNumber dragHorizontally
+                    , boolToNumber dragVertically
                     )
 
                 newPosition =
@@ -92,8 +97,8 @@ update msg ({ position, dragVertically, dragHorizontally } as model) =
             ( { model | isDragging = flag }, Cmd.none )
 
 
-boolToInt : Bool -> Int
-boolToInt bool =
+boolToNumber : Bool -> number
+boolToNumber bool =
     if bool then
         1
     else
@@ -127,7 +132,7 @@ handleKey pressed code =
 
 
 type alias Size =
-    { width : Int, height : Int }
+    { width : Float, height : Float }
 
 
 sceneSize : Size
@@ -168,8 +173,8 @@ box position isDragging =
             boxSize
 
         ( x, y ) =
-            ( position.x - width // 2
-            , position.y - height // 2
+            ( position.x - width / 2
+            , position.y - height / 2
             )
 
         cursor =
@@ -190,7 +195,7 @@ box position isDragging =
             []
 
 
-horizontalGuideline : Int -> Bool -> Svg Msg
+horizontalGuideline : number -> Bool -> Svg Msg
 horizontalGuideline y isEnabled =
     Svg.g [] <|
         [ Svg.text_
@@ -212,7 +217,7 @@ horizontalGuideline y isEnabled =
         ]
 
 
-verticalGuideline : Int -> Bool -> Svg Msg
+verticalGuideline : number -> Bool -> Svg Msg
 verticalGuideline x isEnabled =
     Svg.g [] <|
         [ Svg.text_
@@ -222,12 +227,12 @@ verticalGuideline x isEnabled =
             ]
             [ Svg.text "W" ]
         , Svg.line
-            ([ num Attr.x1 x
-             , num Attr.x2 x
-             , num Attr.y1 25
-             , num Attr.y2 sceneSize.height
-             ]
-                |> guidelineStyle isEnabled
+            (guidelineStyle isEnabled
+                [ num Attr.x1 x
+                , num Attr.x2 x
+                , num Attr.y1 25
+                , num Attr.y2 sceneSize.height
+                ]
             )
             []
         ]

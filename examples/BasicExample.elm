@@ -3,7 +3,12 @@ module BasicExample exposing (..)
 import Html exposing (Html)
 import Html.Attributes as A
 import Draggable
-import Mouse exposing (Position)
+
+
+type alias Position =
+    { x : Float
+    , y : Float
+    }
 
 
 type alias Model =

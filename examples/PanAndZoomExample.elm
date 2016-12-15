@@ -53,7 +53,7 @@ init =
 
 dragConfig : Draggable.Config Msg
 dragConfig =
-    Draggable.basicConfig (OnDragBy << Vector2.fromTuple << Draggable.deltaToFloats)
+    Draggable.basicConfig (OnDragBy << Vector2.fromTuple)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

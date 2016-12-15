@@ -5,7 +5,12 @@ import Html.Attributes as A
 import Draggable
 import Draggable.Events exposing (onClick, onDragBy, onDragEnd, onDragStart)
 import Html.Events
-import Mouse exposing (Position)
+
+
+type alias Position =
+    { x : Float
+    , y : Float
+    }
 
 
 type alias Model =
