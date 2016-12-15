@@ -7,7 +7,6 @@ module Draggable
         , Event
         , basicConfig
         , customConfig
-        , deltaToFloats
         , mouseTrigger
         , init
         , update
@@ -35,9 +34,6 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 # DOM trigger
 @docs mouseTrigger
 
-# Helpers
-@docs deltaToFloats
-
 # Definitions
 @docs Delta, State, Msg, Config, Event
 -}
@@ -52,7 +48,7 @@ import VirtualDom
 {-| A type alias representing the distance between two drag points.
 -}
 type alias Delta =
-    ( Int, Int )
+    ( Float, Float )
 
 
 {-| Drag state to be included in model.
@@ -131,29 +127,6 @@ mouseTrigger key envelope =
         VirtualDom.onWithOptions "mousedown"
             ignoreDefaults
             (Json.Decode.map (envelope << Msg << Internal.StartDragging key) Mouse.position)
-
-
-
--- HELPERS
-
-
-{-| Converts a `Delta` to a tuple of `Float`s. Can be used to change the argument to `DragBy` messages, when float operations are needed:
-
-    dragConfig =
-        Draggable.basicConfig (OnDragBy << Draggable.deltaToFloats)
-
-A use case for that could be converting the `Delta` to a `Vector` type (e.g. [`Math.Vector2.Vec2` from `linear-algebra`][vec2])
-
-    dragConfig =
-        Draggable.basicConfig (OnDragBy << Vector2.fromTuple << Draggable.deltaToFloats)
-
-See [PanAndZoomExample](https://github.com/zaboco/elm-draggable/blob/master/examples/PanAndZoomExample.elm)
-
-[vec2]: http://package.elm-lang.org/packages/elm-community/linear-algebra/1.0.0/Math-Vector2#Vec2
--}
-deltaToFloats : Delta -> ( Float, Float )
-deltaToFloats ( dx, dy ) =
-    ( toFloat dx, toFloat dy )
 
 
 

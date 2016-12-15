@@ -153,7 +153,7 @@ init =
 dragConfig : Draggable.Config Msg
 dragConfig =
     Draggable.customConfig
-        [ onDragBy (Draggable.deltaToFloats >> Vector2.fromTuple >> OnDragBy)
+        [ onDragBy (Vector2.fromTuple >> OnDragBy)
         , onDragStart StartDragging
         , onClick ToggleBoxClicked
         ]

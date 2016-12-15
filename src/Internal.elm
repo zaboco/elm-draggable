@@ -20,7 +20,7 @@ type Msg
 
 
 type alias Delta =
-    ( Int, Int )
+    ( Float, Float )
 
 
 type alias Config msg =
@@ -83,7 +83,9 @@ updateAndEmit config msg drag =
 
 distanceTo : Position -> Position -> Delta
 distanceTo end start =
-    ( end.x - start.x, end.y - start.y )
+    ( toFloat (end.x - start.x)
+    , toFloat (end.y - start.y)
+    )
 
 
 logInvalidState : State -> Msg -> a -> a
