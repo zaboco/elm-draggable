@@ -4181,172 +4181,6 @@ var _elm_lang$core$Array$repeat = F2(
 	});
 var _elm_lang$core$Array$Array = {ctor: 'Array'};
 
-var _elm_community$maybe_extra$Maybe_Extra$filter = F2(
-	function (f, m) {
-		var _p0 = A2(_elm_lang$core$Maybe$map, f, m);
-		if ((_p0.ctor === 'Just') && (_p0._0 === true)) {
-			return m;
-		} else {
-			return _elm_lang$core$Maybe$Nothing;
-		}
-	});
-var _elm_community$maybe_extra$Maybe_Extra$traverseArray = function (f) {
-	var step = F2(
-		function (e, acc) {
-			var _p1 = f(e);
-			if (_p1.ctor === 'Nothing') {
-				return _elm_lang$core$Maybe$Nothing;
-			} else {
-				return A2(
-					_elm_lang$core$Maybe$map,
-					_elm_lang$core$Array$push(_p1._0),
-					acc);
-			}
-		});
-	return A2(
-		_elm_lang$core$Array$foldl,
-		step,
-		_elm_lang$core$Maybe$Just(_elm_lang$core$Array$empty));
-};
-var _elm_community$maybe_extra$Maybe_Extra$combineArray = _elm_community$maybe_extra$Maybe_Extra$traverseArray(_elm_lang$core$Basics$identity);
-var _elm_community$maybe_extra$Maybe_Extra$traverse = function (f) {
-	var step = F2(
-		function (e, acc) {
-			var _p2 = f(e);
-			if (_p2.ctor === 'Nothing') {
-				return _elm_lang$core$Maybe$Nothing;
-			} else {
-				return A2(
-					_elm_lang$core$Maybe$map,
-					F2(
-						function (x, y) {
-							return {ctor: '::', _0: x, _1: y};
-						})(_p2._0),
-					acc);
-			}
-		});
-	return A2(
-		_elm_lang$core$List$foldr,
-		step,
-		_elm_lang$core$Maybe$Just(
-			{ctor: '[]'}));
-};
-var _elm_community$maybe_extra$Maybe_Extra$combine = _elm_community$maybe_extra$Maybe_Extra$traverse(_elm_lang$core$Basics$identity);
-var _elm_community$maybe_extra$Maybe_Extra$maybeToArray = function (m) {
-	var _p3 = m;
-	if (_p3.ctor === 'Nothing') {
-		return _elm_lang$core$Array$empty;
-	} else {
-		return A2(_elm_lang$core$Array$repeat, 1, _p3._0);
-	}
-};
-var _elm_community$maybe_extra$Maybe_Extra$maybeToList = function (m) {
-	var _p4 = m;
-	if (_p4.ctor === 'Nothing') {
-		return {ctor: '[]'};
-	} else {
-		return {
-			ctor: '::',
-			_0: _p4._0,
-			_1: {ctor: '[]'}
-		};
-	}
-};
-var _elm_community$maybe_extra$Maybe_Extra$orElse = F2(
-	function (ma, mb) {
-		var _p5 = mb;
-		if (_p5.ctor === 'Nothing') {
-			return ma;
-		} else {
-			return mb;
-		}
-	});
-var _elm_community$maybe_extra$Maybe_Extra$orElseLazy = F2(
-	function (fma, mb) {
-		var _p6 = mb;
-		if (_p6.ctor === 'Nothing') {
-			return fma(
-				{ctor: '_Tuple0'});
-		} else {
-			return mb;
-		}
-	});
-var _elm_community$maybe_extra$Maybe_Extra$orLazy = F2(
-	function (ma, fmb) {
-		var _p7 = ma;
-		if (_p7.ctor === 'Nothing') {
-			return fmb(
-				{ctor: '_Tuple0'});
-		} else {
-			return ma;
-		}
-	});
-var _elm_community$maybe_extra$Maybe_Extra$or = F2(
-	function (ma, mb) {
-		var _p8 = ma;
-		if (_p8.ctor === 'Nothing') {
-			return mb;
-		} else {
-			return ma;
-		}
-	});
-var _elm_community$maybe_extra$Maybe_Extra$prev = _elm_lang$core$Maybe$map2(_elm_lang$core$Basics$always);
-var _elm_community$maybe_extra$Maybe_Extra$next = _elm_lang$core$Maybe$map2(
-	_elm_lang$core$Basics$flip(_elm_lang$core$Basics$always));
-var _elm_community$maybe_extra$Maybe_Extra$andMap = _elm_lang$core$Maybe$map2(
-	F2(
-		function (x, y) {
-			return y(x);
-		}));
-var _elm_community$maybe_extra$Maybe_Extra$unpack = F3(
-	function (d, f, m) {
-		var _p9 = m;
-		if (_p9.ctor === 'Nothing') {
-			return d(
-				{ctor: '_Tuple0'});
-		} else {
-			return f(_p9._0);
-		}
-	});
-var _elm_community$maybe_extra$Maybe_Extra$unwrap = F3(
-	function (d, f, m) {
-		var _p10 = m;
-		if (_p10.ctor === 'Nothing') {
-			return d;
-		} else {
-			return f(_p10._0);
-		}
-	});
-var _elm_community$maybe_extra$Maybe_Extra$isJust = function (m) {
-	var _p11 = m;
-	if (_p11.ctor === 'Nothing') {
-		return false;
-	} else {
-		return true;
-	}
-};
-var _elm_community$maybe_extra$Maybe_Extra$isNothing = function (m) {
-	var _p12 = m;
-	if (_p12.ctor === 'Nothing') {
-		return true;
-	} else {
-		return false;
-	}
-};
-var _elm_community$maybe_extra$Maybe_Extra$join = function (mx) {
-	var _p13 = mx;
-	if (_p13.ctor === 'Just') {
-		return _p13._0;
-	} else {
-		return _elm_lang$core$Maybe$Nothing;
-	}
-};
-var _elm_community$maybe_extra$Maybe_Extra_ops = _elm_community$maybe_extra$Maybe_Extra_ops || {};
-_elm_community$maybe_extra$Maybe_Extra_ops['?'] = F2(
-	function (mx, x) {
-		return A2(_elm_lang$core$Maybe$withDefault, x, mx);
-	});
-
 var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
 var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
 var _elm_lang$core$Task$spawnCmd = F2(
@@ -9262,6 +9096,12 @@ var _user$project$Cmd_Extra$multiMessage = function (xs) {
 	return _elm_lang$core$Platform_Cmd$batch(
 		A2(_elm_lang$core$List$map, _user$project$Cmd_Extra$message, xs));
 };
+var _user$project$Cmd_Extra$optionalMessage = function (msgMaybe) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		_elm_lang$core$Platform_Cmd$none,
+		A2(_elm_lang$core$Maybe$map, _user$project$Cmd_Extra$message, msgMaybe));
+};
 
 var _user$project$Internal$logInvalidState = F3(
 	function (drag, msg, result) {
@@ -9290,118 +9130,86 @@ var _user$project$Internal$logInvalidState = F3(
 	});
 var _user$project$Internal$distanceTo = F2(
 	function (end, start) {
-		return {ctor: '_Tuple2', _0: end.x - start.x, _1: end.y - start.y};
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Basics$toFloat(end.x - start.x),
+			_1: _elm_lang$core$Basics$toFloat(end.y - start.y)
+		};
 	});
 var _user$project$Internal$defaultConfig = {
-	onDragStart: _elm_lang$core$Maybe$Nothing,
-	onDragBy: function (_p1) {
+	onDragStart: function (_p1) {
+		return _elm_lang$core$Maybe$Nothing;
+	},
+	onDragBy: function (_p2) {
 		return _elm_lang$core$Maybe$Nothing;
 	},
 	onDragEnd: _elm_lang$core$Maybe$Nothing,
-	onClick: _elm_lang$core$Maybe$Nothing,
-	onMouseDown: function (_p2) {
+	onClick: function (_p3) {
 		return _elm_lang$core$Maybe$Nothing;
 	},
-	onMouseUp: _elm_lang$core$Maybe$Nothing
+	onMouseDown: function (_p4) {
+		return _elm_lang$core$Maybe$Nothing;
+	}
 };
-var _user$project$Internal$Config = F6(
-	function (a, b, c, d, e, f) {
-		return {onDragStart: a, onDragBy: b, onDragEnd: c, onClick: d, onMouseDown: e, onMouseUp: f};
+var _user$project$Internal$Config = F5(
+	function (a, b, c, d, e) {
+		return {onDragStart: a, onDragBy: b, onDragEnd: c, onClick: d, onMouseDown: e};
 	});
 var _user$project$Internal$Dragging = function (a) {
 	return {ctor: 'Dragging', _0: a};
 };
-var _user$project$Internal$DraggingTentative = function (a) {
-	return {ctor: 'DraggingTentative', _0: a};
-};
+var _user$project$Internal$DraggingTentative = F2(
+	function (a, b) {
+		return {ctor: 'DraggingTentative', _0: a, _1: b};
+	});
 var _user$project$Internal$NotDragging = {ctor: 'NotDragging'};
 var _user$project$Internal$updateAndEmit = F3(
 	function (config, msg, drag) {
-		var _p3 = {ctor: '_Tuple2', _0: drag, _1: msg};
+		var _p5 = {ctor: '_Tuple2', _0: drag, _1: msg};
 		_v0_5:
 		do {
-			if (_p3.ctor === '_Tuple2') {
-				switch (_p3._0.ctor) {
+			if (_p5.ctor === '_Tuple2') {
+				switch (_p5._0.ctor) {
 					case 'NotDragging':
-						if (_p3._1.ctor === 'StartDragging') {
+						if (_p5._1.ctor === 'StartDragging') {
+							var _p6 = _p5._1._0;
 							return {
 								ctor: '_Tuple2',
-								_0: _user$project$Internal$DraggingTentative(_p3._1._1),
-								_1: _elm_community$maybe_extra$Maybe_Extra$maybeToList(
-									config.onMouseDown(_p3._1._0))
+								_0: A2(_user$project$Internal$DraggingTentative, _p6, _p5._1._1),
+								_1: config.onMouseDown(_p6)
 							};
 						} else {
 							break _v0_5;
 						}
 					case 'DraggingTentative':
-						switch (_p3._1.ctor) {
+						switch (_p5._1.ctor) {
 							case 'DragAt':
-								var _p4 = _p3._1._0;
 								return {
 									ctor: '_Tuple2',
-									_0: _user$project$Internal$Dragging(_p4),
-									_1: A2(
-										_elm_lang$core$List$concatMap,
-										_elm_community$maybe_extra$Maybe_Extra$maybeToList,
-										{
-											ctor: '::',
-											_0: config.onDragStart,
-											_1: {
-												ctor: '::',
-												_0: config.onDragBy(
-													A2(_user$project$Internal$distanceTo, _p4, _p3._0._0)),
-												_1: {ctor: '[]'}
-											}
-										})
+									_0: _user$project$Internal$Dragging(_p5._0._1),
+									_1: config.onDragStart(_p5._0._0)
 								};
 							case 'StopDragging':
 								return {
 									ctor: '_Tuple2',
 									_0: _user$project$Internal$NotDragging,
-									_1: A2(
-										_elm_lang$core$List$concatMap,
-										_elm_community$maybe_extra$Maybe_Extra$maybeToList,
-										{
-											ctor: '::',
-											_0: config.onClick,
-											_1: {
-												ctor: '::',
-												_0: config.onMouseUp,
-												_1: {ctor: '[]'}
-											}
-										})
+									_1: config.onClick(_p5._0._0)
 								};
 							default:
 								break _v0_5;
 						}
 					default:
-						switch (_p3._1.ctor) {
+						switch (_p5._1.ctor) {
 							case 'DragAt':
-								var _p5 = _p3._1._0;
+								var _p7 = _p5._1._0;
 								return {
 									ctor: '_Tuple2',
-									_0: _user$project$Internal$Dragging(_p5),
-									_1: _elm_community$maybe_extra$Maybe_Extra$maybeToList(
-										config.onDragBy(
-											A2(_user$project$Internal$distanceTo, _p5, _p3._0._0)))
+									_0: _user$project$Internal$Dragging(_p7),
+									_1: config.onDragBy(
+										A2(_user$project$Internal$distanceTo, _p7, _p5._0._0))
 								};
 							case 'StopDragging':
-								return {
-									ctor: '_Tuple2',
-									_0: _user$project$Internal$NotDragging,
-									_1: A2(
-										_elm_lang$core$List$concatMap,
-										_elm_community$maybe_extra$Maybe_Extra$maybeToList,
-										{
-											ctor: '::',
-											_0: config.onDragEnd,
-											_1: {
-												ctor: '::',
-												_0: config.onMouseUp,
-												_1: {ctor: '[]'}
-											}
-										})
-								};
+								return {ctor: '_Tuple2', _0: _user$project$Internal$NotDragging, _1: config.onDragEnd};
 							default:
 								break _v0_5;
 						}
@@ -9414,11 +9222,7 @@ var _user$project$Internal$updateAndEmit = F3(
 			_user$project$Internal$logInvalidState,
 			drag,
 			msg,
-			{
-				ctor: '_Tuple2',
-				_0: drag,
-				_1: {ctor: '[]'}
-			});
+			{ctor: '_Tuple2', _0: drag, _1: _elm_lang$core$Maybe$Nothing});
 	});
 var _user$project$Internal$StopDragging = {ctor: 'StopDragging'};
 var _user$project$Internal$DragAt = function (a) {
@@ -9429,37 +9233,29 @@ var _user$project$Internal$StartDragging = F2(
 		return {ctor: 'StartDragging', _0: a, _1: b};
 	});
 
-var _user$project$Draggable$deltaToFloats = function (_p0) {
-	var _p1 = _p0;
-	return {
-		ctor: '_Tuple2',
-		_0: _elm_lang$core$Basics$toFloat(_p1._0),
-		_1: _elm_lang$core$Basics$toFloat(_p1._1)
-	};
-};
 var _user$project$Draggable$State = function (a) {
 	return {ctor: 'State', _0: a};
 };
 var _user$project$Draggable$init = _user$project$Draggable$State(_user$project$Internal$NotDragging);
 var _user$project$Draggable$updateDraggable = F3(
-	function (_p4, _p3, _p2) {
-		var _p5 = _p4;
-		var _p6 = _p3;
-		var _p7 = _p2;
-		var _p8 = A3(_user$project$Internal$updateAndEmit, _p5._0, _p6._0, _p7._0);
-		var newDrag = _p8._0;
-		var newMsgs = _p8._1;
+	function (_p2, _p1, _p0) {
+		var _p3 = _p2;
+		var _p4 = _p1;
+		var _p5 = _p0;
+		var _p6 = A3(_user$project$Internal$updateAndEmit, _p3._0, _p4._0, _p5._0);
+		var newDrag = _p6._0;
+		var newMsgMaybe = _p6._1;
 		return {
 			ctor: '_Tuple2',
 			_0: _user$project$Draggable$State(newDrag),
-			_1: _user$project$Cmd_Extra$multiMessage(newMsgs)
+			_1: _user$project$Cmd_Extra$optionalMessage(newMsgMaybe)
 		};
 	});
 var _user$project$Draggable$update = F3(
 	function (config, msg, model) {
-		var _p9 = A3(_user$project$Draggable$updateDraggable, config, msg, model.drag);
-		var dragState = _p9._0;
-		var dragCmd = _p9._1;
+		var _p7 = A3(_user$project$Draggable$updateDraggable, config, msg, model.drag);
+		var dragState = _p7._0;
+		var dragCmd = _p7._1;
 		return A2(
 			_elm_lang$core$Platform_Cmd_ops['!'],
 			_elm_lang$core$Native_Utils.update(
@@ -9475,17 +9271,17 @@ var _user$project$Draggable$Msg = function (a) {
 	return {ctor: 'Msg', _0: a};
 };
 var _user$project$Draggable$subscriptions = F2(
-	function (envelope, _p10) {
-		var _p11 = _p10;
-		var _p12 = _p11._0;
-		if (_p12.ctor === 'NotDragging') {
+	function (envelope, _p8) {
+		var _p9 = _p8;
+		var _p10 = _p9._0;
+		if (_p10.ctor === 'NotDragging') {
 			return _elm_lang$core$Platform_Sub$none;
 		} else {
 			return A2(
 				_elm_lang$core$Platform_Sub$map,
-				function (_p13) {
+				function (_p11) {
 					return envelope(
-						_user$project$Draggable$Msg(_p13));
+						_user$project$Draggable$Msg(_p11));
 				},
 				_elm_lang$core$Platform_Sub$batch(
 					{
@@ -9494,7 +9290,7 @@ var _user$project$Draggable$subscriptions = F2(
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$mouse$Mouse$ups(
-								function (_p14) {
+								function (_p12) {
 									return _user$project$Internal$StopDragging;
 								}),
 							_1: {ctor: '[]'}
@@ -9511,14 +9307,13 @@ var _user$project$Draggable$mouseTrigger = F2(
 			ignoreDefaults,
 			A2(
 				_elm_lang$core$Json_Decode$map,
-				function (_p15) {
+				function (_p13) {
 					return envelope(
 						_user$project$Draggable$Msg(
-							A2(_user$project$Internal$StartDragging, key, _p15)));
+							A2(_user$project$Internal$StartDragging, key, _p13)));
 				},
 				_elm_lang$mouse$Mouse$position));
 	});
-var _user$project$Draggable$triggerOnMouseDown = _user$project$Draggable$mouseTrigger('');
 var _user$project$Draggable$Config = function (a) {
 	return {ctor: 'Config', _0: a};
 };
@@ -9528,9 +9323,9 @@ var _user$project$Draggable$basicConfig = function (onDragByListener) {
 		_elm_lang$core$Native_Utils.update(
 			defaultConfig,
 			{
-				onDragBy: function (_p16) {
+				onDragBy: function (_p14) {
 					return _elm_lang$core$Maybe$Just(
-						onDragByListener(_p16));
+						onDragByListener(_p14));
 				}
 			}));
 };
@@ -9546,15 +9341,7 @@ var _user$project$Draggable$customConfig = function (events) {
 			events));
 };
 
-var _user$project$Draggable_Events$onMouseUp = F2(
-	function (toMsg, config) {
-		return _elm_lang$core$Native_Utils.update(
-			config,
-			{
-				onMouseUp: _elm_lang$core$Maybe$Just(toMsg)
-			});
-	});
-var _user$project$Draggable_Events$onMouseDownKeyed = F2(
+var _user$project$Draggable_Events$onMouseDown = F2(
 	function (toMsg, config) {
 		return _elm_lang$core$Native_Utils.update(
 			config,
@@ -9565,22 +9352,15 @@ var _user$project$Draggable_Events$onMouseDownKeyed = F2(
 				}
 			});
 	});
-var _user$project$Draggable_Events$onMouseDown = F2(
-	function (toMsg, config) {
-		return _elm_lang$core$Native_Utils.update(
-			config,
-			{
-				onMouseDown: function (_p1) {
-					return _elm_lang$core$Maybe$Just(toMsg);
-				}
-			});
-	});
 var _user$project$Draggable_Events$onClick = F2(
 	function (toMsg, config) {
 		return _elm_lang$core$Native_Utils.update(
 			config,
 			{
-				onClick: _elm_lang$core$Maybe$Just(toMsg)
+				onClick: function (_p1) {
+					return _elm_lang$core$Maybe$Just(
+						toMsg(_p1));
+				}
 			});
 	});
 var _user$project$Draggable_Events$onDragBy = F2(
@@ -9607,7 +9387,10 @@ var _user$project$Draggable_Events$onDragStart = F2(
 		return _elm_lang$core$Native_Utils.update(
 			config,
 			{
-				onDragStart: _elm_lang$core$Maybe$Just(toMsg)
+				onDragStart: function (_p3) {
+					return _elm_lang$core$Maybe$Just(
+						toMsg(_p3));
+				}
 			});
 	});
 
@@ -9654,13 +9437,17 @@ var _user$project$ConstraintsExample$guidelineStyle = F2(
 		};
 		return A2(_elm_lang$core$Basics_ops['++'], otherAttributes, attributes);
 	});
-var _user$project$ConstraintsExample$boolToInt = function (bool) {
+var _user$project$ConstraintsExample$boolToNumber = function (bool) {
 	return bool ? 1 : 0;
 };
+var _user$project$ConstraintsExample$Position = F2(
+	function (a, b) {
+		return {x: a, y: b};
+	});
 var _user$project$ConstraintsExample$init = {
 	ctor: '_Tuple2',
 	_0: {
-		position: A2(_elm_lang$mouse$Mouse$Position, 100, 100),
+		position: A2(_user$project$ConstraintsExample$Position, 100, 100),
 		drag: _user$project$Draggable$init,
 		dragHorizontally: true,
 		dragVertically: true,
@@ -9813,7 +9600,9 @@ var _user$project$ConstraintsExample$dragConfig = _user$project$Draggable$custom
 		_1: {
 			ctor: '::',
 			_0: _user$project$Draggable_Events$onDragStart(
-				_user$project$ConstraintsExample$SetDragging(true)),
+				function (_p0) {
+					return _user$project$ConstraintsExample$SetDragging(true);
+				}),
 			_1: {
 				ctor: '::',
 				_0: _user$project$Draggable_Events$onDragEnd(
@@ -9823,54 +9612,54 @@ var _user$project$ConstraintsExample$dragConfig = _user$project$Draggable$custom
 		}
 	});
 var _user$project$ConstraintsExample$update = F2(
-	function (msg, _p0) {
-		var _p1 = _p0;
-		var _p5 = _p1.position;
-		var _p4 = _p1;
-		var _p2 = msg;
-		switch (_p2.ctor) {
+	function (msg, _p1) {
+		var _p2 = _p1;
+		var _p6 = _p2.position;
+		var _p5 = _p2;
+		var _p3 = msg;
+		switch (_p3.ctor) {
 			case 'NoOp':
-				return {ctor: '_Tuple2', _0: _p4, _1: _elm_lang$core$Platform_Cmd$none};
+				return {ctor: '_Tuple2', _0: _p5, _1: _elm_lang$core$Platform_Cmd$none};
 			case 'OnDragBy':
-				var _p3 = {
+				var _p4 = {
 					ctor: '_Tuple2',
-					_0: _user$project$ConstraintsExample$boolToInt(_p1.dragHorizontally),
-					_1: _user$project$ConstraintsExample$boolToInt(_p1.dragVertically)
+					_0: _user$project$ConstraintsExample$boolToNumber(_p2.dragHorizontally),
+					_1: _user$project$ConstraintsExample$boolToNumber(_p2.dragVertically)
 				};
-				var fx = _p3._0;
-				var fy = _p3._1;
-				var newPosition = A2(_elm_lang$mouse$Mouse$Position, _p5.x + (_p2._0._0 * fx), _p5.y + (_p2._0._1 * fy));
+				var fx = _p4._0;
+				var fy = _p4._1;
+				var newPosition = A2(_user$project$ConstraintsExample$Position, _p6.x + (_p3._0._0 * fx), _p6.y + (_p3._0._1 * fy));
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						_p4,
+						_p5,
 						{position: newPosition}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'DragMsg':
-				return A3(_user$project$Draggable$update, _user$project$ConstraintsExample$dragConfig, _p2._0, _p4);
+				return A3(_user$project$Draggable$update, _user$project$ConstraintsExample$dragConfig, _p3._0, _p5);
 			case 'SetDragHorizontally':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						_p4,
-						{dragHorizontally: _p2._0}),
+						_p5,
+						{dragHorizontally: _p3._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'SetDragVertically':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						_p4,
-						{dragVertically: _p2._0}),
+						_p5,
+						{dragVertically: _p3._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						_p4,
-						{isDragging: _p2._0}),
+						_p5,
+						{isDragging: _p3._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 		}
@@ -9881,12 +9670,12 @@ var _user$project$ConstraintsExample$DragMsg = function (a) {
 var _user$project$ConstraintsExample$box = F2(
 	function (position, isDragging) {
 		var cursor = isDragging ? 'none' : 'move';
-		var _p6 = _user$project$ConstraintsExample$boxSize;
-		var width = _p6.width;
-		var height = _p6.height;
-		var _p7 = {ctor: '_Tuple2', _0: position.x - ((width / 2) | 0), _1: position.y - ((height / 2) | 0)};
-		var x = _p7._0;
-		var y = _p7._1;
+		var _p7 = _user$project$ConstraintsExample$boxSize;
+		var width = _p7.width;
+		var height = _p7.height;
+		var _p8 = {ctor: '_Tuple2', _0: position.x - (width / 2), _1: position.y - (height / 2)};
+		var x = _p8._0;
+		var y = _p8._1;
 		return A2(
 			_elm_lang$svg$Svg$rect,
 			{
@@ -9920,11 +9709,11 @@ var _user$project$ConstraintsExample$box = F2(
 			},
 			{ctor: '[]'});
 	});
-var _user$project$ConstraintsExample$view = function (_p8) {
-	var _p9 = _p8;
-	var _p11 = _p9.position;
-	var _p10 = _p9.isDragging;
-	var cursor = _p10 ? 'none' : 'default';
+var _user$project$ConstraintsExample$view = function (_p9) {
+	var _p10 = _p9;
+	var _p12 = _p10.position;
+	var _p11 = _p10.isDragging;
+	var cursor = _p11 ? 'none' : 'default';
 	return A2(
 		_elm_lang$svg$Svg$svg,
 		{
@@ -9945,13 +9734,13 @@ var _user$project$ConstraintsExample$view = function (_p8) {
 			_0: _user$project$ConstraintsExample$background,
 			_1: {
 				ctor: '::',
-				_0: A2(_user$project$ConstraintsExample$verticalGuideline, _p11.x, _p9.dragVertically),
+				_0: A2(_user$project$ConstraintsExample$verticalGuideline, _p12.x, _p10.dragVertically),
 				_1: {
 					ctor: '::',
-					_0: A2(_user$project$ConstraintsExample$horizontalGuideline, _p11.y, _p9.dragHorizontally),
+					_0: A2(_user$project$ConstraintsExample$horizontalGuideline, _p12.y, _p10.dragHorizontally),
 					_1: {
 						ctor: '::',
-						_0: A2(_user$project$ConstraintsExample$box, _p11, _p10),
+						_0: A2(_user$project$ConstraintsExample$box, _p12, _p11),
 						_1: {ctor: '[]'}
 					}
 				}
@@ -9961,8 +9750,8 @@ var _user$project$ConstraintsExample$view = function (_p8) {
 var _user$project$ConstraintsExample$NoOp = {ctor: 'NoOp'};
 var _user$project$ConstraintsExample$handleKey = F2(
 	function (pressed, code) {
-		var _p12 = _elm_lang$core$Char$fromCode(code);
-		switch (_p12.valueOf()) {
+		var _p13 = _elm_lang$core$Char$fromCode(code);
+		switch (_p13.valueOf()) {
 			case 'A':
 				return _user$project$ConstraintsExample$SetDragHorizontally(!pressed);
 			case 'W':
@@ -9971,8 +9760,8 @@ var _user$project$ConstraintsExample$handleKey = F2(
 				return _user$project$ConstraintsExample$NoOp;
 		}
 	});
-var _user$project$ConstraintsExample$subscriptions = function (_p13) {
-	var _p14 = _p13;
+var _user$project$ConstraintsExample$subscriptions = function (_p14) {
+	var _p15 = _p14;
 	return _elm_lang$core$Platform_Sub$batch(
 		{
 			ctor: '::',
@@ -9984,7 +9773,7 @@ var _user$project$ConstraintsExample$subscriptions = function (_p13) {
 					_user$project$ConstraintsExample$handleKey(false)),
 				_1: {
 					ctor: '::',
-					_0: A2(_user$project$Draggable$subscriptions, _user$project$ConstraintsExample$DragMsg, _p14.drag),
+					_0: A2(_user$project$Draggable$subscriptions, _user$project$ConstraintsExample$DragMsg, _p15.drag),
 					_1: {ctor: '[]'}
 				}
 			}

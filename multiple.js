@@ -4383,172 +4383,6 @@ var _elm_lang$core$Array$repeat = F2(
 	});
 var _elm_lang$core$Array$Array = {ctor: 'Array'};
 
-var _elm_community$maybe_extra$Maybe_Extra$filter = F2(
-	function (f, m) {
-		var _p0 = A2(_elm_lang$core$Maybe$map, f, m);
-		if ((_p0.ctor === 'Just') && (_p0._0 === true)) {
-			return m;
-		} else {
-			return _elm_lang$core$Maybe$Nothing;
-		}
-	});
-var _elm_community$maybe_extra$Maybe_Extra$traverseArray = function (f) {
-	var step = F2(
-		function (e, acc) {
-			var _p1 = f(e);
-			if (_p1.ctor === 'Nothing') {
-				return _elm_lang$core$Maybe$Nothing;
-			} else {
-				return A2(
-					_elm_lang$core$Maybe$map,
-					_elm_lang$core$Array$push(_p1._0),
-					acc);
-			}
-		});
-	return A2(
-		_elm_lang$core$Array$foldl,
-		step,
-		_elm_lang$core$Maybe$Just(_elm_lang$core$Array$empty));
-};
-var _elm_community$maybe_extra$Maybe_Extra$combineArray = _elm_community$maybe_extra$Maybe_Extra$traverseArray(_elm_lang$core$Basics$identity);
-var _elm_community$maybe_extra$Maybe_Extra$traverse = function (f) {
-	var step = F2(
-		function (e, acc) {
-			var _p2 = f(e);
-			if (_p2.ctor === 'Nothing') {
-				return _elm_lang$core$Maybe$Nothing;
-			} else {
-				return A2(
-					_elm_lang$core$Maybe$map,
-					F2(
-						function (x, y) {
-							return {ctor: '::', _0: x, _1: y};
-						})(_p2._0),
-					acc);
-			}
-		});
-	return A2(
-		_elm_lang$core$List$foldr,
-		step,
-		_elm_lang$core$Maybe$Just(
-			{ctor: '[]'}));
-};
-var _elm_community$maybe_extra$Maybe_Extra$combine = _elm_community$maybe_extra$Maybe_Extra$traverse(_elm_lang$core$Basics$identity);
-var _elm_community$maybe_extra$Maybe_Extra$maybeToArray = function (m) {
-	var _p3 = m;
-	if (_p3.ctor === 'Nothing') {
-		return _elm_lang$core$Array$empty;
-	} else {
-		return A2(_elm_lang$core$Array$repeat, 1, _p3._0);
-	}
-};
-var _elm_community$maybe_extra$Maybe_Extra$maybeToList = function (m) {
-	var _p4 = m;
-	if (_p4.ctor === 'Nothing') {
-		return {ctor: '[]'};
-	} else {
-		return {
-			ctor: '::',
-			_0: _p4._0,
-			_1: {ctor: '[]'}
-		};
-	}
-};
-var _elm_community$maybe_extra$Maybe_Extra$orElse = F2(
-	function (ma, mb) {
-		var _p5 = mb;
-		if (_p5.ctor === 'Nothing') {
-			return ma;
-		} else {
-			return mb;
-		}
-	});
-var _elm_community$maybe_extra$Maybe_Extra$orElseLazy = F2(
-	function (fma, mb) {
-		var _p6 = mb;
-		if (_p6.ctor === 'Nothing') {
-			return fma(
-				{ctor: '_Tuple0'});
-		} else {
-			return mb;
-		}
-	});
-var _elm_community$maybe_extra$Maybe_Extra$orLazy = F2(
-	function (ma, fmb) {
-		var _p7 = ma;
-		if (_p7.ctor === 'Nothing') {
-			return fmb(
-				{ctor: '_Tuple0'});
-		} else {
-			return ma;
-		}
-	});
-var _elm_community$maybe_extra$Maybe_Extra$or = F2(
-	function (ma, mb) {
-		var _p8 = ma;
-		if (_p8.ctor === 'Nothing') {
-			return mb;
-		} else {
-			return ma;
-		}
-	});
-var _elm_community$maybe_extra$Maybe_Extra$prev = _elm_lang$core$Maybe$map2(_elm_lang$core$Basics$always);
-var _elm_community$maybe_extra$Maybe_Extra$next = _elm_lang$core$Maybe$map2(
-	_elm_lang$core$Basics$flip(_elm_lang$core$Basics$always));
-var _elm_community$maybe_extra$Maybe_Extra$andMap = _elm_lang$core$Maybe$map2(
-	F2(
-		function (x, y) {
-			return y(x);
-		}));
-var _elm_community$maybe_extra$Maybe_Extra$unpack = F3(
-	function (d, f, m) {
-		var _p9 = m;
-		if (_p9.ctor === 'Nothing') {
-			return d(
-				{ctor: '_Tuple0'});
-		} else {
-			return f(_p9._0);
-		}
-	});
-var _elm_community$maybe_extra$Maybe_Extra$unwrap = F3(
-	function (d, f, m) {
-		var _p10 = m;
-		if (_p10.ctor === 'Nothing') {
-			return d;
-		} else {
-			return f(_p10._0);
-		}
-	});
-var _elm_community$maybe_extra$Maybe_Extra$isJust = function (m) {
-	var _p11 = m;
-	if (_p11.ctor === 'Nothing') {
-		return false;
-	} else {
-		return true;
-	}
-};
-var _elm_community$maybe_extra$Maybe_Extra$isNothing = function (m) {
-	var _p12 = m;
-	if (_p12.ctor === 'Nothing') {
-		return true;
-	} else {
-		return false;
-	}
-};
-var _elm_community$maybe_extra$Maybe_Extra$join = function (mx) {
-	var _p13 = mx;
-	if (_p13.ctor === 'Just') {
-		return _p13._0;
-	} else {
-		return _elm_lang$core$Maybe$Nothing;
-	}
-};
-var _elm_community$maybe_extra$Maybe_Extra_ops = _elm_community$maybe_extra$Maybe_Extra_ops || {};
-_elm_community$maybe_extra$Maybe_Extra_ops['?'] = F2(
-	function (mx, x) {
-		return A2(_elm_lang$core$Maybe$withDefault, x, mx);
-	});
-
 var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
 var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
 var _elm_lang$core$Task$spawnCmd = F2(
@@ -8761,6 +8595,356 @@ var _elm_lang$html$Html$summary = _elm_lang$html$Html$node('summary');
 var _elm_lang$html$Html$menuitem = _elm_lang$html$Html$node('menuitem');
 var _elm_lang$html$Html$menu = _elm_lang$html$Html$node('menu');
 
+var _elm_lang$html$Html_Attributes$map = _elm_lang$virtual_dom$VirtualDom$mapProperty;
+var _elm_lang$html$Html_Attributes$attribute = _elm_lang$virtual_dom$VirtualDom$attribute;
+var _elm_lang$html$Html_Attributes$contextmenu = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'contextmenu', value);
+};
+var _elm_lang$html$Html_Attributes$draggable = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'draggable', value);
+};
+var _elm_lang$html$Html_Attributes$itemprop = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'itemprop', value);
+};
+var _elm_lang$html$Html_Attributes$tabindex = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'tabIndex',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$charset = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'charset', value);
+};
+var _elm_lang$html$Html_Attributes$height = function (value) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'height',
+		_elm_lang$core$Basics$toString(value));
+};
+var _elm_lang$html$Html_Attributes$width = function (value) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'width',
+		_elm_lang$core$Basics$toString(value));
+};
+var _elm_lang$html$Html_Attributes$formaction = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'formAction', value);
+};
+var _elm_lang$html$Html_Attributes$list = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'list', value);
+};
+var _elm_lang$html$Html_Attributes$minlength = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'minLength',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$maxlength = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'maxlength',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$size = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'size',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$form = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'form', value);
+};
+var _elm_lang$html$Html_Attributes$cols = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'cols',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$rows = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'rows',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$challenge = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'challenge', value);
+};
+var _elm_lang$html$Html_Attributes$media = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'media', value);
+};
+var _elm_lang$html$Html_Attributes$rel = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'rel', value);
+};
+var _elm_lang$html$Html_Attributes$datetime = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'datetime', value);
+};
+var _elm_lang$html$Html_Attributes$pubdate = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'pubdate', value);
+};
+var _elm_lang$html$Html_Attributes$colspan = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'colspan',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$rowspan = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'rowspan',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$manifest = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'manifest', value);
+};
+var _elm_lang$html$Html_Attributes$property = _elm_lang$virtual_dom$VirtualDom$property;
+var _elm_lang$html$Html_Attributes$stringProperty = F2(
+	function (name, string) {
+		return A2(
+			_elm_lang$html$Html_Attributes$property,
+			name,
+			_elm_lang$core$Json_Encode$string(string));
+	});
+var _elm_lang$html$Html_Attributes$class = function (name) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'className', name);
+};
+var _elm_lang$html$Html_Attributes$id = function (name) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'id', name);
+};
+var _elm_lang$html$Html_Attributes$title = function (name) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'title', name);
+};
+var _elm_lang$html$Html_Attributes$accesskey = function ($char) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'accessKey',
+		_elm_lang$core$String$fromChar($char));
+};
+var _elm_lang$html$Html_Attributes$dir = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dir', value);
+};
+var _elm_lang$html$Html_Attributes$dropzone = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dropzone', value);
+};
+var _elm_lang$html$Html_Attributes$lang = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'lang', value);
+};
+var _elm_lang$html$Html_Attributes$content = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'content', value);
+};
+var _elm_lang$html$Html_Attributes$httpEquiv = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'httpEquiv', value);
+};
+var _elm_lang$html$Html_Attributes$language = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'language', value);
+};
+var _elm_lang$html$Html_Attributes$src = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'src', value);
+};
+var _elm_lang$html$Html_Attributes$alt = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'alt', value);
+};
+var _elm_lang$html$Html_Attributes$preload = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'preload', value);
+};
+var _elm_lang$html$Html_Attributes$poster = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'poster', value);
+};
+var _elm_lang$html$Html_Attributes$kind = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'kind', value);
+};
+var _elm_lang$html$Html_Attributes$srclang = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'srclang', value);
+};
+var _elm_lang$html$Html_Attributes$sandbox = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'sandbox', value);
+};
+var _elm_lang$html$Html_Attributes$srcdoc = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'srcdoc', value);
+};
+var _elm_lang$html$Html_Attributes$type_ = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'type', value);
+};
+var _elm_lang$html$Html_Attributes$value = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'value', value);
+};
+var _elm_lang$html$Html_Attributes$defaultValue = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'defaultValue', value);
+};
+var _elm_lang$html$Html_Attributes$placeholder = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'placeholder', value);
+};
+var _elm_lang$html$Html_Attributes$accept = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'accept', value);
+};
+var _elm_lang$html$Html_Attributes$acceptCharset = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'acceptCharset', value);
+};
+var _elm_lang$html$Html_Attributes$action = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'action', value);
+};
+var _elm_lang$html$Html_Attributes$autocomplete = function (bool) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'autocomplete',
+		bool ? 'on' : 'off');
+};
+var _elm_lang$html$Html_Attributes$enctype = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'enctype', value);
+};
+var _elm_lang$html$Html_Attributes$method = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'method', value);
+};
+var _elm_lang$html$Html_Attributes$name = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'name', value);
+};
+var _elm_lang$html$Html_Attributes$pattern = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'pattern', value);
+};
+var _elm_lang$html$Html_Attributes$for = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'htmlFor', value);
+};
+var _elm_lang$html$Html_Attributes$max = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'max', value);
+};
+var _elm_lang$html$Html_Attributes$min = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'min', value);
+};
+var _elm_lang$html$Html_Attributes$step = function (n) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'step', n);
+};
+var _elm_lang$html$Html_Attributes$wrap = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'wrap', value);
+};
+var _elm_lang$html$Html_Attributes$usemap = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'useMap', value);
+};
+var _elm_lang$html$Html_Attributes$shape = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'shape', value);
+};
+var _elm_lang$html$Html_Attributes$coords = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'coords', value);
+};
+var _elm_lang$html$Html_Attributes$keytype = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'keytype', value);
+};
+var _elm_lang$html$Html_Attributes$align = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'align', value);
+};
+var _elm_lang$html$Html_Attributes$cite = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'cite', value);
+};
+var _elm_lang$html$Html_Attributes$href = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'href', value);
+};
+var _elm_lang$html$Html_Attributes$target = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'target', value);
+};
+var _elm_lang$html$Html_Attributes$downloadAs = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'download', value);
+};
+var _elm_lang$html$Html_Attributes$hreflang = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'hreflang', value);
+};
+var _elm_lang$html$Html_Attributes$ping = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'ping', value);
+};
+var _elm_lang$html$Html_Attributes$start = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$stringProperty,
+		'start',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$headers = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'headers', value);
+};
+var _elm_lang$html$Html_Attributes$scope = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'scope', value);
+};
+var _elm_lang$html$Html_Attributes$boolProperty = F2(
+	function (name, bool) {
+		return A2(
+			_elm_lang$html$Html_Attributes$property,
+			name,
+			_elm_lang$core$Json_Encode$bool(bool));
+	});
+var _elm_lang$html$Html_Attributes$hidden = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'hidden', bool);
+};
+var _elm_lang$html$Html_Attributes$contenteditable = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'contentEditable', bool);
+};
+var _elm_lang$html$Html_Attributes$spellcheck = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'spellcheck', bool);
+};
+var _elm_lang$html$Html_Attributes$async = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'async', bool);
+};
+var _elm_lang$html$Html_Attributes$defer = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'defer', bool);
+};
+var _elm_lang$html$Html_Attributes$scoped = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'scoped', bool);
+};
+var _elm_lang$html$Html_Attributes$autoplay = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'autoplay', bool);
+};
+var _elm_lang$html$Html_Attributes$controls = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'controls', bool);
+};
+var _elm_lang$html$Html_Attributes$loop = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'loop', bool);
+};
+var _elm_lang$html$Html_Attributes$default = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'default', bool);
+};
+var _elm_lang$html$Html_Attributes$seamless = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'seamless', bool);
+};
+var _elm_lang$html$Html_Attributes$checked = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'checked', bool);
+};
+var _elm_lang$html$Html_Attributes$selected = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'selected', bool);
+};
+var _elm_lang$html$Html_Attributes$autofocus = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'autofocus', bool);
+};
+var _elm_lang$html$Html_Attributes$disabled = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'disabled', bool);
+};
+var _elm_lang$html$Html_Attributes$multiple = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'multiple', bool);
+};
+var _elm_lang$html$Html_Attributes$novalidate = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'noValidate', bool);
+};
+var _elm_lang$html$Html_Attributes$readonly = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'readOnly', bool);
+};
+var _elm_lang$html$Html_Attributes$required = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'required', bool);
+};
+var _elm_lang$html$Html_Attributes$ismap = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'isMap', value);
+};
+var _elm_lang$html$Html_Attributes$download = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'download', bool);
+};
+var _elm_lang$html$Html_Attributes$reversed = function (bool) {
+	return A2(_elm_lang$html$Html_Attributes$boolProperty, 'reversed', bool);
+};
+var _elm_lang$html$Html_Attributes$classList = function (list) {
+	return _elm_lang$html$Html_Attributes$class(
+		A2(
+			_elm_lang$core$String$join,
+			' ',
+			A2(
+				_elm_lang$core$List$map,
+				_elm_lang$core$Tuple$first,
+				A2(_elm_lang$core$List$filter, _elm_lang$core$Tuple$second, list))));
+};
+var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$style;
+
 var _elm_lang$mouse$Mouse_ops = _elm_lang$mouse$Mouse_ops || {};
 _elm_lang$mouse$Mouse_ops['&>'] = F2(
 	function (t1, t2) {
@@ -9285,6 +9469,34 @@ var _elm_lang$svg$Svg_Attributes$accumulate = _elm_lang$virtual_dom$VirtualDom$a
 var _elm_lang$svg$Svg_Attributes$accelerate = _elm_lang$virtual_dom$VirtualDom$attribute('accelerate');
 var _elm_lang$svg$Svg_Attributes$accentHeight = _elm_lang$virtual_dom$VirtualDom$attribute('accent-height');
 
+var _elm_lang$svg$Svg_Events$on = _elm_lang$virtual_dom$VirtualDom$on;
+var _elm_lang$svg$Svg_Events$simpleOn = F2(
+	function (name, msg) {
+		return A2(
+			_elm_lang$svg$Svg_Events$on,
+			name,
+			_elm_lang$core$Json_Decode$succeed(msg));
+	});
+var _elm_lang$svg$Svg_Events$onBegin = _elm_lang$svg$Svg_Events$simpleOn('begin');
+var _elm_lang$svg$Svg_Events$onEnd = _elm_lang$svg$Svg_Events$simpleOn('end');
+var _elm_lang$svg$Svg_Events$onRepeat = _elm_lang$svg$Svg_Events$simpleOn('repeat');
+var _elm_lang$svg$Svg_Events$onAbort = _elm_lang$svg$Svg_Events$simpleOn('abort');
+var _elm_lang$svg$Svg_Events$onError = _elm_lang$svg$Svg_Events$simpleOn('error');
+var _elm_lang$svg$Svg_Events$onResize = _elm_lang$svg$Svg_Events$simpleOn('resize');
+var _elm_lang$svg$Svg_Events$onScroll = _elm_lang$svg$Svg_Events$simpleOn('scroll');
+var _elm_lang$svg$Svg_Events$onLoad = _elm_lang$svg$Svg_Events$simpleOn('load');
+var _elm_lang$svg$Svg_Events$onUnload = _elm_lang$svg$Svg_Events$simpleOn('unload');
+var _elm_lang$svg$Svg_Events$onZoom = _elm_lang$svg$Svg_Events$simpleOn('zoom');
+var _elm_lang$svg$Svg_Events$onActivate = _elm_lang$svg$Svg_Events$simpleOn('activate');
+var _elm_lang$svg$Svg_Events$onClick = _elm_lang$svg$Svg_Events$simpleOn('click');
+var _elm_lang$svg$Svg_Events$onFocusIn = _elm_lang$svg$Svg_Events$simpleOn('focusin');
+var _elm_lang$svg$Svg_Events$onFocusOut = _elm_lang$svg$Svg_Events$simpleOn('focusout');
+var _elm_lang$svg$Svg_Events$onMouseDown = _elm_lang$svg$Svg_Events$simpleOn('mousedown');
+var _elm_lang$svg$Svg_Events$onMouseMove = _elm_lang$svg$Svg_Events$simpleOn('mousemove');
+var _elm_lang$svg$Svg_Events$onMouseOut = _elm_lang$svg$Svg_Events$simpleOn('mouseout');
+var _elm_lang$svg$Svg_Events$onMouseOver = _elm_lang$svg$Svg_Events$simpleOn('mouseover');
+var _elm_lang$svg$Svg_Events$onMouseUp = _elm_lang$svg$Svg_Events$simpleOn('mouseup');
+
 var _elm_lang$svg$Svg_Keyed$svgNamespace = A2(
 	_elm_lang$virtual_dom$VirtualDom$property,
 	'namespace',
@@ -9311,6 +9523,12 @@ var _user$project$Cmd_Extra$message = function (x) {
 var _user$project$Cmd_Extra$multiMessage = function (xs) {
 	return _elm_lang$core$Platform_Cmd$batch(
 		A2(_elm_lang$core$List$map, _user$project$Cmd_Extra$message, xs));
+};
+var _user$project$Cmd_Extra$optionalMessage = function (msgMaybe) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		_elm_lang$core$Platform_Cmd$none,
+		A2(_elm_lang$core$Maybe$map, _user$project$Cmd_Extra$message, msgMaybe));
 };
 
 var _user$project$Internal$logInvalidState = F3(
@@ -9340,118 +9558,86 @@ var _user$project$Internal$logInvalidState = F3(
 	});
 var _user$project$Internal$distanceTo = F2(
 	function (end, start) {
-		return {ctor: '_Tuple2', _0: end.x - start.x, _1: end.y - start.y};
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Basics$toFloat(end.x - start.x),
+			_1: _elm_lang$core$Basics$toFloat(end.y - start.y)
+		};
 	});
 var _user$project$Internal$defaultConfig = {
-	onDragStart: _elm_lang$core$Maybe$Nothing,
-	onDragBy: function (_p1) {
+	onDragStart: function (_p1) {
+		return _elm_lang$core$Maybe$Nothing;
+	},
+	onDragBy: function (_p2) {
 		return _elm_lang$core$Maybe$Nothing;
 	},
 	onDragEnd: _elm_lang$core$Maybe$Nothing,
-	onClick: _elm_lang$core$Maybe$Nothing,
-	onMouseDown: function (_p2) {
+	onClick: function (_p3) {
 		return _elm_lang$core$Maybe$Nothing;
 	},
-	onMouseUp: _elm_lang$core$Maybe$Nothing
+	onMouseDown: function (_p4) {
+		return _elm_lang$core$Maybe$Nothing;
+	}
 };
-var _user$project$Internal$Config = F6(
-	function (a, b, c, d, e, f) {
-		return {onDragStart: a, onDragBy: b, onDragEnd: c, onClick: d, onMouseDown: e, onMouseUp: f};
+var _user$project$Internal$Config = F5(
+	function (a, b, c, d, e) {
+		return {onDragStart: a, onDragBy: b, onDragEnd: c, onClick: d, onMouseDown: e};
 	});
 var _user$project$Internal$Dragging = function (a) {
 	return {ctor: 'Dragging', _0: a};
 };
-var _user$project$Internal$DraggingTentative = function (a) {
-	return {ctor: 'DraggingTentative', _0: a};
-};
+var _user$project$Internal$DraggingTentative = F2(
+	function (a, b) {
+		return {ctor: 'DraggingTentative', _0: a, _1: b};
+	});
 var _user$project$Internal$NotDragging = {ctor: 'NotDragging'};
 var _user$project$Internal$updateAndEmit = F3(
 	function (config, msg, drag) {
-		var _p3 = {ctor: '_Tuple2', _0: drag, _1: msg};
+		var _p5 = {ctor: '_Tuple2', _0: drag, _1: msg};
 		_v0_5:
 		do {
-			if (_p3.ctor === '_Tuple2') {
-				switch (_p3._0.ctor) {
+			if (_p5.ctor === '_Tuple2') {
+				switch (_p5._0.ctor) {
 					case 'NotDragging':
-						if (_p3._1.ctor === 'StartDragging') {
+						if (_p5._1.ctor === 'StartDragging') {
+							var _p6 = _p5._1._0;
 							return {
 								ctor: '_Tuple2',
-								_0: _user$project$Internal$DraggingTentative(_p3._1._1),
-								_1: _elm_community$maybe_extra$Maybe_Extra$maybeToList(
-									config.onMouseDown(_p3._1._0))
+								_0: A2(_user$project$Internal$DraggingTentative, _p6, _p5._1._1),
+								_1: config.onMouseDown(_p6)
 							};
 						} else {
 							break _v0_5;
 						}
 					case 'DraggingTentative':
-						switch (_p3._1.ctor) {
+						switch (_p5._1.ctor) {
 							case 'DragAt':
-								var _p4 = _p3._1._0;
 								return {
 									ctor: '_Tuple2',
-									_0: _user$project$Internal$Dragging(_p4),
-									_1: A2(
-										_elm_lang$core$List$concatMap,
-										_elm_community$maybe_extra$Maybe_Extra$maybeToList,
-										{
-											ctor: '::',
-											_0: config.onDragStart,
-											_1: {
-												ctor: '::',
-												_0: config.onDragBy(
-													A2(_user$project$Internal$distanceTo, _p4, _p3._0._0)),
-												_1: {ctor: '[]'}
-											}
-										})
+									_0: _user$project$Internal$Dragging(_p5._0._1),
+									_1: config.onDragStart(_p5._0._0)
 								};
 							case 'StopDragging':
 								return {
 									ctor: '_Tuple2',
 									_0: _user$project$Internal$NotDragging,
-									_1: A2(
-										_elm_lang$core$List$concatMap,
-										_elm_community$maybe_extra$Maybe_Extra$maybeToList,
-										{
-											ctor: '::',
-											_0: config.onClick,
-											_1: {
-												ctor: '::',
-												_0: config.onMouseUp,
-												_1: {ctor: '[]'}
-											}
-										})
+									_1: config.onClick(_p5._0._0)
 								};
 							default:
 								break _v0_5;
 						}
 					default:
-						switch (_p3._1.ctor) {
+						switch (_p5._1.ctor) {
 							case 'DragAt':
-								var _p5 = _p3._1._0;
+								var _p7 = _p5._1._0;
 								return {
 									ctor: '_Tuple2',
-									_0: _user$project$Internal$Dragging(_p5),
-									_1: _elm_community$maybe_extra$Maybe_Extra$maybeToList(
-										config.onDragBy(
-											A2(_user$project$Internal$distanceTo, _p5, _p3._0._0)))
+									_0: _user$project$Internal$Dragging(_p7),
+									_1: config.onDragBy(
+										A2(_user$project$Internal$distanceTo, _p7, _p5._0._0))
 								};
 							case 'StopDragging':
-								return {
-									ctor: '_Tuple2',
-									_0: _user$project$Internal$NotDragging,
-									_1: A2(
-										_elm_lang$core$List$concatMap,
-										_elm_community$maybe_extra$Maybe_Extra$maybeToList,
-										{
-											ctor: '::',
-											_0: config.onDragEnd,
-											_1: {
-												ctor: '::',
-												_0: config.onMouseUp,
-												_1: {ctor: '[]'}
-											}
-										})
-								};
+								return {ctor: '_Tuple2', _0: _user$project$Internal$NotDragging, _1: config.onDragEnd};
 							default:
 								break _v0_5;
 						}
@@ -9464,11 +9650,7 @@ var _user$project$Internal$updateAndEmit = F3(
 			_user$project$Internal$logInvalidState,
 			drag,
 			msg,
-			{
-				ctor: '_Tuple2',
-				_0: drag,
-				_1: {ctor: '[]'}
-			});
+			{ctor: '_Tuple2', _0: drag, _1: _elm_lang$core$Maybe$Nothing});
 	});
 var _user$project$Internal$StopDragging = {ctor: 'StopDragging'};
 var _user$project$Internal$DragAt = function (a) {
@@ -9479,37 +9661,29 @@ var _user$project$Internal$StartDragging = F2(
 		return {ctor: 'StartDragging', _0: a, _1: b};
 	});
 
-var _user$project$Draggable$deltaToFloats = function (_p0) {
-	var _p1 = _p0;
-	return {
-		ctor: '_Tuple2',
-		_0: _elm_lang$core$Basics$toFloat(_p1._0),
-		_1: _elm_lang$core$Basics$toFloat(_p1._1)
-	};
-};
 var _user$project$Draggable$State = function (a) {
 	return {ctor: 'State', _0: a};
 };
 var _user$project$Draggable$init = _user$project$Draggable$State(_user$project$Internal$NotDragging);
 var _user$project$Draggable$updateDraggable = F3(
-	function (_p4, _p3, _p2) {
-		var _p5 = _p4;
-		var _p6 = _p3;
-		var _p7 = _p2;
-		var _p8 = A3(_user$project$Internal$updateAndEmit, _p5._0, _p6._0, _p7._0);
-		var newDrag = _p8._0;
-		var newMsgs = _p8._1;
+	function (_p2, _p1, _p0) {
+		var _p3 = _p2;
+		var _p4 = _p1;
+		var _p5 = _p0;
+		var _p6 = A3(_user$project$Internal$updateAndEmit, _p3._0, _p4._0, _p5._0);
+		var newDrag = _p6._0;
+		var newMsgMaybe = _p6._1;
 		return {
 			ctor: '_Tuple2',
 			_0: _user$project$Draggable$State(newDrag),
-			_1: _user$project$Cmd_Extra$multiMessage(newMsgs)
+			_1: _user$project$Cmd_Extra$optionalMessage(newMsgMaybe)
 		};
 	});
 var _user$project$Draggable$update = F3(
 	function (config, msg, model) {
-		var _p9 = A3(_user$project$Draggable$updateDraggable, config, msg, model.drag);
-		var dragState = _p9._0;
-		var dragCmd = _p9._1;
+		var _p7 = A3(_user$project$Draggable$updateDraggable, config, msg, model.drag);
+		var dragState = _p7._0;
+		var dragCmd = _p7._1;
 		return A2(
 			_elm_lang$core$Platform_Cmd_ops['!'],
 			_elm_lang$core$Native_Utils.update(
@@ -9525,17 +9699,17 @@ var _user$project$Draggable$Msg = function (a) {
 	return {ctor: 'Msg', _0: a};
 };
 var _user$project$Draggable$subscriptions = F2(
-	function (envelope, _p10) {
-		var _p11 = _p10;
-		var _p12 = _p11._0;
-		if (_p12.ctor === 'NotDragging') {
+	function (envelope, _p8) {
+		var _p9 = _p8;
+		var _p10 = _p9._0;
+		if (_p10.ctor === 'NotDragging') {
 			return _elm_lang$core$Platform_Sub$none;
 		} else {
 			return A2(
 				_elm_lang$core$Platform_Sub$map,
-				function (_p13) {
+				function (_p11) {
 					return envelope(
-						_user$project$Draggable$Msg(_p13));
+						_user$project$Draggable$Msg(_p11));
 				},
 				_elm_lang$core$Platform_Sub$batch(
 					{
@@ -9544,7 +9718,7 @@ var _user$project$Draggable$subscriptions = F2(
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$mouse$Mouse$ups(
-								function (_p14) {
+								function (_p12) {
 									return _user$project$Internal$StopDragging;
 								}),
 							_1: {ctor: '[]'}
@@ -9561,14 +9735,13 @@ var _user$project$Draggable$mouseTrigger = F2(
 			ignoreDefaults,
 			A2(
 				_elm_lang$core$Json_Decode$map,
-				function (_p15) {
+				function (_p13) {
 					return envelope(
 						_user$project$Draggable$Msg(
-							A2(_user$project$Internal$StartDragging, key, _p15)));
+							A2(_user$project$Internal$StartDragging, key, _p13)));
 				},
 				_elm_lang$mouse$Mouse$position));
 	});
-var _user$project$Draggable$triggerOnMouseDown = _user$project$Draggable$mouseTrigger('');
 var _user$project$Draggable$Config = function (a) {
 	return {ctor: 'Config', _0: a};
 };
@@ -9578,9 +9751,9 @@ var _user$project$Draggable$basicConfig = function (onDragByListener) {
 		_elm_lang$core$Native_Utils.update(
 			defaultConfig,
 			{
-				onDragBy: function (_p16) {
+				onDragBy: function (_p14) {
 					return _elm_lang$core$Maybe$Just(
-						onDragByListener(_p16));
+						onDragByListener(_p14));
 				}
 			}));
 };
@@ -9596,15 +9769,7 @@ var _user$project$Draggable$customConfig = function (events) {
 			events));
 };
 
-var _user$project$Draggable_Events$onMouseUp = F2(
-	function (toMsg, config) {
-		return _elm_lang$core$Native_Utils.update(
-			config,
-			{
-				onMouseUp: _elm_lang$core$Maybe$Just(toMsg)
-			});
-	});
-var _user$project$Draggable_Events$onMouseDownKeyed = F2(
+var _user$project$Draggable_Events$onMouseDown = F2(
 	function (toMsg, config) {
 		return _elm_lang$core$Native_Utils.update(
 			config,
@@ -9615,22 +9780,15 @@ var _user$project$Draggable_Events$onMouseDownKeyed = F2(
 				}
 			});
 	});
-var _user$project$Draggable_Events$onMouseDown = F2(
-	function (toMsg, config) {
-		return _elm_lang$core$Native_Utils.update(
-			config,
-			{
-				onMouseDown: function (_p1) {
-					return _elm_lang$core$Maybe$Just(toMsg);
-				}
-			});
-	});
 var _user$project$Draggable_Events$onClick = F2(
 	function (toMsg, config) {
 		return _elm_lang$core$Native_Utils.update(
 			config,
 			{
-				onClick: _elm_lang$core$Maybe$Just(toMsg)
+				onClick: function (_p1) {
+					return _elm_lang$core$Maybe$Just(
+						toMsg(_p1));
+				}
 			});
 	});
 var _user$project$Draggable_Events$onDragBy = F2(
@@ -9657,7 +9815,10 @@ var _user$project$Draggable_Events$onDragStart = F2(
 		return _elm_lang$core$Native_Utils.update(
 			config,
 			{
-				onDragStart: _elm_lang$core$Maybe$Just(toMsg)
+				onDragStart: function (_p3) {
+					return _elm_lang$core$Maybe$Just(
+						toMsg(_p3));
+				}
 			});
 	});
 
@@ -9766,12 +9927,21 @@ var _user$project$MultipleTargetsExample$stopDragging = function (group) {
 			movingBox: _elm_lang$core$Maybe$Nothing
 		});
 };
-var _user$project$MultipleTargetsExample$isMovingIn = F2(
-	function (_p8, box) {
-		var _p9 = _p8;
-		return _elm_lang$core$Native_Utils.eq(
-			_p9.movingBox,
-			_elm_lang$core$Maybe$Just(box));
+var _user$project$MultipleTargetsExample$toggleClicked = function (box) {
+	return _elm_lang$core$Native_Utils.update(
+		box,
+		{clicked: !box.clicked});
+};
+var _user$project$MultipleTargetsExample$toggleBoxClicked = F2(
+	function (id, group) {
+		var possiblyToggleBox = function (box) {
+			return _elm_lang$core$Native_Utils.eq(box.id, id) ? _user$project$MultipleTargetsExample$toggleClicked(box) : box;
+		};
+		return _elm_lang$core$Native_Utils.update(
+			group,
+			{
+				idleBoxes: A2(_elm_lang$core$List$map, possiblyToggleBox, group.idleBoxes)
+			});
 	});
 var _user$project$MultipleTargetsExample$dragBoxBy = F2(
 	function (delta, box) {
@@ -9792,26 +9962,30 @@ var _user$project$MultipleTargetsExample$dragActiveBy = F2(
 					group.movingBox)
 			});
 	});
-var _user$project$MultipleTargetsExample$Box = F2(
-	function (a, b) {
-		return {id: a, position: b};
+var _user$project$MultipleTargetsExample$Box = F3(
+	function (a, b, c) {
+		return {id: a, position: b, clicked: c};
+	});
+var _user$project$MultipleTargetsExample$box = F2(
+	function (id, position) {
+		return A3(_user$project$MultipleTargetsExample$Box, id, position, false);
 	});
 var _user$project$MultipleTargetsExample$addBox = F2(
-	function (position, _p10) {
-		var _p11 = _p10;
-		var _p12 = _p11.uid;
+	function (position, _p8) {
+		var _p9 = _p8;
+		var _p10 = _p9.uid;
 		return _elm_lang$core$Native_Utils.update(
-			_p11,
+			_p9,
 			{
 				idleBoxes: {
 					ctor: '::',
 					_0: A2(
-						_user$project$MultipleTargetsExample$Box,
-						_elm_lang$core$Basics$toString(_p12),
+						_user$project$MultipleTargetsExample$box,
+						_elm_lang$core$Basics$toString(_p10),
 						position),
-					_1: _p11.idleBoxes
+					_1: _p9.idleBoxes
 				},
-				uid: _p12 + 1
+				uid: _p10 + 1
 			});
 	});
 var _user$project$MultipleTargetsExample$BoxGroup = F3(
@@ -9839,6 +10013,9 @@ var _user$project$MultipleTargetsExample$Model = F2(
 		return {boxGroup: a, drag: b};
 	});
 var _user$project$MultipleTargetsExample$StopDragging = {ctor: 'StopDragging'};
+var _user$project$MultipleTargetsExample$ToggleBoxClicked = function (a) {
+	return {ctor: 'ToggleBoxClicked', _0: a};
+};
 var _user$project$MultipleTargetsExample$StartDragging = function (a) {
 	return {ctor: 'StartDragging', _0: a};
 };
@@ -9849,37 +10026,34 @@ var _user$project$MultipleTargetsExample$dragConfig = _user$project$Draggable$cu
 	{
 		ctor: '::',
 		_0: _user$project$Draggable_Events$onDragBy(
-			function (_p13) {
+			function (_p11) {
 				return _user$project$MultipleTargetsExample$OnDragBy(
-					_elm_community$linear_algebra$Math_Vector2$fromTuple(
-						_user$project$Draggable$deltaToFloats(_p13)));
+					_elm_community$linear_algebra$Math_Vector2$fromTuple(_p11));
 			}),
 		_1: {
 			ctor: '::',
-			_0: _user$project$Draggable_Events$onMouseDownKeyed(_user$project$MultipleTargetsExample$StartDragging),
+			_0: _user$project$Draggable_Events$onDragStart(_user$project$MultipleTargetsExample$StartDragging),
 			_1: {
 				ctor: '::',
-				_0: _user$project$Draggable_Events$onMouseUp(_user$project$MultipleTargetsExample$StopDragging),
+				_0: _user$project$Draggable_Events$onClick(_user$project$MultipleTargetsExample$ToggleBoxClicked),
 				_1: {ctor: '[]'}
 			}
 		}
 	});
 var _user$project$MultipleTargetsExample$update = F2(
-	function (msg, _p14) {
-		var _p15 = _p14;
-		var _p18 = _p15;
-		var _p17 = _p15.boxGroup;
-		var _p16 = msg;
-		switch (_p16.ctor) {
-			case 'NoOp':
-				return {ctor: '_Tuple2', _0: _p18, _1: _elm_lang$core$Platform_Cmd$none};
+	function (msg, _p12) {
+		var _p13 = _p12;
+		var _p16 = _p13;
+		var _p15 = _p13.boxGroup;
+		var _p14 = msg;
+		switch (_p14.ctor) {
 			case 'OnDragBy':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						_p18,
+						_p16,
 						{
-							boxGroup: A2(_user$project$MultipleTargetsExample$dragActiveBy, _p16._0, _p17)
+							boxGroup: A2(_user$project$MultipleTargetsExample$dragActiveBy, _p14._0, _p15)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -9887,9 +10061,9 @@ var _user$project$MultipleTargetsExample$update = F2(
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						_p18,
+						_p16,
 						{
-							boxGroup: A2(_user$project$MultipleTargetsExample$startDragging, _p16._0, _p17)
+							boxGroup: A2(_user$project$MultipleTargetsExample$startDragging, _p14._0, _p15)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -9897,26 +10071,37 @@ var _user$project$MultipleTargetsExample$update = F2(
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						_p18,
+						_p16,
 						{
-							boxGroup: _user$project$MultipleTargetsExample$stopDragging(_p17)
+							boxGroup: _user$project$MultipleTargetsExample$stopDragging(_p15)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'ToggleBoxClicked':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						_p16,
+						{
+							boxGroup: A2(_user$project$MultipleTargetsExample$toggleBoxClicked, _p14._0, _p15)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
-				return A3(_user$project$Draggable$update, _user$project$MultipleTargetsExample$dragConfig, _p16._0, _p18);
+				return A3(_user$project$Draggable$update, _user$project$MultipleTargetsExample$dragConfig, _p14._0, _p16);
 		}
 	});
 var _user$project$MultipleTargetsExample$DragMsg = function (a) {
 	return {ctor: 'DragMsg', _0: a};
 };
-var _user$project$MultipleTargetsExample$subscriptions = function (_p19) {
-	var _p20 = _p19;
-	return A2(_user$project$Draggable$subscriptions, _user$project$MultipleTargetsExample$DragMsg, _p20.drag);
+var _user$project$MultipleTargetsExample$subscriptions = function (_p17) {
+	var _p18 = _p17;
+	return A2(_user$project$Draggable$subscriptions, _user$project$MultipleTargetsExample$DragMsg, _p18.drag);
 };
-var _user$project$MultipleTargetsExample$boxView = function (_p21) {
-	var _p22 = _p21;
-	var _p23 = _p22.position;
+var _user$project$MultipleTargetsExample$boxView = function (_p19) {
+	var _p20 = _p19;
+	var _p21 = _p20.position;
+	var color = _p20.clicked ? 'red' : 'lightblue';
 	return A2(
 		_elm_lang$svg$Svg$rect,
 		{
@@ -9936,16 +10121,16 @@ var _user$project$MultipleTargetsExample$boxView = function (_p21) {
 					_0: A2(
 						_user$project$MultipleTargetsExample$num,
 						_elm_lang$svg$Svg_Attributes$x,
-						_elm_community$linear_algebra$Math_Vector2$getX(_p23)),
+						_elm_community$linear_algebra$Math_Vector2$getX(_p21)),
 					_1: {
 						ctor: '::',
 						_0: A2(
 							_user$project$MultipleTargetsExample$num,
 							_elm_lang$svg$Svg_Attributes$y,
-							_elm_community$linear_algebra$Math_Vector2$getY(_p23)),
+							_elm_community$linear_algebra$Math_Vector2$getY(_p21)),
 						_1: {
 							ctor: '::',
-							_0: _elm_lang$svg$Svg_Attributes$fill('lightblue'),
+							_0: _elm_lang$svg$Svg_Attributes$fill(color),
 							_1: {
 								ctor: '::',
 								_0: _elm_lang$svg$Svg_Attributes$stroke('black'),
@@ -9954,8 +10139,12 @@ var _user$project$MultipleTargetsExample$boxView = function (_p21) {
 									_0: _elm_lang$svg$Svg_Attributes$cursor('move'),
 									_1: {
 										ctor: '::',
-										_0: A2(_user$project$Draggable$mouseTrigger, _p22.id, _user$project$MultipleTargetsExample$DragMsg),
-										_1: {ctor: '[]'}
+										_0: A2(_user$project$Draggable$mouseTrigger, _p20.id, _user$project$MultipleTargetsExample$DragMsg),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$svg$Svg_Events$onMouseUp(_user$project$MultipleTargetsExample$StopDragging),
+											_1: {ctor: '[]'}
+										}
 									}
 								}
 							}
@@ -9984,32 +10173,58 @@ var _user$project$MultipleTargetsExample$boxesView = function (boxGroup) {
 			_elm_lang$core$List$reverse(
 				_user$project$MultipleTargetsExample$allBoxes(boxGroup))));
 };
-var _user$project$MultipleTargetsExample$view = function (_p24) {
-	var _p25 = _p24;
+var _user$project$MultipleTargetsExample$view = function (_p22) {
+	var _p23 = _p22;
 	return A2(
-		_elm_lang$svg$Svg$svg,
+		_elm_lang$html$Html$div,
 		{
 			ctor: '::',
-			_0: _elm_lang$svg$Svg_Attributes$width('100%'),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$svg$Svg_Attributes$height('100%'),
-				_1: {ctor: '[]'}
-			}
+			_0: _elm_lang$html$Html_Attributes$style(
+				{
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 'height', _1: '100%'},
+					_1: {ctor: '[]'}
+				}),
+			_1: {ctor: '[]'}
 		},
 		{
 			ctor: '::',
-			_0: _user$project$MultipleTargetsExample$background,
+			_0: A2(
+				_elm_lang$html$Html$p,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Drag any box around. Click it to toggle its color.'),
+					_1: {ctor: '[]'}
+				}),
 			_1: {
 				ctor: '::',
-				_0: _user$project$MultipleTargetsExample$boxesView(_p25.boxGroup),
+				_0: A2(
+					_elm_lang$svg$Svg$svg,
+					{
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$width('100%'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$height('100%'),
+							_1: {ctor: '[]'}
+						}
+					},
+					{
+						ctor: '::',
+						_0: _user$project$MultipleTargetsExample$background,
+						_1: {
+							ctor: '::',
+							_0: _user$project$MultipleTargetsExample$boxesView(_p23.boxGroup),
+							_1: {ctor: '[]'}
+						}
+					}),
 				_1: {ctor: '[]'}
 			}
 		});
 };
 var _user$project$MultipleTargetsExample$main = _elm_lang$html$Html$program(
 	{init: _user$project$MultipleTargetsExample$init, update: _user$project$MultipleTargetsExample$update, subscriptions: _user$project$MultipleTargetsExample$subscriptions, view: _user$project$MultipleTargetsExample$view})();
-var _user$project$MultipleTargetsExample$NoOp = {ctor: 'NoOp'};
 
 var Elm = {};
 Elm['MultipleTargetsExample'] = Elm['MultipleTargetsExample'] || {};
