@@ -3,8 +3,14 @@ module CustomEventsExample exposing (..)
 import Html exposing (Html)
 import Html.Attributes as A
 import Draggable
-import Draggable.Events exposing (onClick, onDragBy, onDragEnd, onDragStart, onMouseDown, onMouseUp)
-import Mouse exposing (Position)
+import Draggable.Events exposing (onClick, onDragBy, onDragEnd, onDragStart)
+import Html.Events
+
+
+type alias Position =
+    { x : Float
+    , y : Float
+    }
 
 
 type alias Model =
@@ -50,12 +56,11 @@ init =
 dragConfig : Draggable.Config Msg
 dragConfig =
     Draggable.customConfig
-        [ onDragStart OnDragStart
+        [ onDragStart (\_ -> OnDragStart)
         , onDragEnd OnDragEnd
         , onDragBy OnDragBy
-        , onClick CountClick
-        , onMouseDown (SetClicked True)
-        , onMouseUp (SetClicked False)
+        , onClick (\_ -> CountClick)
+        , Draggable.Events.onMouseDown (\_ -> SetClicked True)
         ]
 
 
@@ -118,6 +123,7 @@ view { xy, isDragging, isClicked, clicksCount } =
         Html.div
             [ A.style style
             , Draggable.mouseTrigger "" DragMsg
+            , Html.Events.onMouseUp (SetClicked False)
             ]
             [ Html.text status
             , Html.br [] []
@@ -125,5 +131,6 @@ view { xy, isDragging, isClicked, clicksCount } =
             ]
 
 
+(=>) : a -> b -> ( a, b )
 (=>) =
     (,)

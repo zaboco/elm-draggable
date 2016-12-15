@@ -7,8 +7,6 @@ module Draggable
         , Event
         , basicConfig
         , customConfig
-        , deltaToFloats
-        , triggerOnMouseDown
         , mouseTrigger
         , init
         , update
@@ -34,10 +32,7 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 @docs update, subscriptions
 
 # DOM trigger
-@docs mouseTrigger, triggerOnMouseDown
-
-# Helpers
-@docs deltaToFloats
+@docs mouseTrigger
 
 # Definitions
 @docs Delta, State, Msg, Config, Event
@@ -53,7 +48,7 @@ import VirtualDom
 {-| A type alias representing the distance between two drag points.
 -}
 type alias Delta =
-    ( Int, Int )
+    ( Float, Float )
 
 
 {-| Drag state to be included in model.
@@ -99,10 +94,10 @@ update config msg model =
 updateDraggable : Config msg -> Msg -> State -> ( State, Cmd msg )
 updateDraggable (Config config) (Msg msg) (State drag) =
     let
-        ( newDrag, newMsgs ) =
+        ( newDrag, newMsgMaybe ) =
             Internal.updateAndEmit config msg drag
     in
-        ( State newDrag, Cmd.Extra.multiMessage newMsgs )
+        ( State newDrag, Cmd.Extra.optionalMessage newMsgMaybe )
 
 
 {-| Handle mouse subscriptions used for dragging
@@ -119,17 +114,6 @@ subscriptions envelope (State drag) =
                 |> Sub.map (envelope << Msg)
 
 
-{-| __DEPRECATED__: Use [`mouseTrigger`](#mouseTrigger) instead
-
-DOM event handler to start dragging on mouse down.
-
-    div [ triggerOnMouseDown DragMsg ] [ text "Drag me" ]
--}
-triggerOnMouseDown : (Msg -> msg) -> VirtualDom.Property msg
-triggerOnMouseDown =
-    mouseTrigger ""
-
-
 {-| DOM event handler to start dragging on mouse down. It requires a `String` key for the element, in order to provide support for multiple drag targets sharing the same drag state. Of course, if only one element is draggable, it can have any value, including `""`.
 
     div [ mouseTrigger "element-id" DragMsg ] [ text "Drag me" ]
@@ -143,29 +127,6 @@ mouseTrigger key envelope =
         VirtualDom.onWithOptions "mousedown"
             ignoreDefaults
             (Json.Decode.map (envelope << Msg << Internal.StartDragging key) Mouse.position)
-
-
-
--- HELPERS
-
-
-{-| Converts a `Delta` to a tuple of `Float`s. Can be used to change the argument to `DragBy` messages, when float operations are needed:
-
-    dragConfig =
-        Draggable.basicConfig (OnDragBy << Draggable.deltaToFloats)
-
-A use case for that could be converting the `Delta` to a `Vector` type (e.g. [`Math.Vector2.Vec2` from `linear-algebra`][vec2])
-
-    dragConfig =
-        Draggable.basicConfig (OnDragBy << Vector2.fromTuple << Draggable.deltaToFloats)
-
-See [PanAndZoomExample](https://github.com/zaboco/elm-draggable/blob/master/examples/PanAndZoomExample.elm)
-
-[vec2]: http://package.elm-lang.org/packages/elm-community/linear-algebra/1.0.0/Math-Vector2#Vec2
--}
-deltaToFloats : Delta -> ( Float, Float )
-deltaToFloats ( dx, dy ) =
-    ( toFloat dx, toFloat dy )
 
 
 

@@ -52,7 +52,7 @@ initModel =
 ```
 
 #### 4. Define the message types that will be handled by your application
-- `OnDragBy` is for actually updating the position, taking a `Draggable.Delta` as an argument. `Delta` is just an alias for a tuple of `(Int, Int)` and it represents the distance between two consecutive drag points.
+- `OnDragBy` is for actually updating the position, taking a `Draggable.Delta` as an argument. `Delta` is just an alias for a tuple of `(Float, Float)` and it represents the distance between two consecutive drag points.
 - `DragMsg` is for handling internal `Drag` state updates.
 ```elm
 type Msg
@@ -94,7 +94,7 @@ subscriptions { drag } =
 ```
 
 #### 8. Triggering drag
-Finally, inside your `view` function, you must somehow make the element draggable. You do that by adding a trigger for the `mousedown` event. You must also specify a `String` `key` for that element. This is useful when there are multiple drag targets in the same view. 
+Finally, inside your `view` function, you must somehow make the element draggable. You do that by adding a trigger for the `mousedown` event. You must also specify a `String` `key` for that element. This is useful when there are multiple drag targets in the same view.
 
 Of course, you'll also have to style your DOM element such that it reflects its moving position (with `top: x; left: y` or [`transform: translate`](http://www.w3schools.com/css/css3_2dtransforms.asp))
 ```elm
@@ -107,27 +107,26 @@ view { position } =
         [ Html.text "Drag me" ]
 ```
 
-For working demos, see the [basic example](https://github.com/zaboco/elm-draggable/blob/master/examples/BasicExample.elm) or the [examples with multiple targets](https://github.com/zaboco/elm-draggable/blob/master/examples/MultipleTargetsExample.elm) 
+For working demos, see the [basic example](https://github.com/zaboco/elm-draggable/blob/master/examples/BasicExample.elm) or the [examples with multiple targets](https://github.com/zaboco/elm-draggable/blob/master/examples/MultipleTargetsExample.elm)
 
 ### Advanced
 
 #### Custom config
-Besides tracking the mouse moves, this library can also track all the other associated events related to dragging. But, before enumerating these events, it's import to note that an element it's not considered to be dragging if the mouse was simply clicked (without moving). That allows tracking both `click` and `drag` events:
+Besides tracking the mouse moves, this library can also track all the other associated events related to dragging. But, before enumerating these events, it's import to note that an element is not considered to be dragging if the mouse was simply clicked (without moving). That allows tracking both `click` and `drag` events:
 - "mouse down" + "mouse up" = "click"
 - "mouse down" + "mouse moves" + "mouse up" = "drag"
 
 So, the mouse events are:
-- `onMouseDown` - it was pressed.
-- `onDragStart` - it was first moved while being pressed.
-- `onDragBy` - it was moved while being pressed.
-- `onDragEnd` - it was released after dragging.
-- `onMouseUp` - it was released, either after dragging or not.
-- `onClick` - it was pressed and immediately released, without moving.
+- `onMouseDown` - on mouse press.
+- `onDragStart` - on the first mouse move after pressing.
+- `onDragBy` - on every mouse move.
+- `onDragEnd` - on releasing the mouse after dragging.
+- `onClick` - on releasing the mouse without dragging.
 
 All of these events are optional, and can be provided to `Draggable.customConfig` using an API similar to the one used by `VirtualDom.node` to specify the `Attribute`s. For example, if we want to handle all the events, we define the `config` like:
 ```elm
 import Draggable
-import Draggable.Events exposing (onClick, onDragBy, onDragEnd, onDragStart, onMouseDown, onMouseUp)
+import Draggable.Events exposing (onClick, onDragBy, onDragEnd, onDragStart, onMouseDown)
 
 dragConfig : Draggable.Config Msg
 dragConfig =
@@ -137,27 +136,17 @@ dragConfig =
         , onDragBy OnDragBy
         , onClick CountClick
         , onMouseDown (SetClicked True)
-        , onMouseUp (SetClicked False)
         ]
 ```
+
+__Note__: If we need to handle `mouseup` after either a `drag` or a `click`, we can use the `DOM` event handler `onMouseUp` from `Html.Events` or `Svg.Events`.
+
 See [the full example](https://github.com/zaboco/elm-draggable/blob/master/examples/CustomEventsExample.elm)
 
 #### Custom Delta
-By default, `OnDragBy` message will have a `Draggable.Delta` parameter, which, as we saw, is just an alias for `(Int, Int)`. However, there are situations when we would like some other data type for representing our `delta`.
+By default, `OnDragBy` message will have a `Draggable.Delta` parameter, which, as we saw, is just an alias for `(Float, Float)`. However, there are situations when we would like some other data type for representing our `delta`.
 
-Luckily, that's pretty easy using function composition. And the library provides a helper function for a simple (yet useful) transformation: `deltaToFloats`. It just converts the delta to a `(Float, Float)` which can be useful when operations such as scaling are required:
-
-```elm
-type Msg
-    = OnDragBy ( Float, Float )
---  | ...
-
-dragConfig : Draggable.Config Msg
-dragConfig =
-    Draggable.basicConfig (OnDragBy << Draggable.deltaToFloats)
-```
-
-We can go even further and use a [Vec2](http://package.elm-lang.org/packages/elm-community/linear-algebra/1.0.0/Math-Vector2#Vec2) type from the `linear-algebra` library, which provides handy function like `translate`, `scale` and `negate`. And there is even a [simple way of converting our "floats" delta to a `Vec2`](http://package.elm-lang.org/packages/elm-community/linear-algebra/1.0.0/Math-Vector2#fromTuple)
+Luckily, that's pretty easy using function composition. For example, we can use a [Vec2](http://package.elm-lang.org/packages/elm-community/linear-algebra/1.0.0/Math-Vector2#Vec2) type from the `linear-algebra` library, which provides handy function like `translate`, `scale` and `negate`. And there is even a [simple way of converting our "floats" delta to a `Vec2`](http://package.elm-lang.org/packages/elm-community/linear-algebra/1.0.0/Math-Vector2#fromTuple)
 
 ```elm
 import Math.Vector2 as Vector2 exposing (Vec2)
@@ -168,7 +157,7 @@ type Msg
 
 dragConfig : Draggable.Config Msg
 dragConfig =
-    Draggable.basicConfig (OnDragBy << Vector2.fromTuple << Draggable.deltaToFloats)
+    Draggable.basicConfig (OnDragBy << Vector2.fromTuple)
 ```
 
 There is actually [an example right for this use-case](https://github.com/zaboco/elm-draggable/blob/master/examples/PanAndZoomExample.elm)
