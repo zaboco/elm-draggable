@@ -195,11 +195,12 @@ boxSize =
 view : Model -> Html Msg
 view { boxGroup } =
     Html.div
-        [ Html.Attributes.style [ ( "height", "100%" ) ] ]
-        [ Html.p [] [ Html.text "Drag any box around. Click it to toggle its color." ]
+        []
+        [ Html.p
+            [ Html.Attributes.style [ ( "padding-left", "8px" ) ] ]
+            [ Html.text "Drag any box around. Click it to toggle its color." ]
         , Svg.svg
-            [ Attr.width "100%"
-            , Attr.height "100%"
+            [ Attr.style "height: 100vh; width: 100vw"
             ]
             [ background
             , boxesView boxGroup
