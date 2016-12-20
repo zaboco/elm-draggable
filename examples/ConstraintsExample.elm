@@ -155,9 +155,8 @@ view { position, dragHorizontally, dragVertically, isDragging } =
                 "default"
     in
         Svg.svg
-            [ Attr.width "100%"
-            , Attr.height "100%"
-            , Attr.cursor cursor
+            [ Attr.cursor cursor
+            , Attr.style "height: 100vh; width: 100vw;"
             ]
             [ background
             , verticalGuideline position.x dragVertically
