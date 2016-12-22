@@ -1,5 +1,5 @@
 {
-    "version": "2.0.0",
+    "version": "2.0.1",
     "summary": "easy way to make DOM elements draggable",
     "repository": "https://github.com/zaboco/elm-draggable.git",
     "license": "BSD3",
