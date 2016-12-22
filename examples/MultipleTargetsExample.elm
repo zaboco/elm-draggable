@@ -200,7 +200,7 @@ view { boxGroup } =
             [ Html.Attributes.style [ ( "padding-left", "8px" ) ] ]
             [ Html.text "Drag any box around. Click it to toggle its color." ]
         , Svg.svg
-            [ Attr.style "height: 100vh; width: 100vw"
+            [ Attr.style "height: 100vh; width: 100vw; position: fixed;"
             ]
             [ background
             , boxesView boxGroup
