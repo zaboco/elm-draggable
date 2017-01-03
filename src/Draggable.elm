@@ -126,7 +126,25 @@ mouseTrigger key envelope =
     in
         VirtualDom.onWithOptions "mousedown"
             ignoreDefaults
-            (Json.Decode.map (envelope << Msg << Internal.StartDragging key) Mouse.position)
+            (whenLeftMouseButtonPressed <|
+                Json.Decode.map (envelope << Msg << Internal.StartDragging key) Mouse.position
+            )
+
+
+whenLeftMouseButtonPressed : Json.Decode.Decoder a -> Json.Decode.Decoder a
+whenLeftMouseButtonPressed decoder =
+    Json.Decode.field "button" Json.Decode.int
+        |> Json.Decode.andThen
+            (\button ->
+                case button of
+                    -- https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-MouseEvent
+                    -- 0 indicates the primary (usually left) mouse button
+                    0 ->
+                        decoder
+
+                    _ ->
+                        Json.Decode.fail "Event is only relevant when the main mouse button was pressed."
+            )
 
 
 
