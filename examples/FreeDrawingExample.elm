@@ -3,6 +3,7 @@ module FreeDrawingExample exposing (main)
 import Draggable exposing (Delta)
 import Draggable.Events exposing (onDragBy, onMouseDown)
 import Html exposing (Html)
+import Json.Decode as Decode exposing (Decoder)
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
 
@@ -24,14 +25,10 @@ type alias Position =
     }
 
 
-type SceneMsg
-    = StartPath Position
-    | NewPointBy Delta
-
-
 type Msg
-    = UpdateScene SceneMsg
-    | DragMsg Draggable.Msg
+    = DragMsg Draggable.Msg
+    | StartPathAndDrag Draggable.Msg Position
+    | AddNewPointAtDelta Draggable.Delta
 
 
 init : ( Model, Cmd msg )
@@ -45,28 +42,23 @@ update msg model =
         DragMsg dragMsg ->
             Draggable.update dragConfig dragMsg model
 
-        UpdateScene sceneMsg ->
-            ( { model | scene = updateScene sceneMsg model.scene }, Cmd.none )
+        StartPathAndDrag dragMsg startPoint ->
+            { model | scene = Path startPoint [] }
+                |> Draggable.update dragConfig dragMsg
 
+        AddNewPointAtDelta delta ->
+            case model.scene of
+                Empty ->
+                    model ! []
 
-updateScene : SceneMsg -> Scene -> Scene
-updateScene msg scene =
-    case ( scene, msg ) of
-        ( _, StartPath startPoint ) ->
-            Path startPoint []
-
-        ( Path startPoint deltasSoFar, NewPointBy lastDelta ) ->
-            Path startPoint (lastDelta :: deltasSoFar)
-
-        _ ->
-            scene
+                Path startPoint deltasSoFar ->
+                    { model | scene = Path startPoint (delta :: deltasSoFar) } ! []
 
 
 dragConfig : Draggable.Config Msg
 dragConfig =
     Draggable.customConfig
-        [ onMouseDown (\_ -> UpdateScene <| StartPath { x = 10, y = 10 })
-        , onDragBy (UpdateScene << NewPointBy)
+        [ onDragBy AddNewPointAtDelta
         ]
 
 
@@ -78,14 +70,21 @@ subscriptions { drag } =
 view : Model -> Html Msg
 view { scene } =
     Svg.svg
-        [ Attr.style "height: 100vh; width: 100vw;"
+        [ Attr.style "height: 100vh; width: 100vw; margin: 100px;"
         , Attr.fill "none"
         , Attr.stroke "black"
-        , Draggable.mouseTrigger "" DragMsg
+        , Draggable.customMouseTrigger mouseOffsetDecoder StartPathAndDrag
         ]
         [ background
         , sceneView scene
         ]
+
+
+mouseOffsetDecoder : Decoder Position
+mouseOffsetDecoder =
+    Decode.map2 Position
+        (Decode.field "offsetX" Decode.float)
+        (Decode.field "offsetY" Decode.float)
 
 
 sceneView : Scene -> Svg msg
