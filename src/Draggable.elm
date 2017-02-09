@@ -53,25 +53,25 @@ type alias Delta =
 
 {-| Drag state to be included in model.
 -}
-type State
-    = State Internal.State
+type State a
+    = State (Internal.State a)
 
 
 {-| A message type for updating the internal drag state.
 -}
-type Msg
-    = Msg Internal.Msg
+type Msg a
+    = Msg (Internal.Msg a)
 
 
 {-| An event declaration for the draggable config
 -}
-type alias Event msg =
-    Internal.Event msg
+type alias Event a msg =
+    Internal.Event a msg
 
 
 {-| Initial drag state
 -}
-init : State
+init : State a
 init =
     State Internal.NotDragging
 
@@ -79,10 +79,10 @@ init =
 {-| Handle update messages for the draggable model. It assumes that the drag state will be stored under the key `drag`.
 -}
 update :
-    Config msg
-    -> Msg
-    -> { m | drag : State }
-    -> ( { m | drag : State }, Cmd msg )
+    Config a msg
+    -> Msg a
+    -> { m | drag : State a }
+    -> ( { m | drag : State a }, Cmd msg )
 update config msg model =
     let
         ( dragState, dragCmd ) =
@@ -91,7 +91,7 @@ update config msg model =
         { model | drag = dragState } ! [ dragCmd ]
 
 
-updateDraggable : Config msg -> Msg -> State -> ( State, Cmd msg )
+updateDraggable : Config a msg -> Msg a -> State a -> ( State a, Cmd msg )
 updateDraggable (Config config) (Msg msg) (State drag) =
     let
         ( newDrag, newMsgMaybe ) =
@@ -102,7 +102,7 @@ updateDraggable (Config config) (Msg msg) (State drag) =
 
 {-| Handle mouse subscriptions used for dragging
 -}
-subscriptions : (Msg -> msg) -> State -> Sub msg
+subscriptions : (Msg a -> msg) -> State a -> Sub msg
 subscriptions envelope (State drag) =
     case drag of
         Internal.NotDragging ->
@@ -114,11 +114,11 @@ subscriptions envelope (State drag) =
                 |> Sub.map (envelope << Msg)
 
 
-{-| DOM event handler to start dragging on mouse down. It requires a `String` key for the element, in order to provide support for multiple drag targets sharing the same drag state. Of course, if only one element is draggable, it can have any value, including `""`.
+{-| DOM event handler to start dragging on mouse down. It requires a key for the element, in order to provide support for multiple drag targets sharing the same drag state. Of course, if only one element is draggable, it can have any value, including `()`.
 
     div [ mouseTrigger "element-id" DragMsg ] [ text "Drag me" ]
 -}
-mouseTrigger : String -> (Msg -> msg) -> VirtualDom.Property msg
+mouseTrigger : a -> (Msg a -> msg) -> VirtualDom.Property msg
 mouseTrigger key envelope =
     let
         ignoreDefaults =
@@ -153,15 +153,15 @@ whenLeftMouseButtonPressed decoder =
 
 {-| Configuration of a draggable model.
 -}
-type Config msg
-    = Config (Internal.Config msg)
+type Config a msg
+    = Config (Internal.Config a msg)
 
 
 {-| Basic config
 
     config = basicConfig OnDragBy
 -}
-basicConfig : (Delta -> msg) -> Config msg
+basicConfig : (Delta -> msg) -> Config a msg
 basicConfig onDragByListener =
     let
         defaultConfig =
@@ -178,6 +178,6 @@ basicConfig onDragByListener =
         , onDragEnd OnDragEnd
         ]
 -}
-customConfig : List (Event msg) -> Config msg
+customConfig : List (Event a msg) -> Config a msg
 customConfig events =
     Config <| List.foldl (<|) Internal.defaultConfig events

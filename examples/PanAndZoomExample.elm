@@ -30,12 +30,12 @@ type alias Model =
     { zoom : Float
     , center : Vec2
     , size : Size Float
-    , drag : Draggable.State
+    , drag : Draggable.State ()
     }
 
 
 type Msg
-    = DragMsg Draggable.Msg
+    = DragMsg (Draggable.Msg ())
     | OnDragBy Vec2
     | Zoom Float
 
@@ -51,7 +51,7 @@ init =
     )
 
 
-dragConfig : Draggable.Config Msg
+dragConfig : Draggable.Config () Msg
 dragConfig =
     Draggable.basicConfig (OnDragBy << Vector2.fromTuple)
 
@@ -107,7 +107,7 @@ view { center, size, zoom } =
             [ num Attr.width size.width
             , num Attr.height size.height
             , handleZoom Zoom
-            , Draggable.mouseTrigger "" DragMsg
+            , Draggable.mouseTrigger () DragMsg
             ]
             [ background
             , Svg.g

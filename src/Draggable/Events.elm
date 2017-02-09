@@ -5,35 +5,27 @@ module Draggable.Events
         , onDragEnd
         , onClick
         , onMouseDown
-        , Key
         )
 
 {-| Listeners for the various events involved in dragging (`onDragBy`, `onDragStart`, etc.). Also handles `click` events when the mouse was not moved.
 @docs onDragStart, onDragEnd, onDragBy
 @docs onClick, onMouseDown
-@docs Key
 -}
 
 import Internal exposing (Config, Delta)
 import Draggable exposing (Event)
 
 
-{-| Type representing a key used for targeting draggable elements.
--}
-type alias Key =
-    String
-
-
 {-| Register a `DragStart` event listener. It will not trigger if the mouse has not moved while it was pressed. It receives the element key.
 -}
-onDragStart : (Key -> msg) -> Event msg
+onDragStart : (a -> msg) -> Event a msg
 onDragStart toMsg config =
     { config | onDragStart = Just << toMsg }
 
 
 {-| Register a `DragEnd` event listener. It will not trigger if the mouse has not moved while it was pressed.
 -}
-onDragEnd : msg -> Event msg
+onDragEnd : msg -> Event a msg
 onDragEnd toMsg config =
     { config | onDragEnd = Just toMsg }
 
@@ -44,20 +36,20 @@ onDragEnd toMsg config =
         OnDragBy (dx, dy) ->
             { model | position = { x = position.x + dx, y = position.y + dy } }
 -}
-onDragBy : (Delta -> msg) -> Event msg
+onDragBy : (Delta -> msg) -> Event a msg
 onDragBy toMsg config =
     { config | onDragBy = Just << toMsg }
 
 
 {-| Register a `Click` event listener. It will trigger if the mouse is pressed and immediately release, without any move. It receives the element key.
 -}
-onClick : (Key -> msg) -> Event msg
+onClick : (a -> msg) -> Event a msg
 onClick toMsg config =
     { config | onClick = Just << toMsg }
 
 
-{-| Register a `MouseDown` event listener. It will trigger whenever the mouse is pressed and will indicate the target element by the given `String` key.
+{-| Register a `MouseDown` event listener. It will trigger whenever the mouse is pressed and will indicate the target element by the given key.
 -}
-onMouseDown : (Key -> msg) -> Event msg
+onMouseDown : (a -> msg) -> Event a msg
 onMouseDown toMsg config =
     { config | onMouseDown = Just << toMsg }

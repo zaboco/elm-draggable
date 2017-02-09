@@ -18,7 +18,7 @@ type alias Model =
     , clicksCount : Int
     , isDragging : Bool
     , isClicked : Bool
-    , drag : Draggable.State
+    , drag : Draggable.State String
     }
 
 
@@ -28,7 +28,7 @@ type Msg
     | OnDragEnd
     | CountClick
     | SetClicked Bool
-    | DragMsg Draggable.Msg
+    | DragMsg (Draggable.Msg String)
 
 
 main : Program Never Model Msg
@@ -53,7 +53,7 @@ init =
     )
 
 
-dragConfig : Draggable.Config Msg
+dragConfig : Draggable.Config String Msg
 dragConfig =
     Draggable.customConfig
         [ onDragStart (\_ -> OnDragStart)
