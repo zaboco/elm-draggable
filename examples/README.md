@@ -21,3 +21,6 @@ Dragging on a scaled viewport.
 
 ### Multiple Targets Example
 Multiple DOM elements' dragging state can be tracked at once.
+
+### Free Drawing Example
+Showcasing `customMouseTrigger` with `mouseOffsetDecoder` 
