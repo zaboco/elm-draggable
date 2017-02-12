@@ -10,7 +10,7 @@ import Svg.Attributes as Attr
 
 type alias Model =
     { scene : Scene
-    , drag : Draggable.State
+    , drag : Draggable.State ()
     }
 
 
@@ -26,8 +26,8 @@ type alias Position =
 
 
 type Msg
-    = DragMsg Draggable.Msg
-    | StartPathAndDrag Draggable.Msg Position
+    = DragMsg (Draggable.Msg ())
+    | StartPathAndDrag (Draggable.Msg ()) Position
     | AddNewPointAtDelta Draggable.Delta
 
 
@@ -55,7 +55,7 @@ update msg model =
                     { model | scene = Path startPoint (delta :: deltasSoFar) } ! []
 
 
-dragConfig : Draggable.Config Msg
+dragConfig : Draggable.Config () Msg
 dragConfig =
     Draggable.customConfig
         [ onDragBy AddNewPointAtDelta

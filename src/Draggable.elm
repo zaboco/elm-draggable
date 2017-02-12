@@ -130,17 +130,17 @@ mouseTrigger key envelope =
 
     div [ mouseTrigger offsetDecoder CustomDragMsg ] [ text "Drag me" ]
 -}
-customMouseTrigger : Decoder a -> (Msg -> a -> msg) -> VirtualDom.Property msg
+customMouseTrigger : Decoder a -> (Msg () -> a -> msg) -> VirtualDom.Property msg
 customMouseTrigger customDecoder customEnvelope =
     VirtualDom.onWithOptions "mousedown"
         ignoreDefaults
-        (Decode.map2 customEnvelope (positionDecoder "") customDecoder)
+        (Decode.map2 customEnvelope (positionDecoder ()) customDecoder)
 
 
-positionDecoder : String -> Decoder Msg
+positionDecoder : a -> Decoder (Msg a)
 positionDecoder key =
     Mouse.position
-        |> Decode.map (Msg << Internal.StartDragging "")
+        |> Decode.map (Msg << Internal.StartDragging key)
         |> whenLeftMouseButtonPressed
 
 
