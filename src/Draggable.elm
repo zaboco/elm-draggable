@@ -8,6 +8,7 @@ module Draggable
         , basicConfig
         , customConfig
         , mouseTrigger
+        , customMouseTrigger
         , init
         , update
         , subscriptions
@@ -32,7 +33,7 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 @docs update, subscriptions
 
 # DOM trigger
-@docs mouseTrigger
+@docs mouseTrigger, customMouseTrigger
 
 # Definitions
 @docs Delta, State, Msg, Config, Event
@@ -40,7 +41,7 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 
 import Cmd.Extra
 import Internal
-import Json.Decode
+import Json.Decode as Decode exposing (Decoder)
 import Mouse exposing (Position)
 import VirtualDom
 
@@ -120,21 +121,38 @@ subscriptions envelope (State drag) =
 -}
 mouseTrigger : a -> (Msg a -> msg) -> VirtualDom.Property msg
 mouseTrigger key envelope =
-    let
-        ignoreDefaults =
-            VirtualDom.Options True True
-    in
-        VirtualDom.onWithOptions "mousedown"
-            ignoreDefaults
-            (whenLeftMouseButtonPressed <|
-                Json.Decode.map (envelope << Msg << Internal.StartDragging key) Mouse.position
-            )
+    VirtualDom.onWithOptions "mousedown"
+        ignoreDefaults
+        (Decode.map envelope (positionDecoder key))
 
 
-whenLeftMouseButtonPressed : Json.Decode.Decoder a -> Json.Decode.Decoder a
+{-| DOM event handler to start dragging on mouse down and also sending custom information about the `mousedown` event. It does so by using a custom `Decoder` for the [`MouseEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent).
+
+    div [ mouseTrigger offsetDecoder CustomDragMsg ] [ text "Drag me" ]
+-}
+customMouseTrigger : Decoder a -> (Msg -> a -> msg) -> VirtualDom.Property msg
+customMouseTrigger customDecoder customEnvelope =
+    VirtualDom.onWithOptions "mousedown"
+        ignoreDefaults
+        (Decode.map2 customEnvelope (positionDecoder "") customDecoder)
+
+
+positionDecoder : String -> Decoder Msg
+positionDecoder key =
+    Mouse.position
+        |> Decode.map (Msg << Internal.StartDragging "")
+        |> whenLeftMouseButtonPressed
+
+
+ignoreDefaults : VirtualDom.Options
+ignoreDefaults =
+    VirtualDom.Options True True
+
+
+whenLeftMouseButtonPressed : Decoder a -> Decoder a
 whenLeftMouseButtonPressed decoder =
-    Json.Decode.field "button" Json.Decode.int
-        |> Json.Decode.andThen
+    Decode.field "button" Decode.int
+        |> Decode.andThen
             (\button ->
                 case button of
                     -- https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-MouseEvent
@@ -143,7 +161,7 @@ whenLeftMouseButtonPressed decoder =
                         decoder
 
                     _ ->
-                        Json.Decode.fail "Event is only relevant when the main mouse button was pressed."
+                        Decode.fail "Event is only relevant when the main mouse button was pressed."
             )
 
 

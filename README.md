@@ -161,3 +161,34 @@ dragConfig =
 ```
 
 There is actually [an example right for this use-case](https://github.com/zaboco/elm-draggable/blob/master/examples/PanAndZoomExample.elm)
+
+#### Custom mouse trigger
+There are cases when we need some additional information (e.g. mouse offset) about the `mousedown` event which triggers the drag. For these cases, there is an advanced `customMouseTrigger` which also takes a JSON `Decoder` for the [`MouseEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent).
+ 
+```elm
+import Json.Decode as Decode exposing (Decoder)
+
+type Msg
+    = CustomMouseDown Draggable.Msg (Float, Float)
+--  | ...
+ 
+update msg model =
+    case msg of
+        CustomMouseDown dragMsg startPoint ->
+            { model | startPoint = startPoint }
+                |> Draggable.update dragConfig dragMsg
+
+view { scene } =
+    Svg.svg
+        [ Draggable.customMouseTrigger mouseOffsetDecoder CustomMouseDown
+--      , ...        
+        ]
+        []
+
+mouseOffsetDecoder : Decoder (Float, Float)
+mouseOffsetDecoder =
+    Decode.map2 (,)
+        (Decode.field "offsetX" Decode.float)
+        (Decode.field "offsetY" Decode.float)
+```
+[Full example](https://github.com/zaboco/elm-draggable/blob/master/examples/FreeDrawingExample.elm)
