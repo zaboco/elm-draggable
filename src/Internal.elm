@@ -3,18 +3,14 @@ module Internal exposing (..)
 import Mouse exposing (Position)
 
 
-type alias Key =
-    String
-
-
-type State
+type State a
     = NotDragging
-    | DraggingTentative Key Position
+    | DraggingTentative a Position
     | Dragging Position
 
 
-type Msg
-    = StartDragging Key Position
+type Msg a
+    = StartDragging a Position
     | DragAt Position
     | StopDragging
 
@@ -23,20 +19,20 @@ type alias Delta =
     ( Float, Float )
 
 
-type alias Config msg =
-    { onDragStart : Key -> Maybe msg
+type alias Config a msg =
+    { onDragStart : a -> Maybe msg
     , onDragBy : Delta -> Maybe msg
     , onDragEnd : Maybe msg
-    , onClick : Key -> Maybe msg
-    , onMouseDown : Key -> Maybe msg
+    , onClick : a -> Maybe msg
+    , onMouseDown : a -> Maybe msg
     }
 
 
-type alias Event msg =
-    Config msg -> Config msg
+type alias Event a msg =
+    Config a msg -> Config a msg
 
 
-defaultConfig : Config msg
+defaultConfig : Config a msg
 defaultConfig =
     { onDragStart = \_ -> Nothing
     , onDragBy = \_ -> Nothing
@@ -46,7 +42,7 @@ defaultConfig =
     }
 
 
-updateAndEmit : Config msg -> Msg -> State -> ( State, Maybe msg )
+updateAndEmit : Config a msg -> Msg a -> State a -> ( State a, Maybe msg )
 updateAndEmit config msg drag =
     case ( drag, msg ) of
         ( NotDragging, StartDragging key initialPosition ) ->
@@ -88,7 +84,7 @@ distanceTo end start =
     )
 
 
-logInvalidState : State -> Msg -> a -> a
+logInvalidState : State a -> Msg a -> b -> b
 logInvalidState drag msg result =
     let
         str =

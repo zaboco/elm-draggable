@@ -120,12 +120,12 @@ toggleBoxClicked id group =
 
 type alias Model =
     { boxGroup : BoxGroup
-    , drag : Draggable.State
+    , drag : Draggable.State Id
     }
 
 
 type Msg
-    = DragMsg Draggable.Msg
+    = DragMsg (Draggable.Msg Id)
     | OnDragBy Vec2
     | StartDragging String
     | ToggleBoxClicked String
@@ -150,7 +150,7 @@ init =
     )
 
 
-dragConfig : Draggable.Config Msg
+dragConfig : Draggable.Config Id Msg
 dragConfig =
     Draggable.customConfig
         [ onDragBy (Vector2.fromTuple >> OnDragBy)

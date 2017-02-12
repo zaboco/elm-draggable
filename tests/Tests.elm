@@ -4,7 +4,7 @@ import Fuzz exposing (Fuzzer)
 import Mouse exposing (Position)
 import Test exposing (..)
 import Expect as Should exposing (Expectation)
-import Internal exposing (Delta, Key, Msg(..), State(..))
+import Internal exposing (Delta, Msg(..), State(..))
 
 
 all : Test
@@ -18,19 +18,24 @@ all =
         ]
 
 
-type EmitMsg
-    = OnDragStart Key
+type Key
+    = Key String
+
+
+type EmitMsg a
+    = OnDragStart a
     | OnDragBy Delta
     | OnDragEnd
-    | OnClick Key
-    | OnMouseDown Key
+    | OnClick a
+    | OnMouseDown a
 
 
+updateWithEvents : Msg a -> State a -> ( State a, Maybe (EmitMsg a) )
 updateWithEvents =
     Internal.updateAndEmit fullConfig
 
 
-fullConfig : Internal.Config EmitMsg
+fullConfig : Internal.Config a (EmitMsg a)
 fullConfig =
     { onDragStart = Just << OnDragStart
     , onDragBy = Just << OnDragBy
@@ -40,16 +45,17 @@ fullConfig =
     }
 
 
+defaultUpdate : Msg a -> State a -> ( State a, Maybe msg )
 defaultUpdate =
     Internal.updateAndEmit Internal.defaultConfig
 
 
-defaultKey : String
+defaultKey : Key
 defaultKey =
-    "defaultKey"
+    Key "defaultKey"
 
 
-startDragging : Position -> Msg
+startDragging : Position -> Msg Key
 startDragging =
     StartDragging defaultKey
 
@@ -145,7 +151,7 @@ positionF =
 
 keyF : Fuzzer Key
 keyF =
-    Fuzz.string
+    Fuzz.map Key Fuzz.string
 
 
 

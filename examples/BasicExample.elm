@@ -13,13 +13,13 @@ type alias Position =
 
 type alias Model =
     { xy : Position
-    , drag : Draggable.State
+    , drag : Draggable.State ()
     }
 
 
 type Msg
     = OnDragBy Draggable.Delta
-    | DragMsg Draggable.Msg
+    | DragMsg (Draggable.Msg ())
 
 
 main : Program Never Model Msg
@@ -39,7 +39,7 @@ init =
     )
 
 
-dragConfig : Draggable.Config Msg
+dragConfig : Draggable.Config () Msg
 dragConfig =
     Draggable.basicConfig OnDragBy
 
@@ -77,7 +77,7 @@ view { xy } =
     in
         Html.div
             [ A.style style
-            , Draggable.mouseTrigger "" DragMsg
+            , Draggable.mouseTrigger () DragMsg
             ]
             [ Html.text "Drag me" ]
 
