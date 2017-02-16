@@ -140,7 +140,7 @@ customMouseTrigger customDecoder customEnvelope =
 positionDecoder : String -> Decoder Msg
 positionDecoder key =
     Mouse.position
-        |> Decode.map (Msg << Internal.StartDragging "")
+        |> Decode.map (Msg << Internal.StartDragging key)
         |> whenLeftMouseButtonPressed
 
 
