@@ -2,7 +2,7 @@ module BasicExample exposing (..)
 
 import Html exposing (Html)
 import Html.Attributes as A
-import Draggable
+import Draggable exposing (DragEvent(DragBy))
 
 
 type alias Position =
@@ -18,47 +18,44 @@ type alias Model =
 
 
 type Msg
-    = OnDragBy Draggable.Delta
-    | DragMsg (Draggable.Msg ())
+    = UpdateDrag (Draggable.State ()) DragEvent
+    | StartDrag (Draggable.State ())
 
 
 main : Program Never Model Msg
 main =
     Html.program
-        { init = init
-        , update = update
+        { init = ( model, Cmd.none )
+        , update = \msg model -> ( update msg model, Cmd.none )
         , subscriptions = subscriptions
         , view = view
         }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { xy = Position 32 32, drag = Draggable.init }
-    , Cmd.none
-    )
+model : Model
+model =
+    { xy = Position 32 32, drag = Draggable.init }
 
 
-dragConfig : Draggable.Config () Msg
-dragConfig =
-    Draggable.basicConfig OnDragBy
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg ({ xy } as model) =
     case msg of
-        OnDragBy ( dx, dy ) ->
-            ( { model | xy = Position (xy.x + dx) (xy.y + dy) }
-            , Cmd.none
-            )
+        UpdateDrag drag (DragBy ( dx, dy )) ->
+            { model
+                | drag = drag
+                , xy = Position (xy.x + dx) (xy.y + dy)
+            }
 
-        DragMsg dragMsg ->
-            Draggable.update dragConfig dragMsg model
+        UpdateDrag drag _ ->
+            { model | drag = drag }
+
+        StartDrag dragStart ->
+            { model | drag = dragStart }
 
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.subscriptions DragMsg drag
+    Draggable.newSubscription UpdateDrag drag
 
 
 view : Model -> Html Msg
@@ -77,7 +74,7 @@ view { xy } =
     in
         Html.div
             [ A.style style
-            , Draggable.mouseTrigger () DragMsg
+            , Draggable.newMouseTrigger () StartDrag
             ]
             [ Html.text "Drag me" ]
 

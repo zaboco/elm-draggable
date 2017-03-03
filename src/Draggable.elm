@@ -5,13 +5,16 @@ module Draggable
         , Delta
         , Config
         , Event
+        , DragEvent(..)
         , basicConfig
         , customConfig
         , mouseTrigger
         , customMouseTrigger
+        , newMouseTrigger
         , init
         , update
         , subscriptions
+        , newSubscription
         )
 
 {-|
@@ -30,17 +33,17 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 @docs basicConfig, customConfig
 
 # Update
-@docs update, subscriptions
+@docs update, subscriptions, newSubscription
 
 # DOM trigger
-@docs mouseTrigger, customMouseTrigger
+@docs mouseTrigger, customMouseTrigger, newMouseTrigger
 
 # Definitions
-@docs Delta, State, Msg, Config, Event
+@docs Delta, State, Msg, Config, Event, DragEvent
 -}
 
 import Cmd.Extra
-import Internal
+import Internal exposing (State(Dragging), State(DraggingTentative), State(NotDragging))
 import Json.Decode as Decode exposing (Decoder)
 import Mouse exposing (Position)
 import VirtualDom
@@ -68,6 +71,14 @@ type Msg a
 -}
 type alias Event a msg =
     Internal.Event a msg
+
+
+{-| -}
+type DragEvent
+    = DragStart
+    | DragBy Delta
+    | DragEnd
+    | Click
 
 
 {-| Initial drag state
@@ -115,6 +126,46 @@ subscriptions envelope (State drag) =
                 |> Sub.map (envelope << Msg)
 
 
+{-| -}
+newSubscription : (State a -> DragEvent -> msg) -> State a -> Sub msg
+newSubscription moveHandler (State drag) =
+    Sub.batch
+        [ handleMoves moveHandler drag
+        , handleMouseups moveHandler drag
+        ]
+
+
+handleMoves : (State a -> DragEvent -> msg) -> Internal.State a -> Sub msg
+handleMoves moveHandler drag =
+    case drag of
+        Dragging oldPosition ->
+            Mouse.moves
+                (\newPosition ->
+                    moveHandler
+                        (State <| Dragging newPosition)
+                        (DragBy <| Internal.distanceTo newPosition oldPosition)
+                )
+
+        NotDragging ->
+            Sub.none
+
+        DraggingTentative _ oldPosition ->
+            Mouse.moves (\_ -> moveHandler (State <| Dragging oldPosition) DragStart)
+
+
+handleMouseups : (State a -> DragEvent -> msg) -> Internal.State a -> Sub msg
+handleMouseups moveHandler drag =
+    case drag of
+        NotDragging ->
+            Sub.none
+
+        DraggingTentative _ _ ->
+            Mouse.ups (\_ -> moveHandler (State NotDragging) Click)
+
+        Dragging _ ->
+            Mouse.ups (\_ -> moveHandler (State NotDragging) DragEnd)
+
+
 {-| DOM event handler to start dragging on mouse down. It requires a key for the element, in order to provide support for multiple drag targets sharing the same drag state. Of course, if only one element is draggable, it can have any value, including `()`.
 
     div [ mouseTrigger "element-id" DragMsg ] [ text "Drag me" ]
@@ -135,6 +186,14 @@ customMouseTrigger customDecoder customEnvelope =
     VirtualDom.onWithOptions "mousedown"
         ignoreDefaults
         (Decode.map2 customEnvelope (positionDecoder ()) customDecoder)
+
+
+{-| -}
+newMouseTrigger : a -> (State a -> msg) -> VirtualDom.Property msg
+newMouseTrigger key stateHandler =
+    VirtualDom.onWithOptions "mousedown"
+        ignoreDefaults
+        (Decode.map (\pos -> stateHandler <| State <| Internal.DraggingTentative key pos) Mouse.position)
 
 
 positionDecoder : a -> Decoder (Msg a)
