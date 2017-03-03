@@ -2,7 +2,7 @@ module CustomEventsExample exposing (..)
 
 import Html exposing (Html)
 import Html.Attributes as A
-import Draggable
+import Draggable exposing (DragEvent(..))
 import Draggable.Events exposing (onClick, onDragBy, onDragEnd, onDragStart)
 import Html.Events
 
@@ -23,74 +23,64 @@ type alias Model =
 
 
 type Msg
-    = OnDragBy Draggable.Delta
-    | OnDragStart
-    | OnDragEnd
-    | CountClick
-    | SetClicked Bool
-    | DragMsg (Draggable.Msg String)
+    = StartDrag (Draggable.State String)
+    | UpdateDrag (Draggable.State String) DragEvent
+    | ReleaseButton
 
 
 main : Program Never Model Msg
 main =
     Html.program
-        { init = init
-        , update = update
+        { init = ( model, Cmd.none )
+        , update = \msg model -> ( update msg model, Cmd.none )
         , subscriptions = subscriptions
         , view = view
         }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { xy = Position 32 32
-      , drag = Draggable.init
-      , clicksCount = 0
-      , isDragging = False
-      , isClicked = False
-      }
-    , Cmd.none
-    )
+model : Model
+model =
+    { xy = Position 32 32
+    , drag = Draggable.init
+    , clicksCount = 0
+    , isDragging = False
+    , isClicked = False
+    }
 
 
-dragConfig : Draggable.Config String Msg
-dragConfig =
-    Draggable.customConfig
-        [ onDragStart (\_ -> OnDragStart)
-        , onDragEnd OnDragEnd
-        , onDragBy OnDragBy
-        , onClick (\_ -> CountClick)
-        , Draggable.Events.onMouseDown (\_ -> SetClicked True)
-        ]
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg ({ xy } as model) =
     case msg of
-        OnDragBy ( dx, dy ) ->
-            ( { model | xy = Position (xy.x + dx) (xy.y + dy) }
-            , Cmd.none
-            )
+        StartDrag drag ->
+            { model | drag = drag, isClicked = True }
 
-        OnDragStart ->
-            ( { model | isDragging = True }, Cmd.none )
+        UpdateDrag drag event ->
+            { model | drag = drag }
+                |> updateOnDrag event
 
-        OnDragEnd ->
-            ( { model | isDragging = False }, Cmd.none )
+        ReleaseButton ->
+            { model | isClicked = False }
 
-        CountClick ->
-            ( { model | clicksCount = model.clicksCount + 1 }, Cmd.none )
 
-        SetClicked flag ->
-            ( { model | isClicked = flag }, Cmd.none )
+updateOnDrag : DragEvent -> Model -> Model
+updateOnDrag dragEvent ({ xy } as model) =
+    case dragEvent of
+        DragBy ( dx, dy ) ->
+            { model | xy = Position (xy.x + dx) (xy.y + dy) }
 
-        DragMsg dragMsg ->
-            Draggable.update dragConfig dragMsg model
+        DragStart ->
+            { model | isDragging = True }
+
+        DragEnd ->
+            { model | isDragging = False }
+
+        Click ->
+            { model | clicksCount = model.clicksCount + 1 }
 
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.subscriptions DragMsg drag
+    Draggable.newSubscription UpdateDrag drag
 
 
 view : Model -> Html Msg
@@ -122,8 +112,8 @@ view { xy, isDragging, isClicked, clicksCount } =
     in
         Html.div
             [ A.style style
-            , Draggable.mouseTrigger "" DragMsg
-            , Html.Events.onMouseUp (SetClicked False)
+            , Draggable.newMouseTrigger "" StartDrag
+            , Html.Events.onMouseUp ReleaseButton
             ]
             [ Html.text status
             , Html.br [] []
