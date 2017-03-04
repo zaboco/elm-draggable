@@ -1,7 +1,7 @@
 module ConstraintsExample exposing (..)
 
 import Char
-import Draggable
+import Draggable exposing (DragEvent(..))
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import Html exposing (Html)
 import Keyboard exposing (KeyCode)
@@ -12,8 +12,8 @@ import Svg.Attributes as Attr
 main : Program Never Model Msg
 main =
     Html.program
-        { init = init
-        , update = update
+        { init = ( model, Cmd.none )
+        , update = \msg model -> ( update msg model, Cmd.none )
         , subscriptions = subscriptions
         , view = view
         }
@@ -36,41 +36,46 @@ type alias Model =
 
 type Msg
     = NoOp
-    | DragMsg (Draggable.Msg String)
-    | OnDragBy Draggable.Delta
+    | StartDrag (Draggable.State String)
+    | UpdateDrag (Draggable.State String) DragEvent
     | SetDragHorizontally Bool
     | SetDragVertically Bool
-    | SetDragging Bool
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { position = Position 100 100
-      , drag = Draggable.init
-      , dragHorizontally = True
-      , dragVertically = True
-      , isDragging = False
-      }
-    , Cmd.none
-    )
+model : Model
+model =
+    { position = Position 100 100
+    , drag = Draggable.init
+    , dragHorizontally = True
+    , dragVertically = True
+    , isDragging = False
+    }
 
 
-dragConfig : Draggable.Config String Msg
-dragConfig =
-    Draggable.customConfig
-        [ onDragBy (OnDragBy)
-        , onDragStart (\_ -> SetDragging True)
-        , onDragEnd (SetDragging False)
-        ]
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({ position, dragVertically, dragHorizontally } as model) =
+update : Msg -> Model -> Model
+update msg model =
     case msg of
         NoOp ->
-            ( model, Cmd.none )
+            model
 
-        OnDragBy ( dx, dy ) ->
+        StartDrag drag ->
+            { model | drag = drag }
+
+        UpdateDrag drag event ->
+            { model | drag = drag }
+                |> updateOnDrag event
+
+        SetDragHorizontally flag ->
+            { model | dragHorizontally = flag }
+
+        SetDragVertically flag ->
+            { model | dragVertically = flag }
+
+
+updateOnDrag : DragEvent -> Model -> Model
+updateOnDrag dragEvent ({ position, dragVertically, dragHorizontally } as model) =
+    case dragEvent of
+        DragBy ( dx, dy ) ->
             let
                 ( fx, fy ) =
                     ( boolToNumber dragHorizontally
@@ -82,19 +87,16 @@ update msg ({ position, dragVertically, dragHorizontally } as model) =
                         (position.x + dx * fx)
                         (position.y + dy * fy)
             in
-                ( { model | position = newPosition }, Cmd.none )
+                { model | position = newPosition }
 
-        DragMsg dragMsg ->
-            Draggable.update dragConfig dragMsg model
+        DragStart ->
+            { model | isDragging = True }
 
-        SetDragHorizontally flag ->
-            ( { model | dragHorizontally = flag }, Cmd.none )
+        DragEnd ->
+            { model | isDragging = False }
 
-        SetDragVertically flag ->
-            ( { model | dragVertically = flag }, Cmd.none )
-
-        SetDragging flag ->
-            ( { model | isDragging = flag }, Cmd.none )
+        _ ->
+            model
 
 
 boolToNumber : Bool -> number
@@ -110,7 +112,7 @@ subscriptions { drag } =
     Sub.batch
         [ Keyboard.downs (handleKey True)
         , Keyboard.ups (handleKey False)
-        , Draggable.subscriptions DragMsg drag
+        , Draggable.newSubscription UpdateDrag drag
         ]
 
 
@@ -189,7 +191,7 @@ box position isDragging =
             , num Attr.y y
             , Attr.cursor cursor
             , Attr.fill "red"
-            , Draggable.mouseTrigger "" DragMsg
+            , Draggable.newMouseTrigger "" StartDrag
             ]
             []
 
