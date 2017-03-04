@@ -3,7 +3,6 @@ module CustomEventsExample exposing (..)
 import Html exposing (Html)
 import Html.Attributes as A
 import Draggable exposing (DragEvent(..))
-import Draggable.Events exposing (onClick, onDragBy, onDragEnd, onDragStart)
 import Html.Events
 
 

@@ -2,7 +2,7 @@ module BasicExample exposing (..)
 
 import Html exposing (Html)
 import Html.Attributes as A
-import Draggable exposing (DragEvent(DragBy))
+import Draggable
 
 
 type alias Position =
@@ -18,7 +18,7 @@ type alias Model =
 
 
 type Msg
-    = UpdateDrag (Draggable.State ()) DragEvent
+    = UpdateDrag (Draggable.State ()) Draggable.Delta
     | StartDrag (Draggable.State ())
 
 
@@ -40,14 +40,11 @@ model =
 update : Msg -> Model -> Model
 update msg ({ xy } as model) =
     case msg of
-        UpdateDrag drag (DragBy ( dx, dy )) ->
+        UpdateDrag drag ( dx, dy ) ->
             { model
                 | drag = drag
                 , xy = Position (xy.x + dx) (xy.y + dy)
             }
-
-        UpdateDrag drag _ ->
-            { model | drag = drag }
 
         StartDrag dragStart ->
             { model | drag = dragStart }
@@ -55,7 +52,7 @@ update msg ({ xy } as model) =
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.newSubscription UpdateDrag drag
+    Draggable.basicSubscription UpdateDrag drag
 
 
 view : Model -> Html Msg

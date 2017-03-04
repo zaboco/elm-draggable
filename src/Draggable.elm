@@ -15,6 +15,7 @@ module Draggable
         , update
         , subscriptions
         , newSubscription
+        , basicSubscription
         )
 
 {-|
@@ -33,7 +34,7 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 @docs basicConfig, customConfig
 
 # Update
-@docs update, subscriptions, newSubscription
+@docs update, subscriptions, newSubscription, basicSubscription
 
 # DOM trigger
 @docs mouseTrigger, customMouseTrigger, newMouseTrigger
@@ -128,11 +129,26 @@ subscriptions envelope (State drag) =
 
 {-| -}
 newSubscription : (State a -> DragEvent -> msg) -> State a -> Sub msg
-newSubscription moveHandler (State drag) =
+newSubscription dragHandler (State drag) =
     Sub.batch
-        [ handleMoves moveHandler drag
-        , handleMouseups moveHandler drag
+        [ handleMoves dragHandler drag
+        , handleMouseups dragHandler drag
         ]
+
+
+{-| -}
+basicSubscription : (State a -> Delta -> msg) -> State a -> Sub msg
+basicSubscription moveHandler =
+    let
+        dragHandler drag event =
+            case event of
+                DragBy delta ->
+                    moveHandler drag delta
+
+                _ ->
+                    moveHandler drag ( 0, 0 )
+    in
+        newSubscription dragHandler
 
 
 handleMoves : (State a -> DragEvent -> msg) -> Internal.State a -> Sub msg
