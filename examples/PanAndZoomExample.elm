@@ -3,7 +3,6 @@ module PanAndZoomExample exposing (..)
 import Draggable
 import Json.Decode as Decode
 import Html exposing (Html)
-import Html
 import Math.Vector2 as Vector2 exposing (Vec2, getX, getY)
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
@@ -13,8 +12,8 @@ import VirtualDom
 main : Program Never Model Msg
 main =
     Html.program
-        { init = init
-        , update = update
+        { init = ( model, Cmd.none )
+        , update = \msg model -> ( update msg model, Cmd.none )
         , subscriptions = subscriptions
         , view = view
         }
@@ -35,37 +34,34 @@ type alias Model =
 
 
 type Msg
-    = DragMsg (Draggable.Msg ())
-    | OnDragBy Vec2
+    = StartDrag (Draggable.State ())
+    | UpdateDragBy (Draggable.State ()) Draggable.Delta
     | Zoom Float
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { zoom = 1
-      , center = Vector2.vec2 0 0
-      , size = Size 300 300
-      , drag = Draggable.init
-      }
-    , Cmd.none
-    )
+model : Model
+model =
+    { zoom = 1
+    , center = Vector2.vec2 0 0
+    , size = Size 300 300
+    , drag = Draggable.init
+    }
 
 
-dragConfig : Draggable.Config () Msg
-dragConfig =
-    Draggable.basicConfig (OnDragBy << Vector2.fromTuple)
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg ({ center, zoom } as model) =
     case msg of
-        OnDragBy rawDelta ->
+        StartDrag drag ->
+            { model | drag = drag }
+
+        UpdateDragBy drag rawDelta ->
             let
                 delta =
                     rawDelta
+                        |> Vector2.fromTuple
                         |> Vector2.scale (-1 / zoom)
             in
-                ( { model | center = center |> Vector2.add delta }, Cmd.none )
+                { model | drag = drag, center = center |> Vector2.add delta }
 
         Zoom factor ->
             let
@@ -74,15 +70,12 @@ update msg ({ center, zoom } as model) =
                         |> (+) (factor * 0.05)
                         |> clamp 0.5 5
             in
-                ( { model | zoom = newZoom }, Cmd.none )
-
-        DragMsg dragMsg ->
-            Draggable.update dragConfig dragMsg model
+                { model | zoom = newZoom }
 
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.subscriptions DragMsg drag
+    Draggable.basicSubscription UpdateDragBy drag
 
 
 view : Model -> Html Msg
@@ -107,7 +100,7 @@ view { center, size, zoom } =
             [ num Attr.width size.width
             , num Attr.height size.height
             , handleZoom Zoom
-            , Draggable.mouseTrigger () DragMsg
+            , Draggable.newMouseTrigger () StartDrag
             ]
             [ background
             , Svg.g
