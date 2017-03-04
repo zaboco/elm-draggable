@@ -1,13 +1,11 @@
 module MultipleTargetsExample exposing (main)
 
-import Draggable
-import Draggable.Events exposing (onClick, onDragBy, onDragStart)
+import Draggable exposing (DragEvent(..))
 import Html exposing (Html)
 import Html.Attributes
 import Math.Vector2 as Vector2 exposing (Vec2, getX, getY)
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
-import Svg.Events exposing (onMouseUp)
 import Svg.Keyed
 import Svg.Lazy exposing (lazy)
 
@@ -15,8 +13,8 @@ import Svg.Lazy exposing (lazy)
 main : Program Never Model Msg
 main =
     Html.program
-        { init = init
-        , update = update
+        { init = ( model, Cmd.none )
+        , update = \msg model -> ( update msg model, Cmd.none )
         , subscriptions = subscriptions
         , view = view
         }
@@ -106,30 +104,20 @@ dragActiveBy delta group =
     { group | movingBox = group.movingBox |> Maybe.map (dragBoxBy delta) }
 
 
-toggleBoxClicked : Id -> BoxGroup -> BoxGroup
-toggleBoxClicked id group =
-    let
-        possiblyToggleBox box =
-            if box.id == id then
-                toggleClicked box
-            else
-                box
-    in
-        { group | idleBoxes = group.idleBoxes |> List.map possiblyToggleBox }
+toggleActive : BoxGroup -> BoxGroup
+toggleActive group =
+    { group | movingBox = group.movingBox |> Maybe.map toggleClicked }
 
 
 type alias Model =
     { boxGroup : BoxGroup
-    , drag : Draggable.State Id
+    , drag : Draggable.State ()
     }
 
 
 type Msg
-    = DragMsg (Draggable.Msg Id)
-    | OnDragBy Vec2
-    | StartDragging String
-    | ToggleBoxClicked String
-    | StopDragging
+    = StartDrag String (Draggable.State ())
+    | UpdateDrag (Draggable.State ()) DragEvent
 
 
 boxPositions : List Vec2
@@ -141,46 +129,46 @@ boxPositions =
         List.range 0 10 |> List.map indexToPosition
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { boxGroup = boxGroup boxPositions
-      , drag = Draggable.init
-      }
-    , Cmd.none
-    )
+model : Model
+model =
+    { boxGroup = boxGroup boxPositions
+    , drag = Draggable.init
+    }
 
 
-dragConfig : Draggable.Config Id Msg
-dragConfig =
-    Draggable.customConfig
-        [ onDragBy (Vector2.fromTuple >> OnDragBy)
-        , onDragStart StartDragging
-        , onClick ToggleBoxClicked
-        ]
+updateOnDrag : DragEvent -> Model -> Model
+updateOnDrag dragEvent ({ boxGroup } as model) =
+    case dragEvent of
+        DragBy delta ->
+            { model | boxGroup = boxGroup |> dragActiveBy (Vector2.fromTuple delta) }
+
+        Click ->
+            { model | boxGroup = boxGroup |> toggleActive |> stopDragging }
+
+        DragEnd ->
+            { model | boxGroup = boxGroup |> stopDragging }
+
+        _ ->
+            model
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg ({ boxGroup } as model) =
     case msg of
-        OnDragBy delta ->
-            ( { model | boxGroup = boxGroup |> dragActiveBy delta }, Cmd.none )
+        StartDrag id drag ->
+            { model
+                | drag = drag
+                , boxGroup = boxGroup |> startDragging id
+            }
 
-        StartDragging id ->
-            ( { model | boxGroup = boxGroup |> startDragging id }, Cmd.none )
-
-        StopDragging ->
-            ( { model | boxGroup = boxGroup |> stopDragging }, Cmd.none )
-
-        ToggleBoxClicked id ->
-            ( { model | boxGroup = boxGroup |> toggleBoxClicked id }, Cmd.none )
-
-        DragMsg dragMsg ->
-            Draggable.update dragConfig dragMsg model
+        UpdateDrag drag event ->
+            { model | drag = drag }
+                |> updateOnDrag event
 
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.subscriptions DragMsg drag
+    Draggable.newSubscription UpdateDrag drag
 
 
 
@@ -239,8 +227,7 @@ boxView { id, position, clicked } =
             , Attr.fill color
             , Attr.stroke "black"
             , Attr.cursor "move"
-            , Draggable.mouseTrigger id DragMsg
-            , onMouseUp StopDragging
+            , Draggable.newMouseTrigger () (StartDrag id)
             ]
             []
 
