@@ -1,7 +1,6 @@
 module FreeDrawingExample exposing (main)
 
 import Draggable exposing (Delta)
-import Draggable.Events exposing (onDragBy, onMouseDown)
 import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
 import Svg exposing (Svg)
@@ -26,54 +25,42 @@ type alias Position =
 
 
 type Msg
-    = DragMsg (Draggable.Msg ())
-    | StartPathAndDrag (Draggable.Msg ()) Position
-    | AddNewPointAtDelta Draggable.Delta
+    = UpdateDragBy (Draggable.State ()) Draggable.Delta
+    | StartDrag (Draggable.State ()) Position
 
 
-init : ( Model, Cmd msg )
-init =
-    ( { scene = Empty, drag = Draggable.init }, Cmd.none )
+model : Model
+model =
+    { scene = Empty, drag = Draggable.init }
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg model =
     case msg of
-        DragMsg dragMsg ->
-            Draggable.update dragConfig dragMsg model
+        StartDrag drag startPoint ->
+            { model | drag = drag, scene = Path startPoint [] }
 
-        StartPathAndDrag dragMsg startPoint ->
-            { model | scene = Path startPoint [] }
-                |> Draggable.update dragConfig dragMsg
-
-        AddNewPointAtDelta delta ->
+        UpdateDragBy drag delta ->
             case model.scene of
                 Empty ->
-                    model ! []
+                    model
 
                 Path startPoint deltasSoFar ->
-                    { model | scene = Path startPoint (delta :: deltasSoFar) } ! []
-
-
-dragConfig : Draggable.Config () Msg
-dragConfig =
-    Draggable.customConfig
-        [ onDragBy AddNewPointAtDelta
-        ]
+                    { model | drag = drag, scene = Path startPoint (delta :: deltasSoFar) }
 
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.subscriptions DragMsg drag
+    Draggable.basicSubscription UpdateDragBy drag
 
 
 view : Model -> Html Msg
 view { scene } =
     Svg.svg
-        [ Attr.style "height: 100vh; width: 100vw; margin: 100px;"
+        [ Attr.style "height: 90vh; width: 90vw; margin: 5vh 5vw;"
         , Attr.fill "none"
         , Attr.stroke "black"
-        , Draggable.customMouseTrigger mouseOffsetDecoder StartPathAndDrag
+        , Draggable.newCustomMouseTrigger mouseOffsetDecoder StartDrag
         ]
         [ background
         , sceneView scene
@@ -132,8 +119,8 @@ background =
 main : Program Never Model Msg
 main =
     Html.program
-        { init = init
-        , update = update
+        { init = ( model, Cmd.none )
+        , update = \msg model -> ( update msg model, Cmd.none )
         , subscriptions = subscriptions
         , view = view
         }

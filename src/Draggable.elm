@@ -11,6 +11,7 @@ module Draggable
         , mouseTrigger
         , customMouseTrigger
         , newMouseTrigger
+        , newCustomMouseTrigger
         , init
         , update
         , subscriptions
@@ -37,14 +38,14 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 @docs update, subscriptions, newSubscription, basicSubscription
 
 # DOM trigger
-@docs mouseTrigger, customMouseTrigger, newMouseTrigger
+@docs mouseTrigger, customMouseTrigger, newMouseTrigger, newCustomMouseTrigger
 
 # Definitions
 @docs Delta, State, Msg, Config, Event, DragEvent
 -}
 
 import Cmd.Extra
-import Internal exposing (State(Dragging), State(DraggingTentative), State(NotDragging))
+import Internal exposing (State(..))
 import Json.Decode as Decode exposing (Decoder)
 import Mouse exposing (Position)
 import VirtualDom
@@ -209,7 +210,22 @@ newMouseTrigger : a -> (State a -> msg) -> VirtualDom.Property msg
 newMouseTrigger key stateHandler =
     VirtualDom.onWithOptions "mousedown"
         ignoreDefaults
-        (Decode.map (\pos -> stateHandler <| State <| Internal.DraggingTentative key pos) Mouse.position)
+        (Decode.map stateHandler (newPositionDecoder key))
+
+
+{-| -}
+newCustomMouseTrigger : Decoder a -> (State () -> a -> msg) -> VirtualDom.Property msg
+newCustomMouseTrigger customDecoder customStateHandler =
+    VirtualDom.onWithOptions "mousedown"
+        ignoreDefaults
+        (Decode.map2 customStateHandler (newPositionDecoder ()) customDecoder)
+
+
+newPositionDecoder : a -> Decoder (State a)
+newPositionDecoder key =
+    Mouse.position
+        |> Decode.map (State << Internal.DraggingTentative key)
+        |> whenLeftMouseButtonPressed
 
 
 positionDecoder : a -> Decoder (Msg a)

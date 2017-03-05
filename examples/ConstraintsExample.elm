@@ -2,7 +2,6 @@ module ConstraintsExample exposing (..)
 
 import Char
 import Draggable exposing (DragEvent(..))
-import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import Html exposing (Html)
 import Keyboard exposing (KeyCode)
 import Svg exposing (Svg)
