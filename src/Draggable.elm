@@ -33,7 +33,6 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 @docs Delta, State, DragEvent
 -}
 
-import Internal exposing (State(..))
 import Json.Decode as Decode exposing (Decoder)
 import Mouse exposing (Position)
 import VirtualDom
@@ -48,7 +47,7 @@ type alias Delta =
 {-| Drag state to be included in model.
 -}
 type State a
-    = State (Internal.State a)
+    = State (InternalState a)
 
 
 {-| Events triggered while dragging.
@@ -58,6 +57,12 @@ type DragEvent
     | DragBy Delta
     | DragEnd
     | Click
+
+
+type InternalState a
+    = NotDragging
+    | DraggingTentative a Position
+    | Dragging Position
 
 
 {-| Initial drag state.
@@ -99,7 +104,7 @@ basicSubscriptions moveHandler =
         subscriptions dragHandler
 
 
-handleMoves : (State a -> DragEvent -> msg) -> Internal.State a -> Sub msg
+handleMoves : (State a -> DragEvent -> msg) -> InternalState a -> Sub msg
 handleMoves moveHandler drag =
     case drag of
         Dragging oldPosition ->
@@ -107,7 +112,7 @@ handleMoves moveHandler drag =
                 (\newPosition ->
                     moveHandler
                         (State <| Dragging newPosition)
-                        (DragBy <| Internal.distanceTo newPosition oldPosition)
+                        (DragBy <| distanceTo newPosition oldPosition)
                 )
 
         NotDragging ->
@@ -117,7 +122,14 @@ handleMoves moveHandler drag =
             Mouse.moves (\_ -> moveHandler (State <| Dragging oldPosition) DragStart)
 
 
-handleMouseups : (State a -> DragEvent -> msg) -> Internal.State a -> Sub msg
+distanceTo : Position -> Position -> Delta
+distanceTo end start =
+    ( toFloat (end.x - start.x)
+    , toFloat (end.y - start.y)
+    )
+
+
+handleMouseups : (State a -> DragEvent -> msg) -> InternalState a -> Sub msg
 handleMouseups moveHandler drag =
     case drag of
         NotDragging ->
