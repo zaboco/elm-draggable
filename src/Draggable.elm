@@ -47,7 +47,9 @@ type alias Delta =
 {-| Drag state to be included in model.
 -}
 type State a
-    = State (InternalState a)
+    = NotDragging
+    | DraggingTentative a Position
+    | Dragging Position
 
 
 {-| Events triggered while dragging.
@@ -59,17 +61,11 @@ type DragEvent
     | Click
 
 
-type InternalState a
-    = NotDragging
-    | DraggingTentative a Position
-    | Dragging Position
-
-
 {-| Initial drag state.
 -}
 init : State a
 init =
-    State NotDragging
+    NotDragging
 
 
 {-| Mouse subscriptions used to update the current drag state, as well
@@ -78,7 +74,7 @@ init =
     should be used instead.
 -}
 subscriptions : (State a -> DragEvent -> msg) -> State a -> Sub msg
-subscriptions dragHandler (State drag) =
+subscriptions dragHandler drag =
     Sub.batch
         [ handleMoves dragHandler drag
         , handleMouseups dragHandler drag
@@ -104,14 +100,14 @@ basicSubscriptions moveHandler =
         subscriptions dragHandler
 
 
-handleMoves : (State a -> DragEvent -> msg) -> InternalState a -> Sub msg
+handleMoves : (State a -> DragEvent -> msg) -> State a -> Sub msg
 handleMoves moveHandler drag =
     case drag of
         Dragging oldPosition ->
             Mouse.moves
                 (\newPosition ->
                     moveHandler
-                        (State <| Dragging newPosition)
+                        (Dragging newPosition)
                         (DragBy <| distanceTo newPosition oldPosition)
                 )
 
@@ -119,7 +115,7 @@ handleMoves moveHandler drag =
             Sub.none
 
         DraggingTentative _ oldPosition ->
-            Mouse.moves (\_ -> moveHandler (State <| Dragging oldPosition) DragStart)
+            Mouse.moves (\_ -> moveHandler (Dragging oldPosition) DragStart)
 
 
 distanceTo : Position -> Position -> Delta
@@ -129,17 +125,17 @@ distanceTo end start =
     )
 
 
-handleMouseups : (State a -> DragEvent -> msg) -> InternalState a -> Sub msg
+handleMouseups : (State a -> DragEvent -> msg) -> State a -> Sub msg
 handleMouseups moveHandler drag =
     case drag of
         NotDragging ->
             Sub.none
 
         DraggingTentative _ _ ->
-            Mouse.ups (\_ -> moveHandler (State NotDragging) Click)
+            Mouse.ups (\_ -> moveHandler NotDragging Click)
 
         Dragging _ ->
-            Mouse.ups (\_ -> moveHandler (State NotDragging) DragEnd)
+            Mouse.ups (\_ -> moveHandler NotDragging DragEnd)
 
 
 {-| DOM event handler to start dragging on mouse down. It requires a key for the element, in order to provide support for multiple drag targets sharing the same drag state. Of course, if only one element is draggable, it can have any value, including `()`.
@@ -167,7 +163,7 @@ customMouseTrigger customDecoder customStateHandler =
 positionDecoder : a -> Decoder (State a)
 positionDecoder key =
     Mouse.position
-        |> Decode.map (State << DraggingTentative key)
+        |> Decode.map (DraggingTentative key)
         |> whenLeftMouseButtonPressed
 
 
