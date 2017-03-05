@@ -100,7 +100,7 @@ view { center, size, zoom } =
             [ num Attr.width size.width
             , num Attr.height size.height
             , handleZoom Zoom
-            , Draggable.mouseTrigger () StartDrag
+            , Draggable.mouseTrigger StartDrag
             ]
             [ background
             , Svg.g

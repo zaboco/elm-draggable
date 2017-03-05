@@ -227,7 +227,7 @@ boxView { id, position, clicked } =
             , Attr.fill color
             , Attr.stroke "black"
             , Attr.cursor "move"
-            , Draggable.mouseTrigger () (StartDrag id)
+            , Draggable.mouseTrigger (StartDrag id)
             ]
             []
 

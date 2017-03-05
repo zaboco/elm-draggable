@@ -138,15 +138,15 @@ handleMouseups moveHandler drag =
             Mouse.ups (\_ -> moveHandler NotDragging DragEnd)
 
 
-{-| DOM event handler to start dragging on mouse down. It requires a key for the element, in order to provide support for multiple drag targets sharing the same drag state. Of course, if only one element is draggable, it can have any value, including `()`.
+{-| DOM event handler to start dragging on mouse down.
 
-    div [ mouseTrigger "element-id" StartDrag ] [ text "Drag me" ]
+    div [ mouseTrigger StartDrag ] [ text "Drag me" ]
 -}
-mouseTrigger : a -> (State -> msg) -> VirtualDom.Property msg
-mouseTrigger key stateHandler =
+mouseTrigger : (State -> msg) -> VirtualDom.Property msg
+mouseTrigger stateHandler =
     VirtualDom.onWithOptions "mousedown"
         ignoreDefaults
-        (Decode.map stateHandler (positionDecoder key))
+        (Decode.map stateHandler positionDecoder)
 
 
 {-| DOM event handler to start dragging on mouse down and also sending custom information about the `mousedown` event. It does so by using a custom `Decoder` for the [`MouseEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent).
@@ -157,11 +157,11 @@ customMouseTrigger : Decoder a -> (State -> a -> msg) -> VirtualDom.Property msg
 customMouseTrigger customDecoder customStateHandler =
     VirtualDom.onWithOptions "mousedown"
         ignoreDefaults
-        (Decode.map2 customStateHandler (positionDecoder ()) customDecoder)
+        (Decode.map2 customStateHandler positionDecoder customDecoder)
 
 
-positionDecoder : a -> Decoder State
-positionDecoder key =
+positionDecoder : Decoder State
+positionDecoder =
     Mouse.position
         |> Decode.map DraggingTentative
         |> whenLeftMouseButtonPressed
