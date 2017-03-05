@@ -8,7 +8,7 @@ NC='\033[0m'
 echo Compiling main library
 echo ======================
 
-elm-make --warn --yes --docs documentation.json
+elm-make --warn --yes --docs /dev/null
 ((status+=$?))
 
 echo
@@ -18,7 +18,7 @@ echo ======================
 cd examples
 for f in *.elm; do
     echo "$f:"
-    elm-make --warn --yes $f
+    elm-make --warn --yes $f --output /dev/null
     ((status+=$?))
     echo
 done
