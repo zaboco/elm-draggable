@@ -18,8 +18,8 @@ type alias Model =
 
 
 type Msg
-    = UpdateDrag Draggable.State Draggable.Delta
-    | StartDrag Draggable.State
+    = TriggerDrag Draggable.State
+    | UpdateDragBy Draggable.State Draggable.Delta
 
 
 main : Program Never Model Msg
@@ -40,19 +40,19 @@ model =
 update : Msg -> Model -> Model
 update msg ({ xy } as model) =
     case msg of
-        UpdateDrag drag ( dx, dy ) ->
+        TriggerDrag drag ->
+            { model | drag = drag }
+
+        UpdateDragBy drag ( dx, dy ) ->
             { model
                 | drag = drag
                 , xy = Position (xy.x + dx) (xy.y + dy)
             }
 
-        StartDrag dragStart ->
-            { model | drag = dragStart }
-
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.basicSubscriptions UpdateDrag drag
+    Draggable.subscriptions UpdateDragBy drag
 
 
 view : Model -> Html Msg
@@ -71,7 +71,7 @@ view { xy } =
     in
         Html.div
             [ A.style style
-            , Draggable.mouseTrigger StartDrag
+            , Draggable.mouseTrigger TriggerDrag
             ]
             [ Html.text "Drag me" ]
 

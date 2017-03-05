@@ -22,7 +22,7 @@ type alias Model =
 
 
 type Msg
-    = StartDrag Draggable.State
+    = TriggerDrag Draggable.State
     | UpdateDrag Draggable.State DragEvent
     | ReleaseButton
 
@@ -48,9 +48,9 @@ model =
 
 
 update : Msg -> Model -> Model
-update msg ({ xy } as model) =
+update msg model =
     case msg of
-        StartDrag drag ->
+        TriggerDrag drag ->
             { model | drag = drag, isClicked = True }
 
         UpdateDrag drag event ->
@@ -79,7 +79,7 @@ updateOnDrag dragEvent ({ xy } as model) =
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.subscriptions UpdateDrag drag
+    Draggable.eventSubscriptions UpdateDrag drag
 
 
 view : Model -> Html Msg
@@ -111,7 +111,7 @@ view { xy, isDragging, isClicked, clicksCount } =
     in
         Html.div
             [ A.style style
-            , Draggable.mouseTrigger StartDrag
+            , Draggable.mouseTrigger TriggerDrag
             , Html.Events.onMouseUp ReleaseButton
             ]
             [ Html.text status

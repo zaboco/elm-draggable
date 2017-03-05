@@ -6,8 +6,8 @@ module Draggable
         , mouseTrigger
         , customMouseTrigger
         , init
+        , eventSubscriptions
         , subscriptions
-        , basicSubscriptions
         )
 
 {-|
@@ -24,7 +24,7 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 
 
 # Update
-@docs subscriptions, basicSubscriptions
+@docs subscriptions, eventSubscriptions
 
 # DOM trigger
 @docs mouseTrigger, customMouseTrigger
@@ -73,8 +73,8 @@ init =
     related to dragging are needed, [`subscriptions`](#subscriptions)
     should be used instead.
 -}
-basicSubscriptions : (State -> Delta -> msg) -> State -> Sub msg
-basicSubscriptions moveHandler =
+subscriptions : (State -> Delta -> msg) -> State -> Sub msg
+subscriptions moveHandler =
     let
         dragHandler drag event =
             case event of
@@ -84,16 +84,16 @@ basicSubscriptions moveHandler =
                 _ ->
                     moveHandler drag ( 0, 0 )
     in
-        subscriptions dragHandler
+        eventSubscriptions dragHandler
 
 
 {-| Mouse subscriptions used to update the current drag state, as well
     as to handle the [`DragEvent`s](#DragEvent). If no events other than
-    `DragBy` are needed, [`basicSubscriptions`](#basicSubscriptions)
+    `DragBy` are needed, [`subscriptions`](#subscriptions)
     should be used instead.
 -}
-subscriptions : (State -> DragEvent -> msg) -> State -> Sub msg
-subscriptions dragHandler drag =
+eventSubscriptions : (State -> DragEvent -> msg) -> State -> Sub msg
+eventSubscriptions dragHandler drag =
     Sub.batch
         [ handleMouseMoves dragHandler drag
         , handleMouseUps dragHandler drag
@@ -140,7 +140,7 @@ handleMouseUps moveHandler drag =
 
 {-| DOM event handler to start dragging on mouse down.
 
-    div [ mouseTrigger StartDrag ] [ text "Drag me" ]
+    div [ mouseTrigger TriggerDrag ] [ text "Drag me" ]
 -}
 mouseTrigger : (State -> msg) -> VirtualDom.Property msg
 mouseTrigger stateHandler =
@@ -151,7 +151,7 @@ mouseTrigger stateHandler =
 
 {-| DOM event handler to start dragging on mouse down and also sending custom information about the `mousedown` event. It does so by using a custom `Decoder` for the [`MouseEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent).
 
-    div [ customMouseTrigger offsetDecoder StartDrag ] [ text "Drag me" ]
+    div [ customMouseTrigger offsetDecoder TriggerDrag ] [ text "Drag me" ]
 -}
 customMouseTrigger : Decoder a -> (State -> a -> msg) -> VirtualDom.Property msg
 customMouseTrigger customDecoder customStateHandler =

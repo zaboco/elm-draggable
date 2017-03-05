@@ -48,7 +48,7 @@ toggleClicked box =
 
 type alias BoxGroup =
     { uid : Int
-    , movingBox : Maybe Box
+    , activeBox : Maybe Box
     , idleBoxes : List Box
     }
 
@@ -73,40 +73,40 @@ boxGroup positions =
 
 
 allBoxes : BoxGroup -> List Box
-allBoxes { movingBox, idleBoxes } =
-    movingBox
+allBoxes { activeBox, idleBoxes } =
+    activeBox
         |> Maybe.map (flip (::) idleBoxes)
         |> Maybe.withDefault idleBoxes
 
 
-startDragging : Id -> BoxGroup -> BoxGroup
-startDragging id ({ idleBoxes, movingBox } as group) =
+setActive : Id -> BoxGroup -> BoxGroup
+setActive id ({ idleBoxes, activeBox } as group) =
     let
         ( targetAsList, others ) =
             List.partition (.id >> ((==) id)) idleBoxes
     in
         { group
             | idleBoxes = others
-            , movingBox = targetAsList |> List.head
+            , activeBox = targetAsList |> List.head
         }
 
 
-stopDragging : BoxGroup -> BoxGroup
-stopDragging group =
+resetActive : BoxGroup -> BoxGroup
+resetActive group =
     { group
         | idleBoxes = allBoxes group
-        , movingBox = Nothing
+        , activeBox = Nothing
     }
 
 
 dragActiveBy : Vec2 -> BoxGroup -> BoxGroup
 dragActiveBy delta group =
-    { group | movingBox = group.movingBox |> Maybe.map (dragBoxBy delta) }
+    { group | activeBox = group.activeBox |> Maybe.map (dragBoxBy delta) }
 
 
 toggleActive : BoxGroup -> BoxGroup
 toggleActive group =
-    { group | movingBox = group.movingBox |> Maybe.map toggleClicked }
+    { group | activeBox = group.activeBox |> Maybe.map toggleClicked }
 
 
 type alias Model =
@@ -116,7 +116,7 @@ type alias Model =
 
 
 type Msg
-    = StartDrag String Draggable.State
+    = TriggerDrag Id Draggable.State
     | UpdateDrag Draggable.State DragEvent
 
 
@@ -136,29 +136,13 @@ model =
     }
 
 
-updateOnDrag : DragEvent -> Model -> Model
-updateOnDrag dragEvent ({ boxGroup } as model) =
-    case dragEvent of
-        DragBy delta ->
-            { model | boxGroup = boxGroup |> dragActiveBy (Vector2.fromTuple delta) }
-
-        Click ->
-            { model | boxGroup = boxGroup |> toggleActive |> stopDragging }
-
-        DragEnd ->
-            { model | boxGroup = boxGroup |> stopDragging }
-
-        _ ->
-            model
-
-
 update : Msg -> Model -> Model
 update msg ({ boxGroup } as model) =
     case msg of
-        StartDrag id drag ->
+        TriggerDrag id drag ->
             { model
                 | drag = drag
-                , boxGroup = boxGroup |> startDragging id
+                , boxGroup = boxGroup |> setActive id
             }
 
         UpdateDrag drag event ->
@@ -166,9 +150,25 @@ update msg ({ boxGroup } as model) =
                 |> updateOnDrag event
 
 
+updateOnDrag : DragEvent -> Model -> Model
+updateOnDrag dragEvent ({ boxGroup } as model) =
+    case dragEvent of
+        DragBy delta ->
+            { model | boxGroup = boxGroup |> dragActiveBy (Vector2.fromTuple delta) }
+
+        Click ->
+            { model | boxGroup = boxGroup |> toggleActive |> resetActive }
+
+        DragEnd ->
+            { model | boxGroup = boxGroup |> resetActive }
+
+        _ ->
+            model
+
+
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.subscriptions UpdateDrag drag
+    Draggable.eventSubscriptions UpdateDrag drag
 
 
 
@@ -205,7 +205,7 @@ boxesView boxGroup =
         |> Svg.Keyed.node "g" []
 
 
-boxKeyedView : Box -> ( String, Svg Msg )
+boxKeyedView : Box -> ( Id, Svg Msg )
 boxKeyedView box =
     ( box.id, lazy boxView box )
 
@@ -227,7 +227,7 @@ boxView { id, position, clicked } =
             , Attr.fill color
             , Attr.stroke "black"
             , Attr.cursor "move"
-            , Draggable.mouseTrigger (StartDrag id)
+            , Draggable.mouseTrigger (TriggerDrag id)
             ]
             []
 

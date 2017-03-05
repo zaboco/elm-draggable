@@ -35,7 +35,7 @@ type alias Model =
 
 type Msg
     = NoOp
-    | StartDrag Draggable.State
+    | TriggerDrag Draggable.State
     | UpdateDrag Draggable.State DragEvent
     | SetDragHorizontally Bool
     | SetDragVertically Bool
@@ -57,7 +57,7 @@ update msg model =
         NoOp ->
             model
 
-        StartDrag drag ->
+        TriggerDrag drag ->
             { model | drag = drag }
 
         UpdateDrag drag event ->
@@ -111,7 +111,7 @@ subscriptions { drag } =
     Sub.batch
         [ Keyboard.downs (handleKey True)
         , Keyboard.ups (handleKey False)
-        , Draggable.subscriptions UpdateDrag drag
+        , Draggable.eventSubscriptions UpdateDrag drag
         ]
 
 
@@ -190,7 +190,7 @@ box position isDragging =
             , num Attr.y y
             , Attr.cursor cursor
             , Attr.fill "red"
-            , Draggable.mouseTrigger StartDrag
+            , Draggable.mouseTrigger TriggerDrag
             ]
             []
 

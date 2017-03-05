@@ -25,8 +25,8 @@ type alias Position =
 
 
 type Msg
-    = UpdateDragBy Draggable.State Draggable.Delta
-    | StartDrag Draggable.State Position
+    = TriggerDrag Draggable.State Position
+    | UpdateDragBy Draggable.State Draggable.Delta
 
 
 model : Model
@@ -37,7 +37,7 @@ model =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        StartDrag drag startPoint ->
+        TriggerDrag drag startPoint ->
             { model | drag = drag, scene = Path startPoint [] }
 
         UpdateDragBy drag delta ->
@@ -51,7 +51,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.basicSubscriptions UpdateDragBy drag
+    Draggable.subscriptions UpdateDragBy drag
 
 
 view : Model -> Html Msg
@@ -60,7 +60,7 @@ view { scene } =
         [ Attr.style "height: 90vh; width: 90vw; margin: 5vh 5vw;"
         , Attr.fill "none"
         , Attr.stroke "black"
-        , Draggable.customMouseTrigger mouseOffsetDecoder StartDrag
+        , Draggable.customMouseTrigger mouseOffsetDecoder TriggerDrag
         ]
         [ background
         , sceneView scene
