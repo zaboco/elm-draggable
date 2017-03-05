@@ -9,7 +9,7 @@ import Svg.Attributes as Attr
 
 type alias Model =
     { scene : Scene
-    , drag : Draggable.State ()
+    , drag : Draggable.State
     }
 
 
@@ -25,8 +25,8 @@ type alias Position =
 
 
 type Msg
-    = UpdateDragBy (Draggable.State ()) Draggable.Delta
-    | StartDrag (Draggable.State ()) Position
+    = UpdateDragBy Draggable.State Draggable.Delta
+    | StartDrag Draggable.State Position
 
 
 model : Model

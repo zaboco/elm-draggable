@@ -26,7 +26,7 @@ type alias Position =
 
 type alias Model =
     { position : Position
-    , drag : Draggable.State String
+    , drag : Draggable.State
     , dragHorizontally : Bool
     , dragVertically : Bool
     , isDragging : Bool
@@ -35,8 +35,8 @@ type alias Model =
 
 type Msg
     = NoOp
-    | StartDrag (Draggable.State String)
-    | UpdateDrag (Draggable.State String) DragEvent
+    | StartDrag Draggable.State
+    | UpdateDrag Draggable.State DragEvent
     | SetDragHorizontally Bool
     | SetDragVertically Bool
 

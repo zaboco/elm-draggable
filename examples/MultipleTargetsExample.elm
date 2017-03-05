@@ -111,13 +111,13 @@ toggleActive group =
 
 type alias Model =
     { boxGroup : BoxGroup
-    , drag : Draggable.State ()
+    , drag : Draggable.State
     }
 
 
 type Msg
-    = StartDrag String (Draggable.State ())
-    | UpdateDrag (Draggable.State ()) DragEvent
+    = StartDrag String Draggable.State
+    | UpdateDrag Draggable.State DragEvent
 
 
 boxPositions : List Vec2

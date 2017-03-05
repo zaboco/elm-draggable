@@ -29,13 +29,13 @@ type alias Model =
     { zoom : Float
     , center : Vec2
     , size : Size Float
-    , drag : Draggable.State ()
+    , drag : Draggable.State
     }
 
 
 type Msg
-    = StartDrag (Draggable.State ())
-    | UpdateDragBy (Draggable.State ()) Draggable.Delta
+    = StartDrag Draggable.State
+    | UpdateDragBy Draggable.State Draggable.Delta
     | Zoom Float
 
 

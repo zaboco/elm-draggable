@@ -17,13 +17,13 @@ type alias Model =
     , clicksCount : Int
     , isDragging : Bool
     , isClicked : Bool
-    , drag : Draggable.State String
+    , drag : Draggable.State
     }
 
 
 type Msg
-    = StartDrag (Draggable.State String)
-    | UpdateDrag (Draggable.State String) DragEvent
+    = StartDrag Draggable.State
+    | UpdateDrag Draggable.State DragEvent
     | ReleaseButton
 
 

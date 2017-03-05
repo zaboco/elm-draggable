@@ -46,9 +46,9 @@ type alias Delta =
 
 {-| Drag state to be included in model.
 -}
-type State a
+type State
     = NotDragging
-    | DraggingTentative a Position
+    | DraggingTentative Position
     | Dragging Position
 
 
@@ -63,7 +63,7 @@ type DragEvent
 
 {-| Initial drag state.
 -}
-init : State a
+init : State
 init =
     NotDragging
 
@@ -73,7 +73,7 @@ init =
     `DragBy` are needed, [`basicSubscriptions`](#basicSubscriptions)
     should be used instead.
 -}
-subscriptions : (State a -> DragEvent -> msg) -> State a -> Sub msg
+subscriptions : (State -> DragEvent -> msg) -> State -> Sub msg
 subscriptions dragHandler drag =
     Sub.batch
         [ handleMoves dragHandler drag
@@ -86,7 +86,7 @@ subscriptions dragHandler drag =
     related to dragging are needed, [`subscriptions`](#subscriptions)
     should be used instead.
 -}
-basicSubscriptions : (State a -> Delta -> msg) -> State a -> Sub msg
+basicSubscriptions : (State -> Delta -> msg) -> State -> Sub msg
 basicSubscriptions moveHandler =
     let
         dragHandler drag event =
@@ -100,7 +100,7 @@ basicSubscriptions moveHandler =
         subscriptions dragHandler
 
 
-handleMoves : (State a -> DragEvent -> msg) -> State a -> Sub msg
+handleMoves : (State -> DragEvent -> msg) -> State -> Sub msg
 handleMoves moveHandler drag =
     case drag of
         Dragging oldPosition ->
@@ -114,7 +114,7 @@ handleMoves moveHandler drag =
         NotDragging ->
             Sub.none
 
-        DraggingTentative _ oldPosition ->
+        DraggingTentative oldPosition ->
             Mouse.moves (\_ -> moveHandler (Dragging oldPosition) DragStart)
 
 
@@ -125,13 +125,13 @@ distanceTo end start =
     )
 
 
-handleMouseups : (State a -> DragEvent -> msg) -> State a -> Sub msg
+handleMouseups : (State -> DragEvent -> msg) -> State -> Sub msg
 handleMouseups moveHandler drag =
     case drag of
         NotDragging ->
             Sub.none
 
-        DraggingTentative _ _ ->
+        DraggingTentative _ ->
             Mouse.ups (\_ -> moveHandler NotDragging Click)
 
         Dragging _ ->
@@ -142,7 +142,7 @@ handleMouseups moveHandler drag =
 
     div [ mouseTrigger "element-id" StartDrag ] [ text "Drag me" ]
 -}
-mouseTrigger : a -> (State a -> msg) -> VirtualDom.Property msg
+mouseTrigger : a -> (State -> msg) -> VirtualDom.Property msg
 mouseTrigger key stateHandler =
     VirtualDom.onWithOptions "mousedown"
         ignoreDefaults
@@ -153,17 +153,17 @@ mouseTrigger key stateHandler =
 
     div [ customMouseTrigger offsetDecoder StartDrag ] [ text "Drag me" ]
 -}
-customMouseTrigger : Decoder a -> (State () -> a -> msg) -> VirtualDom.Property msg
+customMouseTrigger : Decoder a -> (State -> a -> msg) -> VirtualDom.Property msg
 customMouseTrigger customDecoder customStateHandler =
     VirtualDom.onWithOptions "mousedown"
         ignoreDefaults
         (Decode.map2 customStateHandler (positionDecoder ()) customDecoder)
 
 
-positionDecoder : a -> Decoder (State a)
+positionDecoder : a -> Decoder State
 positionDecoder key =
     Mouse.position
-        |> Decode.map (DraggingTentative key)
+        |> Decode.map DraggingTentative
         |> whenLeftMouseButtonPressed
 
 

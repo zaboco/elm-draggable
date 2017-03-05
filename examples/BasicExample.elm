@@ -13,13 +13,13 @@ type alias Position =
 
 type alias Model =
     { xy : Position
-    , drag : Draggable.State ()
+    , drag : Draggable.State
     }
 
 
 type Msg
-    = UpdateDrag (Draggable.State ()) Draggable.Delta
-    | StartDrag (Draggable.State ())
+    = UpdateDrag Draggable.State Draggable.Delta
+    | StartDrag Draggable.State
 
 
 main : Program Never Model Msg
