@@ -111,7 +111,7 @@ subscriptions { drag } =
     Sub.batch
         [ Keyboard.downs (handleKey True)
         , Keyboard.ups (handleKey False)
-        , Draggable.newSubscription UpdateDrag drag
+        , Draggable.subscriptions UpdateDrag drag
         ]
 
 
@@ -190,7 +190,7 @@ box position isDragging =
             , num Attr.y y
             , Attr.cursor cursor
             , Attr.fill "red"
-            , Draggable.newMouseTrigger "" StartDrag
+            , Draggable.mouseTrigger "" StartDrag
             ]
             []
 

@@ -3,11 +3,11 @@ module Draggable
         ( State
         , Delta
         , DragEvent(..)
-        , newMouseTrigger
-        , newCustomMouseTrigger
+        , mouseTrigger
+        , customMouseTrigger
         , init
-        , newSubscription
-        , basicSubscription
+        , subscriptions
+        , basicSubscriptions
         )
 
 {-|
@@ -24,10 +24,10 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 
 
 # Update
-@docs newSubscription, basicSubscription
+@docs subscriptions, basicSubscriptions
 
 # DOM trigger
-@docs newMouseTrigger, newCustomMouseTrigger
+@docs mouseTrigger, customMouseTrigger
 
 # Definitions
 @docs Delta, State, DragEvent
@@ -51,7 +51,8 @@ type State a
     = State (Internal.State a)
 
 
-{-| -}
+{-| Events triggered while dragging.
+-}
 type DragEvent
     = DragStart
     | DragBy Delta
@@ -59,26 +60,33 @@ type DragEvent
     | Click
 
 
-{-| Initial drag state
+{-| Initial drag state.
 -}
 init : State a
 init =
-    State Internal.NotDragging
+    State NotDragging
 
 
-{-| Handle mouse subscriptions used for dragging
+{-| Mouse subscriptions used to update the current drag state, as well
+    as to handle the [`DragEvent`s](#DragEvent). If no events other than
+    `DragBy` are needed, [`basicSubscriptions`](#basicSubscriptions)
+    should be used instead.
 -}
-newSubscription : (State a -> DragEvent -> msg) -> State a -> Sub msg
-newSubscription dragHandler (State drag) =
+subscriptions : (State a -> DragEvent -> msg) -> State a -> Sub msg
+subscriptions dragHandler (State drag) =
     Sub.batch
         [ handleMoves dragHandler drag
         , handleMouseups dragHandler drag
         ]
 
 
-{-| -}
-basicSubscription : (State a -> Delta -> msg) -> State a -> Sub msg
-basicSubscription moveHandler =
+{-| Mouse subscriptions used to update the current drag state, as well
+    as to change state according to the last drag delta. If other events
+    related to dragging are needed, [`subscriptions`](#subscriptions)
+    should be used instead.
+-}
+basicSubscriptions : (State a -> Delta -> msg) -> State a -> Sub msg
+basicSubscriptions moveHandler =
     let
         dragHandler drag event =
             case event of
@@ -88,7 +96,7 @@ basicSubscription moveHandler =
                 _ ->
                     moveHandler drag ( 0, 0 )
     in
-        newSubscription dragHandler
+        subscriptions dragHandler
 
 
 handleMoves : (State a -> DragEvent -> msg) -> Internal.State a -> Sub msg
@@ -124,30 +132,30 @@ handleMouseups moveHandler drag =
 
 {-| DOM event handler to start dragging on mouse down. It requires a key for the element, in order to provide support for multiple drag targets sharing the same drag state. Of course, if only one element is draggable, it can have any value, including `()`.
 
-    div [ mouseTrigger "element-id" DragMsg ] [ text "Drag me" ]
+    div [ mouseTrigger "element-id" StartDrag ] [ text "Drag me" ]
 -}
-newMouseTrigger : a -> (State a -> msg) -> VirtualDom.Property msg
-newMouseTrigger key stateHandler =
+mouseTrigger : a -> (State a -> msg) -> VirtualDom.Property msg
+mouseTrigger key stateHandler =
     VirtualDom.onWithOptions "mousedown"
         ignoreDefaults
-        (Decode.map stateHandler (newPositionDecoder key))
+        (Decode.map stateHandler (positionDecoder key))
 
 
 {-| DOM event handler to start dragging on mouse down and also sending custom information about the `mousedown` event. It does so by using a custom `Decoder` for the [`MouseEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent).
 
-    div [ mouseTrigger offsetDecoder CustomDragMsg ] [ text "Drag me" ]
+    div [ customMouseTrigger offsetDecoder StartDrag ] [ text "Drag me" ]
 -}
-newCustomMouseTrigger : Decoder a -> (State () -> a -> msg) -> VirtualDom.Property msg
-newCustomMouseTrigger customDecoder customStateHandler =
+customMouseTrigger : Decoder a -> (State () -> a -> msg) -> VirtualDom.Property msg
+customMouseTrigger customDecoder customStateHandler =
     VirtualDom.onWithOptions "mousedown"
         ignoreDefaults
-        (Decode.map2 customStateHandler (newPositionDecoder ()) customDecoder)
+        (Decode.map2 customStateHandler (positionDecoder ()) customDecoder)
 
 
-newPositionDecoder : a -> Decoder (State a)
-newPositionDecoder key =
+positionDecoder : a -> Decoder (State a)
+positionDecoder key =
     Mouse.position
-        |> Decode.map (State << Internal.DraggingTentative key)
+        |> Decode.map (State << DraggingTentative key)
         |> whenLeftMouseButtonPressed
 
 

@@ -51,7 +51,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.basicSubscription UpdateDragBy drag
+    Draggable.basicSubscriptions UpdateDragBy drag
 
 
 view : Model -> Html Msg
@@ -60,7 +60,7 @@ view { scene } =
         [ Attr.style "height: 90vh; width: 90vw; margin: 5vh 5vw;"
         , Attr.fill "none"
         , Attr.stroke "black"
-        , Draggable.newCustomMouseTrigger mouseOffsetDecoder StartDrag
+        , Draggable.customMouseTrigger mouseOffsetDecoder StartDrag
         ]
         [ background
         , sceneView scene

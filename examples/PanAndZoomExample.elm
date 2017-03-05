@@ -75,7 +75,7 @@ update msg ({ center, zoom } as model) =
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.basicSubscription UpdateDragBy drag
+    Draggable.basicSubscriptions UpdateDragBy drag
 
 
 view : Model -> Html Msg
@@ -100,7 +100,7 @@ view { center, size, zoom } =
             [ num Attr.width size.width
             , num Attr.height size.height
             , handleZoom Zoom
-            , Draggable.newMouseTrigger () StartDrag
+            , Draggable.mouseTrigger () StartDrag
             ]
             [ background
             , Svg.g

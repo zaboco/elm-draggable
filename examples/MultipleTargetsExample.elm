@@ -168,7 +168,7 @@ update msg ({ boxGroup } as model) =
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.newSubscription UpdateDrag drag
+    Draggable.subscriptions UpdateDrag drag
 
 
 
@@ -227,7 +227,7 @@ boxView { id, position, clicked } =
             , Attr.fill color
             , Attr.stroke "black"
             , Attr.cursor "move"
-            , Draggable.newMouseTrigger () (StartDrag id)
+            , Draggable.mouseTrigger () (StartDrag id)
             ]
             []
 

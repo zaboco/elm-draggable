@@ -79,7 +79,7 @@ updateOnDrag dragEvent ({ xy } as model) =
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.newSubscription UpdateDrag drag
+    Draggable.subscriptions UpdateDrag drag
 
 
 view : Model -> Html Msg
@@ -111,7 +111,7 @@ view { xy, isDragging, isClicked, clicksCount } =
     in
         Html.div
             [ A.style style
-            , Draggable.newMouseTrigger "" StartDrag
+            , Draggable.mouseTrigger "" StartDrag
             , Html.Events.onMouseUp ReleaseButton
             ]
             [ Html.text status

@@ -52,7 +52,7 @@ update msg ({ xy } as model) =
 
 subscriptions : Model -> Sub Msg
 subscriptions { drag } =
-    Draggable.basicSubscription UpdateDrag drag
+    Draggable.basicSubscriptions UpdateDrag drag
 
 
 view : Model -> Html Msg
@@ -71,7 +71,7 @@ view { xy } =
     in
         Html.div
             [ A.style style
-            , Draggable.newMouseTrigger () StartDrag
+            , Draggable.mouseTrigger () StartDrag
             ]
             [ Html.text "Drag me" ]
 
