@@ -69,19 +69,6 @@ init =
 
 
 {-| Mouse subscriptions used to update the current drag state, as well
-    as to handle the [`DragEvent`s](#DragEvent). If no events other than
-    `DragBy` are needed, [`basicSubscriptions`](#basicSubscriptions)
-    should be used instead.
--}
-subscriptions : (State -> DragEvent -> msg) -> State -> Sub msg
-subscriptions dragHandler drag =
-    Sub.batch
-        [ handleMoves dragHandler drag
-        , handleMouseups dragHandler drag
-        ]
-
-
-{-| Mouse subscriptions used to update the current drag state, as well
     as to change state according to the last drag delta. If other events
     related to dragging are needed, [`subscriptions`](#subscriptions)
     should be used instead.
@@ -100,9 +87,28 @@ basicSubscriptions moveHandler =
         subscriptions dragHandler
 
 
-handleMoves : (State -> DragEvent -> msg) -> State -> Sub msg
-handleMoves moveHandler drag =
+{-| Mouse subscriptions used to update the current drag state, as well
+    as to handle the [`DragEvent`s](#DragEvent). If no events other than
+    `DragBy` are needed, [`basicSubscriptions`](#basicSubscriptions)
+    should be used instead.
+-}
+subscriptions : (State -> DragEvent -> msg) -> State -> Sub msg
+subscriptions dragHandler drag =
+    Sub.batch
+        [ handleMouseMoves dragHandler drag
+        , handleMouseUps dragHandler drag
+        ]
+
+
+handleMouseMoves : (State -> DragEvent -> msg) -> State -> Sub msg
+handleMouseMoves moveHandler drag =
     case drag of
+        NotDragging ->
+            Sub.none
+
+        DraggingTentative oldPosition ->
+            Mouse.moves (\_ -> moveHandler (Dragging oldPosition) DragStart)
+
         Dragging oldPosition ->
             Mouse.moves
                 (\newPosition ->
@@ -110,12 +116,6 @@ handleMoves moveHandler drag =
                         (Dragging newPosition)
                         (DragBy <| distanceTo newPosition oldPosition)
                 )
-
-        NotDragging ->
-            Sub.none
-
-        DraggingTentative oldPosition ->
-            Mouse.moves (\_ -> moveHandler (Dragging oldPosition) DragStart)
 
 
 distanceTo : Position -> Position -> Delta
@@ -125,8 +125,8 @@ distanceTo end start =
     )
 
 
-handleMouseups : (State -> DragEvent -> msg) -> State -> Sub msg
-handleMouseups moveHandler drag =
+handleMouseUps : (State -> DragEvent -> msg) -> State -> Sub msg
+handleMouseUps moveHandler drag =
     case drag of
         NotDragging ->
             Sub.none
