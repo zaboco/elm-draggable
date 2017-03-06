@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "chai": "^3.5.0",
+    "chai-dom": "^1.4.3",
+    "jsdom": "^9.11.0",
+    "mocha": "^3.2.0",
+    "node-elm-compiler": "https://github.com/rtfeldman/node-elm-compiler.git"
+  },
+  "scripts": {
+    "test": "mocha --opts mocha.opts draggable.spec.js"
+  }
+}
