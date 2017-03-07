@@ -3,13 +3,10 @@ branches:
   only:
     - master
 cache:
+  yarn: true
   directories:
-    - tests/elm-stuff/build-artifacts
-    - $(npm config get prefix)/bin
-    - $(npm root -g)
+    - test/elm-stuff/build-artifacts
 node_js:
-  - "6.9"
-install:
-  - npm install -g elm elm-test
-script:
-  - elm-test
+  - "7.7"
+before_script:
+  - yarn global add elm@0.18

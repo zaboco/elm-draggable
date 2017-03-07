@@ -4,13 +4,13 @@ const jsdom = require("jsdom")
 const { compileToString } = require('node-elm-compiler')
 const { expect } = require('chai')
 
+const ELM_TEST_APP = './DraggableTest.elm'
+
 suite('Draggable', function () {
-
-
   before(function (done) {
     this.timeout(1000000)
 
-    loadElmFile('./TestApp.elm', window => {
+    loadElmFile(ELM_TEST_APP, window => {
       global.document = window.document
       global.window = window
 
@@ -96,6 +96,7 @@ function getLogMessage() {
 }
 
 function loadElmFile(fileName, callback) {
+  process.chdir('./test') // because we need to compile with test/elm-package.json
   return compileToString([fileName], { yes: true }).then(data => {
     jsdom.env({
       html: '',

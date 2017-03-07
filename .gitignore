@@ -1,3 +1,5 @@
+node_modules
 elm-stuff
 examples/index.html
+test/index.html
 documentation.json
