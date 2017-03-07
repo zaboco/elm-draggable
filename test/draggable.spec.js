@@ -127,6 +127,25 @@ suite('Draggable', function() {
       return `UpdateEventDrag ${dragEvent}`
     }
   })
+
+  suite('Custom trigger', () => {
+    let customTriggerTarget
+
+    before(() => {
+      customTriggerTarget = document.getElementById('custom-trigger-target')
+    })
+
+    test('1 - mouse offsetX is sent on the trigger event', async() => {
+      const offsetX = 123
+      customTriggerTarget.dispatchEvent(mouseEvent('mousedown', { offsetX }))
+      expect(await getLogMessage()).to.equal(`CustomTrigger ${offsetX}`)
+    })
+
+    test('2 - Click is still yielded at mouse up', async() => {
+      document.dispatchEvent(mouseUp())
+      expect(await getLogMessage()).to.equal('UpdateEventDrag Click') // reusing event drag
+    })
+  })
 })
 
 function mouseDown(pageX, pageY) {

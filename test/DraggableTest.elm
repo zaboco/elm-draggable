@@ -2,6 +2,7 @@ port module TestApp exposing (..)
 
 import Html exposing (Html)
 import Html.Attributes as A
+import Json.Decode as Decode exposing (Decoder)
 import Draggable exposing (DragEvent)
 
 
@@ -26,6 +27,7 @@ type Msg
     | UpdateBasicDrag Draggable.State Draggable.Delta
     | TriggerEventDrag Draggable.State
     | UpdateEventDrag Draggable.State DragEvent
+    | CustomTrigger Draggable.State Float
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -43,6 +45,10 @@ update msg model =
 
         UpdateEventDrag eventDrag dragEvent ->
             { model | eventDrag = eventDrag } ! [ log ("UpdateEventDrag " ++ (toString dragEvent)) ]
+
+        CustomTrigger eventDrag offsetX ->
+            -- reusing the eventDrag, since it is not relevant for this use-case
+            { model | eventDrag = eventDrag } ! [ log ("CustomTrigger " ++ (toString offsetX)) ]
 
 
 subscriptions : Model -> Sub Msg
@@ -67,7 +73,17 @@ view _ =
             , Draggable.mouseTrigger TriggerEventDrag
             ]
             [ Html.text "Drag me too" ]
+        , Html.div
+            [ A.id "custom-trigger-target"
+            , Draggable.customMouseTrigger mouseOffsetXDecoder CustomTrigger
+            ]
+            [ Html.text "Whatever" ]
         ]
+
+
+mouseOffsetXDecoder : Decoder Float
+mouseOffsetXDecoder =
+    Decode.field "offsetX" Decode.float
 
 
 main : Program Never Model Msg
