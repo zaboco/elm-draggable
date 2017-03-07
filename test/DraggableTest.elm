@@ -2,17 +2,19 @@ port module TestApp exposing (..)
 
 import Html exposing (Html)
 import Html.Attributes as A
-import Draggable
+import Draggable exposing (DragEvent)
 
 
 type alias Model =
-    { drag : Draggable.State
+    { basicDrag : Draggable.State
+    , eventDrag : Draggable.State
     }
 
 
 model : Model
 model =
-    { drag = Draggable.init
+    { basicDrag = Draggable.init
+    , eventDrag = Draggable.init
     }
 
 
@@ -20,24 +22,35 @@ port log : String -> Cmd msg
 
 
 type Msg
-    = TriggerDrag Draggable.State
-    | UpdateDragBy Draggable.State Draggable.Delta
+    = TriggerBasicDrag Draggable.State
+    | UpdateBasicDrag Draggable.State Draggable.Delta
+    | TriggerEventDrag Draggable.State
+    | UpdateEventDrag Draggable.State DragEvent
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        TriggerDrag drag ->
-            { model | drag = drag } ! [ log "TriggerDrag" ]
+        TriggerBasicDrag basicDrag ->
+            { model | basicDrag = basicDrag } ! [ log "TriggerBasicDrag" ]
 
-        UpdateDragBy drag ( dx, dy ) ->
-            { model | drag = drag }
-                ! [ log ("UpdateDragBy " ++ (toString dx) ++ ", " ++ (toString dy)) ]
+        UpdateBasicDrag basicDrag ( dx, dy ) ->
+            { model | basicDrag = basicDrag }
+                ! [ log ("UpdateBasicDrag " ++ (toString dx) ++ ", " ++ (toString dy)) ]
+
+        TriggerEventDrag eventDrag ->
+            { model | eventDrag = eventDrag } ! [ log "TriggerEventDrag" ]
+
+        UpdateEventDrag eventDrag dragEvent ->
+            { model | eventDrag = eventDrag } ! [ log ("UpdateEventDrag " ++ (toString dragEvent)) ]
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { drag } =
-    Draggable.subscriptions UpdateDragBy drag
+subscriptions { basicDrag, eventDrag } =
+    Sub.batch
+        [ Draggable.subscriptions UpdateBasicDrag basicDrag
+        , Draggable.eventSubscriptions UpdateEventDrag eventDrag
+        ]
 
 
 view : Model -> Html Msg
@@ -46,9 +59,14 @@ view _ =
         []
         [ Html.div
             [ A.id "basic-subscription-target"
-            , Draggable.mouseTrigger TriggerDrag
+            , Draggable.mouseTrigger TriggerBasicDrag
             ]
             [ Html.text "Drag me" ]
+        , Html.div
+            [ A.id "event-subscription-target"
+            , Draggable.mouseTrigger TriggerEventDrag
+            ]
+            [ Html.text "Drag me too" ]
         ]
 
 
