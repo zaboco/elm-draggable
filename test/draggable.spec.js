@@ -183,8 +183,12 @@ function getLogMessage() {
 }
 
 function loadElmFile(fileName, callback) {
-  process.chdir('./test') // because we need to compile with test/elm-package.json
-  return compileToString([fileName], { yes: true }).then(data => {
+  return compileToString([fileName], {
+    cwd: './test',
+    yes: true,
+    verbose: true,
+    warn: true,
+  }).then(data => {
     jsdom.env({
       html: '',
       src: [data],
