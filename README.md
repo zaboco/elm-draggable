@@ -154,7 +154,7 @@ updateOnDrag dragEvent model =
             recordClick model
 ```
 
-__Note__: If we need to handle `mouseup` after either a `drag` or a `click`, we can use the `DOM` event handler `onMouseUp` from `Html.Events` or `Svg.Events`. Be aware though that the `Msg` received from `onMouseUp` is handled before `DragEnd` or `Click`.
+__Note__: If we need to handle `mouseup` after either a `drag` or a `click`, we can use the `DOM` event handler `onMouseUp` from `Html.Events` or `Svg.Events`. Be aware though that the `Msg` received from `onMouseUp` is handled before `DragEnd` or `Click`. Also, that only works if the mouse is over the element at `mouseup`, some times that is not the case, see [an example here](https://github.com/zaboco/elm-draggable/blob/master/examples/ConstraintsExample.elm).
 
 See [the example featuring all events](https://github.com/zaboco/elm-draggable/blob/master/examples/CustomEventsExample.elm).
 
