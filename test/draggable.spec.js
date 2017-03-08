@@ -59,6 +59,22 @@ suite('Draggable', function() {
       expect(await getLogMessage()).to.equal(updateMessage(0, 0))
     })
 
+    test('[right click] does not trigger drag', done => {
+      basicTarget.dispatchEvent(mouseEvent('mousedown', { button: 1 }))
+
+      getLogMessage()
+        .then(() => {
+          // Reset the state in case the test fails and the drag IS triggered.
+          document.dispatchEvent(mouseUp())
+
+          done(Error('Expected right click not to trigger drag'))
+        })
+        .catch(() => {
+          // If not message is received, we're fine.
+          done()
+        })
+    })
+
     function triggerMessage() {
       return 'TriggerBasicDrag'
     }
@@ -110,9 +126,6 @@ suite('Draggable', function() {
     test('[click] - Click is yielded if no mouse move', async() => {
       eventTarget.dispatchEvent(mouseDown(0, 0))
       await getLogMessage()
-
-      document.dispatchEvent(mouseUp())
-      expect(await getLogMessage()).to.equal(updateMessage('Click'))
     })
 
     function triggerMessage() {
@@ -172,13 +185,30 @@ function mouseEvent(type = 'mousemove', params = {}) {
 }
 
 function getLogMessage() {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     APP.ports.log.subscribe(handler)
 
     function handler(data) {
       APP.ports.log.unsubscribe(handler)
       resolve(data)
     }
+
+    setTimeout(() => reject(Error('Timeout')), 100)
+  })
+}
+
+function expectNoLogMessage() {
+  return new Promise((resolve, reject) => {
+    APP.ports.log.subscribe(handler)
+
+    function handler(data) {
+      APP.ports.log.unsubscribe(handler)
+      reject(new Error(`Got log message ${data}`))
+    }
+
+    setTimeout(() => {
+      resolve()
+    }, 100)
   })
 }
 
