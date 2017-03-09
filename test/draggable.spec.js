@@ -60,7 +60,7 @@ suite('Draggable', function() {
     })
 
     test('[right click] does not trigger drag', done => {
-      basicTarget.dispatchEvent(mouseEvent('mousedown', { button: 1 }))
+      basicTarget.dispatchEvent(mouseEvent('mousedown', { button: 2 }))
 
       getLogMessage()
         .then(() => {
