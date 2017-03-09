@@ -197,21 +197,6 @@ function getLogMessage() {
   })
 }
 
-function expectNoLogMessage() {
-  return new Promise((resolve, reject) => {
-    APP.ports.log.subscribe(handler)
-
-    function handler(data) {
-      APP.ports.log.unsubscribe(handler)
-      reject(new Error(`Got log message ${data}`))
-    }
-
-    setTimeout(() => {
-      resolve()
-    }, 100)
-  })
-}
-
 function loadElmFile(fileName, callback) {
   return compileToString([fileName], {
     cwd: './test',
