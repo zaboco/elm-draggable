@@ -15,29 +15,40 @@ module Draggable
         , subscriptions
         )
 
-{-|
-This library provides and easy way to make DOM elements (Html or Svg) draggable.
+{-| This library provides and easy way to make DOM elements (Html or Svg) draggable.
+
 
 ## When is dragging considered?
+
 An element is considered to be dragging when the mouse is pressed **and** moved before it is released. Otherwise, the action is considered a click. This is useful because in some cases you may want to support both actions.
 
 [See examples](https://github.com/zaboco/elm-draggable/tree/master/examples)
 
 
 # Initial State
+
 @docs init
 
+
 # Config
+
 @docs basicConfig, customConfig
 
+
 # Update
+
 @docs update, subscriptions
 
+
 # DOM trigger
-@docs mouseTrigger, customMouseTrigger, touchTriggers
+
+@docs mouseTrigger, customMouseTrigger
+
 
 # Definitions
+
 @docs Delta, State, Msg, Config, Event
+
 -}
 
 import Cmd.Extra
@@ -120,6 +131,7 @@ subscriptions envelope (State drag) =
 {-| DOM event handler to start dragging on mouse down. It requires a key for the element, in order to provide support for multiple drag targets sharing the same drag state. Of course, if only one element is draggable, it can have any value, including `()`.
 
     div [ mouseTrigger "element-id" DragMsg ] [ text "Drag me" ]
+
 -}
 mouseTrigger : a -> (Msg a -> msg) -> VirtualDom.Property msg
 mouseTrigger key envelope =
@@ -148,6 +160,7 @@ touchTriggers key envelope =
 {-| DOM event handler to start dragging on mouse down and also sending custom information about the `mousedown` event. It does so by using a custom `Decoder` for the [`MouseEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent).
 
     div [ mouseTrigger offsetDecoder CustomDragMsg ] [ text "Drag me" ]
+
 -}
 customMouseTrigger : Decoder a -> (Msg () -> a -> msg) -> VirtualDom.Property msg
 customMouseTrigger customDecoder customEnvelope =
@@ -196,7 +209,9 @@ type Config a msg
 
 {-| Basic config
 
-    config = basicConfig OnDragBy
+    config =
+        basicConfig OnDragBy
+
 -}
 basicConfig : (Delta -> msg) -> Config a msg
 basicConfig onDragByListener =
@@ -209,11 +224,13 @@ basicConfig onDragByListener =
 
 {-| Custom config, including arbitrary options. See [`Events`](#Draggable-Events).
 
-    config = customConfig
-        [ onDragBy OnDragBy
-        , onDragStart OnDragStart
-        , onDragEnd OnDragEnd
-        ]
+    config =
+        customConfig
+            [ onDragBy OnDragBy
+            , onDragStart OnDragStart
+            , onDragEnd OnDragEnd
+            ]
+
 -}
 customConfig : List (Event a msg) -> Config a msg
 customConfig events =
