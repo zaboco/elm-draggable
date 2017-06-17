@@ -42,7 +42,7 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 
 # DOM trigger
 
-@docs mouseTrigger, customMouseTrigger
+@docs mouseTrigger, customMouseTrigger, touchTriggers
 
 
 # Definitions
