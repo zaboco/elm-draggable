@@ -35,6 +35,7 @@ onDragEnd toMsg config =
     case Msg of
         OnDragBy (dx, dy) ->
             { model | position = { x = position.x + dx, y = position.y + dy } }
+
 -}
 onDragBy : (Delta -> msg) -> Event a msg
 onDragBy toMsg config =
