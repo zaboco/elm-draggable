@@ -9,6 +9,7 @@ module Draggable
         , customConfig
         , mouseTrigger
         , customMouseTrigger
+        , touchTriggers
         , init
         , update
         , subscriptions
@@ -54,6 +55,7 @@ import Cmd.Extra
 import Internal
 import Json.Decode as Decode exposing (Decoder)
 import Mouse exposing (Position)
+import SingleTouch
 import VirtualDom
 
 
@@ -136,6 +138,23 @@ mouseTrigger key envelope =
     VirtualDom.onWithOptions "mousedown"
         ignoreDefaults
         (Decode.map envelope (positionDecoder key))
+
+
+{-| DOM event handlers to manage dragging based on touch events. See `mouseTrigger` for details on the `key` parameter.
+-}
+touchTriggers : a -> (Msg a -> msg) -> List (VirtualDom.Property msg)
+touchTriggers key envelope =
+    let
+        touchToMouse =
+            \{ clientX, clientY } -> Mouse.Position (round clientX) (round clientY)
+
+        mouseToEnv internal =
+            touchToMouse >> internal >> Msg >> envelope
+    in
+        [ SingleTouch.onStart <| mouseToEnv (Internal.StartDragging key)
+        , SingleTouch.onMove <| mouseToEnv Internal.DragAt
+        , SingleTouch.onEnd <| mouseToEnv (\_ -> Internal.StopDragging)
+        ]
 
 
 {-| DOM event handler to start dragging on mouse down and also sending custom information about the `mousedown` event. It does so by using a custom `Decoder` for the [`MouseEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent).

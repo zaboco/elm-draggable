@@ -94,7 +94,7 @@ subscriptions { drag } =
 ```
 
 #### 8. Triggering drag
-Finally, inside your `view` function, you must somehow make the element draggable. You do that by adding a trigger for the `mousedown` event. You must also specify a `key` for that element. This can be useful when there are multiple drag targets in the same view.
+Inside your `view` function, you must somehow make the element draggable. You do that by adding a trigger for the `mousedown` event. You must also specify a `key` for that element. This can be useful when there are multiple drag targets in the same view.
 
 Of course, you'll also have to style your DOM element such that it reflects its moving position (with `top: x; left: y` or [`transform: translate`](http://www.w3schools.com/css/css3_2dtransforms.asp))
 ```elm
@@ -108,6 +108,25 @@ view { position } =
 ```
 
 For working demos, see the [basic example](https://github.com/zaboco/elm-draggable/blob/master/examples/BasicExample.elm) or the [examples with multiple targets](https://github.com/zaboco/elm-draggable/blob/master/examples/MultipleTargetsExample.elm)
+
+#### 9. Triggering on touch
+If you want to trigger drags on touch events (i.e. on mobile platforms) as well
+as mouse events, you need to add `touchTriggers` to your elements. Building on
+the previous example, it looks like this.
+
+```elm
+view : Model -> Html Msg
+view { position } =
+    Html.div
+        [ Draggable.mouseTrigger "my-element" DragMsg
+        -- , Html.Attributes.style (someStyleThatSetsPosition position)
+        ] ++ (Draggable.touchTriggers "my-element" DragMsg)
+        [ Html.text "Drag me" ]
+```
+
+The
+[basic example](https://github.com/zaboco/elm-draggable/blob/master/examples/BasicExample.elm) demonstrates
+this as well.
 
 ### Advanced
 
@@ -164,14 +183,14 @@ There is actually [an example right for this use-case](https://github.com/zaboco
 
 #### Custom mouse trigger
 There are cases when we need some additional information (e.g. mouse offset) about the `mousedown` event which triggers the drag. For these cases, there is an advanced `customMouseTrigger` which also takes a JSON `Decoder` for the [`MouseEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent).
- 
+
 ```elm
 import Json.Decode as Decode exposing (Decoder)
 
 type Msg
     = CustomMouseDown Draggable.Msg (Float, Float)
 --  | ...
- 
+
 update msg model =
     case msg of
         CustomMouseDown dragMsg startPoint ->
@@ -181,7 +200,7 @@ update msg model =
 view { scene } =
     Svg.svg
         [ Draggable.customMouseTrigger mouseOffsetDecoder CustomMouseDown
---      , ...        
+--      , ...
         ]
         []
 

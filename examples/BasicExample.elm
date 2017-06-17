@@ -76,9 +76,11 @@ view { xy } =
             ]
     in
         Html.div
-            [ A.style style
-            , Draggable.mouseTrigger () DragMsg
-            ]
+            ([ A.style style
+             , Draggable.mouseTrigger () DragMsg
+             ]
+                ++ (Draggable.touchTriggers () DragMsg)
+            )
             [ Html.text "Drag me" ]
 
 
