@@ -1,4 +1,4 @@
-module ConstraintsExample exposing (..)
+module ConstraintsExample exposing (Model, Msg(..), Position, Size, background, boolToNumber, box, boxSize, dragConfig, guidelineStyle, handleKey, horizontalGuideline, init, main, num, sceneSize, subscriptions, update, verticalGuideline, view)
 
 import Char
 import Draggable
@@ -58,7 +58,7 @@ init =
 dragConfig : Draggable.Config String Msg
 dragConfig =
     Draggable.customConfig
-        [ onDragBy (OnDragBy)
+        [ onDragBy OnDragBy
         , onDragStart (\_ -> SetDragging True)
         , onDragEnd (SetDragging False)
         ]
@@ -82,7 +82,7 @@ update msg ({ position, dragVertically, dragHorizontally } as model) =
                         (position.x + dx * fx)
                         (position.y + dy * fy)
             in
-                ( { model | position = newPosition }, Cmd.none )
+            ( { model | position = newPosition }, Cmd.none )
 
         DragMsg dragMsg ->
             Draggable.update dragConfig dragMsg model
@@ -101,6 +101,7 @@ boolToNumber : Bool -> number
 boolToNumber bool =
     if bool then
         1
+
     else
         0
 
@@ -116,7 +117,7 @@ subscriptions { drag } =
 
 handleKey : Bool -> Keyboard.KeyCode -> Msg
 handleKey pressed code =
-    case (Char.fromCode code) of
+    case Char.fromCode code of
         'A' ->
             SetDragHorizontally (not pressed)
 
@@ -151,18 +152,19 @@ view { position, dragHorizontally, dragVertically, isDragging } =
         cursor =
             if isDragging then
                 "none"
+
             else
                 "default"
     in
-        Svg.svg
-            [ Attr.cursor cursor
-            , Attr.style "height: 100vh; width: 100vw;"
-            ]
-            [ background
-            , verticalGuideline position.x dragVertically
-            , horizontalGuideline position.y dragHorizontally
-            , box position isDragging
-            ]
+    Svg.svg
+        [ Attr.cursor cursor
+        , Attr.style "height: 100vh; width: 100vw;"
+        ]
+        [ background
+        , verticalGuideline position.x dragVertically
+        , horizontalGuideline position.y dragHorizontally
+        , box position isDragging
+        ]
 
 
 box : Position -> Bool -> Svg Msg
@@ -179,19 +181,20 @@ box position isDragging =
         cursor =
             if isDragging then
                 "none"
+
             else
                 "move"
     in
-        Svg.rect
-            [ num Attr.width boxSize.width
-            , num Attr.height boxSize.height
-            , num Attr.x x
-            , num Attr.y y
-            , Attr.cursor cursor
-            , Attr.fill "red"
-            , Draggable.mouseTrigger "" DragMsg
-            ]
-            []
+    Svg.rect
+        [ num Attr.width boxSize.width
+        , num Attr.height boxSize.height
+        , num Attr.x x
+        , num Attr.y y
+        , Attr.cursor cursor
+        , Attr.fill "red"
+        , Draggable.mouseTrigger "" DragMsg
+        ]
+        []
 
 
 horizontalGuideline : number -> Bool -> Svg Msg
@@ -243,6 +246,7 @@ guidelineStyle isEnabled otherAttributes =
         color =
             if isEnabled then
                 "black"
+
             else
                 "#ccc"
 
@@ -251,7 +255,7 @@ guidelineStyle isEnabled otherAttributes =
             , Attr.strokeDasharray "10, 10"
             ]
     in
-        otherAttributes ++ attributes
+    otherAttributes ++ attributes
 
 
 background : Svg msg

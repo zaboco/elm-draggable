@@ -1,9 +1,8 @@
-module PanAndZoomExample exposing (..)
+module PanAndZoomExample exposing (Model, Msg(..), Size, background, dragConfig, handleZoom, init, main, num, subscriptions, update, view)
 
 import Draggable
-import Json.Decode as Decode
 import Html exposing (Html)
-import Html
+import Json.Decode as Decode
 import Math.Vector2 as Vector2 exposing (Vec2, getX, getY)
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
@@ -65,7 +64,7 @@ update msg ({ center, zoom } as model) =
                     rawDelta
                         |> Vector2.scale (-1 / zoom)
             in
-                ( { model | center = center |> Vector2.add delta }, Cmd.none )
+            ( { model | center = center |> Vector2.add delta }, Cmd.none )
 
         Zoom factor ->
             let
@@ -74,7 +73,7 @@ update msg ({ center, zoom } as model) =
                         |> (+) (factor * 0.05)
                         |> clamp 0.5 5
             in
-                ( { model | zoom = newZoom }, Cmd.none )
+            ( { model | zoom = newZoom }, Cmd.none )
 
         DragMsg dragMsg ->
             Draggable.update dragConfig dragMsg model
@@ -103,40 +102,40 @@ view { center, size, zoom } =
         zooming =
             "scale(" ++ toString zoom ++ ")"
     in
-        Svg.svg
-            [ num Attr.width size.width
-            , num Attr.height size.height
-            , handleZoom Zoom
-            , Draggable.mouseTrigger () DragMsg
+    Svg.svg
+        [ num Attr.width size.width
+        , num Attr.height size.height
+        , handleZoom Zoom
+        , Draggable.mouseTrigger () DragMsg
+        ]
+        [ background
+        , Svg.g
+            [ Attr.transform (zooming ++ " " ++ panning)
+            , Attr.stroke "black"
+            , Attr.fill "none"
             ]
-            [ background
-            , Svg.g
-                [ Attr.transform (zooming ++ " " ++ panning)
-                , Attr.stroke "black"
-                , Attr.fill "none"
+            [ Svg.line
+                [ num Attr.x1 left
+                , num Attr.x2 right
+                , num Attr.y1 0
+                , num Attr.y2 0
                 ]
-                [ Svg.line
-                    [ num Attr.x1 left
-                    , num Attr.x2 right
-                    , num Attr.y1 0
-                    , num Attr.y2 0
-                    ]
-                    []
-                , Svg.line
-                    [ num Attr.x1 0
-                    , num Attr.x2 0
-                    , num Attr.y1 top
-                    , num Attr.y2 bottom
-                    ]
-                    []
-                , Svg.circle
-                    [ num Attr.cx 0
-                    , num Attr.cy 0
-                    , num Attr.r 10
-                    ]
-                    []
+                []
+            , Svg.line
+                [ num Attr.x1 0
+                , num Attr.x2 0
+                , num Attr.y1 top
+                , num Attr.y2 bottom
                 ]
+                []
+            , Svg.circle
+                [ num Attr.cx 0
+                , num Attr.cy 0
+                , num Attr.r 10
+                ]
+                []
             ]
+        ]
 
 
 handleZoom : (Float -> msg) -> Svg.Attribute msg
@@ -145,10 +144,10 @@ handleZoom onZoom =
         ignoreDefaults =
             VirtualDom.Options True True
     in
-        VirtualDom.onWithOptions
-            "wheel"
-            ignoreDefaults
-            (Decode.map onZoom <| Decode.field "deltaY" Decode.float)
+    VirtualDom.onWithOptions
+        "wheel"
+        ignoreDefaults
+        (Decode.map onZoom <| Decode.field "deltaY" Decode.float)
 
 
 background : Svg Msg

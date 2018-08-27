@@ -63,7 +63,7 @@ emptyGroup =
 addBox : Vec2 -> BoxGroup -> BoxGroup
 addBox position ({ uid, idleBoxes } as group) =
     { group
-        | idleBoxes = (box (toString uid) position) :: idleBoxes
+        | idleBoxes = box (toString uid) position :: idleBoxes
         , uid = uid + 1
     }
 
@@ -77,7 +77,7 @@ boxGroup positions =
 allBoxes : BoxGroup -> List Box
 allBoxes { movingBox, idleBoxes } =
     movingBox
-        |> Maybe.map (flip (::) idleBoxes)
+        |> Maybe.map (\a -> (::) a idleBoxes)
         |> Maybe.withDefault idleBoxes
 
 
@@ -85,12 +85,12 @@ startDragging : Id -> BoxGroup -> BoxGroup
 startDragging id ({ idleBoxes, movingBox } as group) =
     let
         ( targetAsList, others ) =
-            List.partition (.id >> ((==) id)) idleBoxes
+            List.partition (.id >> (==) id) idleBoxes
     in
-        { group
-            | idleBoxes = others
-            , movingBox = targetAsList |> List.head
-        }
+    { group
+        | idleBoxes = others
+        , movingBox = targetAsList |> List.head
+    }
 
 
 stopDragging : BoxGroup -> BoxGroup
@@ -112,10 +112,11 @@ toggleBoxClicked id group =
         possiblyToggleBox box =
             if box.id == id then
                 toggleClicked box
+
             else
                 box
     in
-        { group | idleBoxes = group.idleBoxes |> List.map possiblyToggleBox }
+    { group | idleBoxes = group.idleBoxes |> List.map possiblyToggleBox }
 
 
 type alias Model =
@@ -136,9 +137,9 @@ boxPositions : List Vec2
 boxPositions =
     let
         indexToPosition =
-            toFloat >> ((*) 60) >> ((+) 10) >> (Vector2.vec2 10)
+            toFloat >> (*) 60 >> (+) 10 >> Vector2.vec2 10
     in
-        List.range 0 10 |> List.map indexToPosition
+    List.range 0 10 |> List.map indexToPosition
 
 
 init : ( Model, Cmd Msg )
@@ -197,7 +198,7 @@ view { boxGroup } =
     Html.div
         []
         [ Html.p
-            [ Html.Attributes.style [ ( "padding-left", "8px" ) ] ]
+            [ Html.Attributes.style "padding-left" "8px" ]
             [ Html.text "Drag any box around. Click it to toggle its color." ]
         , Svg.svg
             [ Attr.style "height: 100vh; width: 100vw; position: fixed;"
@@ -228,21 +229,22 @@ boxView { id, position, clicked } =
         color =
             if clicked then
                 "red"
+
             else
                 "lightblue"
     in
-        Svg.rect
-            [ num Attr.width <| getX boxSize
-            , num Attr.height <| getY boxSize
-            , num Attr.x (getX position)
-            , num Attr.y (getY position)
-            , Attr.fill color
-            , Attr.stroke "black"
-            , Attr.cursor "move"
-            , Draggable.mouseTrigger id DragMsg
-            , onMouseUp StopDragging
-            ]
-            []
+    Svg.rect
+        [ num Attr.width <| getX boxSize
+        , num Attr.height <| getY boxSize
+        , num Attr.x (getX position)
+        , num Attr.y (getY position)
+        , Attr.fill color
+        , Attr.stroke "black"
+        , Attr.cursor "move"
+        , Draggable.mouseTrigger id DragMsg
+        , onMouseUp StopDragging
+        ]
+        []
 
 
 background : Svg msg

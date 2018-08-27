@@ -1,9 +1,9 @@
-module CustomEventsExample exposing (..)
+module CustomEventsExample exposing (Model, Msg(..), Position, dragConfig, init, main, subscriptions, update, view)
 
-import Html exposing (Html)
-import Html.Attributes as A
 import Draggable
 import Draggable.Events exposing (onClick, onDragBy, onDragEnd, onDragStart)
+import Html exposing (Html)
+import Html.Attributes as A
 import Html.Events
 
 
@@ -97,17 +97,19 @@ view : Model -> Html Msg
 view { xy, isDragging, isClicked, clicksCount } =
     let
         translate =
-            "translate(" ++ (toString xy.x) ++ "px, " ++ (toString xy.y) ++ "px)"
+            "translate(" ++ toString xy.x ++ "px, " ++ toString xy.y ++ "px)"
 
         status =
             if isDragging then
                 "Release me"
+
             else
                 "Drag me"
 
         color =
             if isClicked then
                 "limegreen"
+
             else
                 "lightgray"
 
@@ -120,17 +122,17 @@ view { xy, isDragging, isClicked, clicksCount } =
             , "cursor" => "move"
             ]
     in
-        Html.div
-            [ A.style style
-            , Draggable.mouseTrigger "" DragMsg
-            , Html.Events.onMouseUp (SetClicked False)
-            ]
-            [ Html.text status
-            , Html.br [] []
-            , Html.text <| (toString clicksCount) ++ " clicks"
-            ]
+    Html.div
+        [ A.style style
+        , Draggable.mouseTrigger "" DragMsg
+        , Html.Events.onMouseUp (SetClicked False)
+        ]
+        [ Html.text status
+        , Html.br [] []
+        , Html.text <| toString clicksCount ++ " clicks"
+        ]
 
 
 (=>) : a -> b -> ( a, b )
 (=>) =
-    (,)
+    \a b -> ( a, b )

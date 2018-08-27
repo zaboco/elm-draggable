@@ -1,8 +1,8 @@
-module BasicExample exposing (..)
+module BasicExample exposing (Model, Msg(..), Position, dragConfig, init, main, subscriptions, update, view)
 
+import Draggable
 import Html exposing (Html)
 import Html.Attributes as A
-import Draggable
 
 
 type alias Position =
@@ -65,7 +65,7 @@ view : Model -> Html Msg
 view { xy } =
     let
         translate =
-            "translate(" ++ (toString xy.x) ++ "px, " ++ (toString xy.y) ++ "px)"
+            "translate(" ++ toString xy.x ++ "px, " ++ toString xy.y ++ "px)"
 
         style =
             [ "transform" => translate
@@ -75,15 +75,15 @@ view { xy } =
             , "cursor" => "move"
             ]
     in
-        Html.div
-            ([ A.style style
-             , Draggable.mouseTrigger () DragMsg
-             ]
-                ++ (Draggable.touchTriggers () DragMsg)
-            )
-            [ Html.text "Drag me" ]
+    Html.div
+        ([ A.style style
+         , Draggable.mouseTrigger () DragMsg
+         ]
+            ++ Draggable.touchTriggers () DragMsg
+        )
+        [ Html.text "Drag me" ]
 
 
 (=>) : a -> b -> ( a, b )
 (=>) =
-    (,)
+    \a b -> ( a, b )

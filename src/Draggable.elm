@@ -1,19 +1,10 @@
-module Draggable
-    exposing
-        ( State
-        , Msg
-        , Delta
-        , Config
-        , Event
-        , basicConfig
-        , customConfig
-        , mouseTrigger
-        , customMouseTrigger
-        , touchTriggers
-        , init
-        , update
-        , subscriptions
-        )
+module Draggable exposing
+    ( init
+    , basicConfig, customConfig
+    , update, subscriptions
+    , mouseTrigger, customMouseTrigger, touchTriggers
+    , Delta, State, Msg, Config, Event
+    )
 
 {-| This library provides and easy way to make DOM elements (Html or Svg) draggable.
 
@@ -102,7 +93,9 @@ update config msg model =
         ( dragState, dragCmd ) =
             updateDraggable config msg model.drag
     in
-        { model | drag = dragState } ! [ dragCmd ]
+    ( { model | drag = dragState }
+    , dragCmd
+    )
 
 
 updateDraggable : Config a msg -> Msg a -> State a -> ( State a, Cmd msg )
@@ -111,7 +104,7 @@ updateDraggable (Config config) (Msg msg) (State drag) =
         ( newDrag, newMsgMaybe ) =
             Internal.updateAndEmit config msg drag
     in
-        ( State newDrag, Cmd.Extra.optionalMessage newMsgMaybe )
+    ( State newDrag, Cmd.Extra.optionalMessage newMsgMaybe )
 
 
 {-| Handle mouse subscriptions used for dragging
@@ -151,10 +144,10 @@ touchTriggers key envelope =
         mouseToEnv internal =
             touchToMouse >> internal >> Msg >> envelope
     in
-        [ SingleTouch.onStart <| mouseToEnv (Internal.StartDragging key)
-        , SingleTouch.onMove <| mouseToEnv Internal.DragAt
-        , SingleTouch.onEnd <| mouseToEnv (\_ -> Internal.StopDragging)
-        ]
+    [ SingleTouch.onStart <| mouseToEnv (Internal.StartDragging key)
+    , SingleTouch.onMove <| mouseToEnv Internal.DragAt
+    , SingleTouch.onEnd <| mouseToEnv (\_ -> Internal.StopDragging)
+    ]
 
 
 {-| DOM event handler to start dragging on mouse down and also sending custom information about the `mousedown` event. It does so by using a custom `Decoder` for the [`MouseEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent).
@@ -219,7 +212,7 @@ basicConfig onDragByListener =
         defaultConfig =
             Internal.defaultConfig
     in
-        Config { defaultConfig | onDragBy = Just << onDragByListener }
+    Config { defaultConfig | onDragBy = Just << onDragByListener }
 
 
 {-| Custom config, including arbitrary options. See [`Events`](#Draggable-Events).

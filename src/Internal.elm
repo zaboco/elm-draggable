@@ -1,4 +1,4 @@
-module Internal exposing (..)
+module Internal exposing (Config, Delta, Event, Msg(..), State(..), defaultConfig, distanceTo, logInvalidState, updateAndEmit)
 
 import Mouse exposing (Position)
 
@@ -98,4 +98,4 @@ logInvalidState drag msg result =
         _ =
             Debug.log str
     in
-        result
+    result

@@ -49,10 +49,14 @@ update msg model =
         AddNewPointAtDelta delta ->
             case model.scene of
                 Empty ->
-                    model ! []
+                    ( model
+                    , Cmd.none
+                    )
 
                 Path startPoint deltasSoFar ->
-                    { model | scene = Path startPoint (delta :: deltasSoFar) } ! []
+                    ( { model | scene = Path startPoint (delta :: deltasSoFar) }
+                    , Cmd.none
+                    )
 
 
 dragConfig : Draggable.Config () Msg
@@ -105,16 +109,16 @@ pathView firstPoint reverseDeltas =
 
         deltasString =
             deltas
-                |> List.map (\( dx, dy ) -> " l " ++ (toString dx) ++ " " ++ (toString dy))
+                |> List.map (\( dx, dy ) -> " l " ++ toString dx ++ " " ++ toString dy)
                 |> String.join ""
 
         firstPointString =
-            "M " ++ (toString firstPoint.x) ++ " " ++ (toString firstPoint.y)
+            "M " ++ toString firstPoint.x ++ " " ++ toString firstPoint.y
 
         pathString =
             firstPointString ++ deltasString
     in
-        Svg.path [ Attr.d pathString ] []
+    Svg.path [ Attr.d pathString ] []
 
 
 background : Svg msg
