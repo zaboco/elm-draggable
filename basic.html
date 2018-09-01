@@ -597,8 +597,7 @@ function toString(v)
 	var type = typeof v;
 	if (type === 'function')
 	{
-		var name = v.func ? v.func.name : v.name;
-		return '<function' + (name === '' ? '' : ':') + name + '>';
+		return '<function>';
 	}
 
 	if (type === 'boolean')
@@ -1132,6 +1131,13 @@ return {
 var _elm_lang$core$List$sortBy = _elm_lang$core$Native_List.sortBy;
 var _elm_lang$core$List$sort = function (xs) {
 	return A2(_elm_lang$core$List$sortBy, _elm_lang$core$Basics$identity, xs);
+};
+var _elm_lang$core$List$singleton = function (value) {
+	return {
+		ctor: '::',
+		_0: value,
+		_1: {ctor: '[]'}
+	};
 };
 var _elm_lang$core$List$drop = F2(
 	function (n, list) {
@@ -2006,7 +2012,7 @@ function endsWith(sub, str)
 function indexes(sub, str)
 {
 	var subLen = sub.length;
-	
+
 	if (subLen < 1)
 	{
 		return _elm_lang$core$Native_List.Nil;
@@ -2019,74 +2025,78 @@ function indexes(sub, str)
 	{
 		is.push(i);
 		i = i + subLen;
-	}	
-	
+	}
+
 	return _elm_lang$core$Native_List.fromArray(is);
 }
+
 
 function toInt(s)
 {
 	var len = s.length;
+
+	// if empty
 	if (len === 0)
 	{
-		return _elm_lang$core$Result$Err("could not convert string '" + s + "' to an Int" );
+		return intErr(s);
 	}
-	var start = 0;
-	if (s[0] === '-')
+
+	// if hex
+	var c = s[0];
+	if (c === '0' && s[1] === 'x')
 	{
-		if (len === 1)
+		for (var i = 2; i < len; ++i)
 		{
-			return _elm_lang$core$Result$Err("could not convert string '" + s + "' to an Int" );
+			var c = s[i];
+			if (('0' <= c && c <= '9') || ('A' <= c && c <= 'F') || ('a' <= c && c <= 'f'))
+			{
+				continue;
+			}
+			return intErr(s);
 		}
-		start = 1;
+		return _elm_lang$core$Result$Ok(parseInt(s, 16));
 	}
-	for (var i = start; i < len; ++i)
+
+	// is decimal
+	if (c > '9' || (c < '0' && c !== '-' && c !== '+'))
+	{
+		return intErr(s);
+	}
+	for (var i = 1; i < len; ++i)
 	{
 		var c = s[i];
 		if (c < '0' || '9' < c)
 		{
-			return _elm_lang$core$Result$Err("could not convert string '" + s + "' to an Int" );
+			return intErr(s);
 		}
 	}
+
 	return _elm_lang$core$Result$Ok(parseInt(s, 10));
 }
 
+function intErr(s)
+{
+	return _elm_lang$core$Result$Err("could not convert string '" + s + "' to an Int");
+}
+
+
 function toFloat(s)
 {
-	var len = s.length;
-	if (len === 0)
+	// check if it is a hex, octal, or binary number
+	if (s.length === 0 || /[\sxbo]/.test(s))
 	{
-		return _elm_lang$core$Result$Err("could not convert string '" + s + "' to a Float" );
+		return floatErr(s);
 	}
-	var start = 0;
-	if (s[0] === '-')
-	{
-		if (len === 1)
-		{
-			return _elm_lang$core$Result$Err("could not convert string '" + s + "' to a Float" );
-		}
-		start = 1;
-	}
-	var dotCount = 0;
-	for (var i = start; i < len; ++i)
-	{
-		var c = s[i];
-		if ('0' <= c && c <= '9')
-		{
-			continue;
-		}
-		if (c === '.')
-		{
-			dotCount += 1;
-			if (dotCount <= 1)
-			{
-				continue;
-			}
-		}
-		return _elm_lang$core$Result$Err("could not convert string '" + s + "' to a Float" );
-	}
-	return _elm_lang$core$Result$Ok(parseFloat(s));
+	var n = +s;
+	// faster isNaN check
+	return n === n ? _elm_lang$core$Result$Ok(n) : floatErr(s);
 }
+
+function floatErr(s)
+{
+	return _elm_lang$core$Result$Err("could not convert string '" + s + "' to a Float");
+}
+
 
 function toList(str)
 {
@@ -2786,15 +2796,8 @@ function setupIncomingPort(name, callback)
 		sentBeforeInit.push(value);
 	}
 
-	function postInitSend(incomingValue)
+	function postInitSend(value)
 	{
-		var result = A2(_elm_lang$core$Json_Decode$decodeValue, converter, incomingValue);
-		if (result.ctor === 'Err')
-		{
-			throw new Error('Trying to send an unexpected type of value through port `' + name + '`:\n' + result._0);
-		}
-
-		var value = result._0;
 		var temp = subs;
 		while (temp.ctor !== '[]')
 		{
@@ -2805,7 +2808,13 @@ function setupIncomingPort(name, callback)
 
 	function send(incomingValue)
 	{
-		currentSend(incomingValue);
+		var result = A2(_elm_lang$core$Json_Decode$decodeValue, converter, incomingValue);
+		if (result.ctor === 'Err')
+		{
+			throw new Error('Trying to send an unexpected type of value through port `' + name + '`:\n' + result._0);
+		}
+
+		currentSend(result._0);
 	}
 
 	return { send: send };
@@ -5698,11 +5707,6 @@ function badToString(problem)
 				problem = problem.rest;
 				break;
 
-			case 'index':
-				context += '[' + problem.index + ']';
-				problem = problem.rest;
-				break;
-
 			case 'oneOf':
 				var problems = problem.problems;
 				for (var i = 0; i < problems.length; i++)
@@ -6587,9 +6591,9 @@ function on(name, options, decoder)
 
 function equalEvents(a, b)
 {
-	if (!a.options === b.options)
+	if (a.options !== b.options)
 	{
-		if (a.stopPropagation !== b.stopPropagation || a.preventDefault !== b.preventDefault)
+		if (a.options.stopPropagation !== b.options.stopPropagation || a.options.preventDefault !== b.options.preventDefault)
 		{
 			return false;
 		}
@@ -7865,7 +7869,7 @@ function normalRenderer(parentNode, view)
 var rAF =
 	typeof requestAnimationFrame !== 'undefined'
 		? requestAnimationFrame
-		: function(callback) { callback(); };
+		: function(callback) { setTimeout(callback, 1000 / 60); };
 
 function makeStepper(domNode, view, initialVirtualNode, eventNode)
 {
@@ -8709,6 +8713,120 @@ var _elm_lang$html$Html_Attributes$classList = function (list) {
 				A2(_elm_lang$core$List$filter, _elm_lang$core$Tuple$second, list))));
 };
 var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$style;
+var _elm_lang$html$Html_Events$keyCode = A2(_elm_lang$core$Json_Decode$field, 'keyCode', _elm_lang$core$Json_Decode$int);
+var _elm_lang$html$Html_Events$targetChecked = A2(
+	_elm_lang$core$Json_Decode$at,
+	{
+		ctor: '::',
+		_0: 'target',
+		_1: {
+			ctor: '::',
+			_0: 'checked',
+			_1: {ctor: '[]'}
+		}
+	},
+	_elm_lang$core$Json_Decode$bool);
+var _elm_lang$html$Html_Events$targetValue = A2(
+	_elm_lang$core$Json_Decode$at,
+	{
+		ctor: '::',
+		_0: 'target',
+		_1: {
+			ctor: '::',
+			_0: 'value',
+			_1: {ctor: '[]'}
+		}
+	},
+	_elm_lang$core$Json_Decode$string);
+var _elm_lang$html$Html_Events$defaultOptions = _elm_lang$virtual_dom$VirtualDom$defaultOptions;
+var _elm_lang$html$Html_Events$onWithOptions = _elm_lang$virtual_dom$VirtualDom$onWithOptions;
+var _elm_lang$html$Html_Events$on = _elm_lang$virtual_dom$VirtualDom$on;
+var _elm_lang$html$Html_Events$onFocus = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'focus',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onBlur = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'blur',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onSubmitOptions = _elm_lang$core$Native_Utils.update(
+	_elm_lang$html$Html_Events$defaultOptions,
+	{preventDefault: true});
+var _elm_lang$html$Html_Events$onSubmit = function (msg) {
+	return A3(
+		_elm_lang$html$Html_Events$onWithOptions,
+		'submit',
+		_elm_lang$html$Html_Events$onSubmitOptions,
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onCheck = function (tagger) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'change',
+		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetChecked));
+};
+var _elm_lang$html$Html_Events$onInput = function (tagger) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'input',
+		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
+};
+var _elm_lang$html$Html_Events$onMouseOut = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseout',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseOver = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseover',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseLeave = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseleave',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseEnter = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseenter',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseUp = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseup',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseDown = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mousedown',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onDoubleClick = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'dblclick',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onClick = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'click',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$Options = F2(
+	function (a, b) {
+		return {stopPropagation: a, preventDefault: b};
+	});
 var _elm_lang$mouse$Mouse_ops = _elm_lang$mouse$Mouse_ops || {};
 _elm_lang$mouse$Mouse_ops['&>'] = F2(
 	function (t1, t2) {
@@ -8891,6 +9009,88 @@ var _elm_lang$mouse$Mouse$subMap = F2(
 			});
 	});
 _elm_lang$core$Native_Platform.effectManagers['Mouse'] = {pkg: 'elm-lang/mouse', init: _elm_lang$mouse$Mouse$init, onEffects: _elm_lang$mouse$Mouse$onEffects, onSelfMsg: _elm_lang$mouse$Mouse$onSelfMsg, tag: 'sub', subMap: _elm_lang$mouse$Mouse$subMap};
+var _mpizenberg$elm_touch_events$Private_Touch$stopOptions = {stopPropagation: true, preventDefault: true};
+var _mpizenberg$elm_touch_events$Private_Touch$toTuple = function (touch) {
+	return {ctor: '_Tuple2', _0: touch.identifier, _1: touch.coordinates};
+};
+var _mpizenberg$elm_touch_events$Private_Touch$Event = F3(
+	function (a, b, c) {
+		return {changedTouches: a, targetTouches: b, touches: c};
+	});
+var _mpizenberg$elm_touch_events$Private_Touch$Touch = F2(
+	function (a, b) {
+		return {identifier: a, coordinates: b};
+	});
+var _mpizenberg$elm_touch_events$Private_Touch$Coordinates = F2(
+	function (a, b) {
+		return {clientX: a, clientY: b};
+	});
+var _mpizenberg$elm_touch_events$Private_Touch$decode = A3(
+	_elm_lang$core$Json_Decode$map2,
+	_mpizenberg$elm_touch_events$Private_Touch$Touch,
+	A2(_elm_lang$core$Json_Decode$field, 'identifier', _elm_lang$core$Json_Decode$int),
+	A3(
+		_elm_lang$core$Json_Decode$map2,
+		_mpizenberg$elm_touch_events$Private_Touch$Coordinates,
+		A2(_elm_lang$core$Json_Decode$field, 'clientX', _elm_lang$core$Json_Decode$float),
+		A2(_elm_lang$core$Json_Decode$field, 'clientY', _elm_lang$core$Json_Decode$float)));
+var _mpizenberg$elm_touch_events$Touch$clientPos = function (coordinates) {
+	return {
+		ctor: '_Tuple2',
+		_0: function (_) {
+			return _.clientX;
+		}(coordinates),
+		_1: function (_) {
+			return _.clientY;
+		}(coordinates)
+	};
+};
+var _mpizenberg$elm_touch_events$Touch$touches = function (_) {
+	return _.touches;
+};
+var _mpizenberg$elm_touch_events$Touch$targetTouches = function (_) {
+	return _.targetTouches;
+};
+var _mpizenberg$elm_touch_events$Touch$changedTouches = function (_) {
+	return _.changedTouches;
+};
+var _mpizenberg$elm_touch_events$SingleTouch$decodeCoordinates = A2(
+	_elm_lang$core$Json_Decode$map,
+	function (_) {
+		return _.coordinates;
+	},
+	A2(
+		_elm_lang$core$Json_Decode$at,
+		{
+			ctor: '::',
+			_0: 'changedTouches',
+			_1: {
+				ctor: '::',
+				_0: '0',
+				_1: {ctor: '[]'}
+			}
+		},
+		_mpizenberg$elm_touch_events$Private_Touch$decode));
+var _mpizenberg$elm_touch_events$SingleTouch$on = F2(
+	function (event, tag) {
+		return A3(
+			_elm_lang$html$Html_Events$onWithOptions,
+			event,
+			_mpizenberg$elm_touch_events$Private_Touch$stopOptions,
+			A2(_elm_lang$core$Json_Decode$map, tag, _mpizenberg$elm_touch_events$SingleTouch$decodeCoordinates));
+	});
+var _mpizenberg$elm_touch_events$SingleTouch$onCancel = function (tag) {
+	return A2(_mpizenberg$elm_touch_events$SingleTouch$on, 'touchcancel', tag);
+};
+var _mpizenberg$elm_touch_events$SingleTouch$onEnd = function (tag) {
+	return A2(_mpizenberg$elm_touch_events$SingleTouch$on, 'touchend', tag);
+};
+var _mpizenberg$elm_touch_events$SingleTouch$onMove = function (tag) {
+	return A2(_mpizenberg$elm_touch_events$SingleTouch$on, 'touchmove', tag);
+};
+var _mpizenberg$elm_touch_events$SingleTouch$onStart = function (tag) {
+	return A2(_mpizenberg$elm_touch_events$SingleTouch$on, 'touchstart', tag);
+};
 var _user$project$Cmd_Extra$message = function (x) {
 	return A2(
 		_elm_lang$core$Task$perform,
@@ -9036,18 +9236,32 @@ var _user$project$Internal$StartDragging = F2(
 	function (a, b) {
 		return {ctor: 'StartDragging', _0: a, _1: b};
 	});
+var _user$project$Draggable$whenLeftMouseButtonPressed = function (decoder) {
+	return A2(
+		_elm_lang$core$Json_Decode$andThen,
+		function (button) {
+			var _p0 = button;
+			if (_p0 === 0) {
+				return decoder;
+			} else {
+				return _elm_lang$core$Json_Decode$fail('Event is only relevant when the main mouse button was pressed.');
+			}
+		},
+		A2(_elm_lang$core$Json_Decode$field, 'button', _elm_lang$core$Json_Decode$int));
+};
+var _user$project$Draggable$ignoreDefaults = A2(_elm_lang$virtual_dom$VirtualDom$Options, true, true);
 var _user$project$Draggable$State = function (a) {
 	return {ctor: 'State', _0: a};
 };
 var _user$project$Draggable$init = _user$project$Draggable$State(_user$project$Internal$NotDragging);
 var _user$project$Draggable$updateDraggable = F3(
-	function (_p2, _p1, _p0) {
-		var _p3 = _p2;
-		var _p4 = _p1;
-		var _p5 = _p0;
-		var _p6 = A3(_user$project$Internal$updateAndEmit, _p3._0, _p4._0, _p5._0);
-		var newDrag = _p6._0;
-		var newMsgMaybe = _p6._1;
+	function (_p3, _p2, _p1) {
+		var _p4 = _p3;
+		var _p5 = _p2;
+		var _p6 = _p1;
+		var _p7 = A3(_user$project$Internal$updateAndEmit, _p4._0, _p5._0, _p6._0);
+		var newDrag = _p7._0;
+		var newMsgMaybe = _p7._1;
 		return {
 			ctor: '_Tuple2',
 			_0: _user$project$Draggable$State(newDrag),
@@ -9056,9 +9270,9 @@ var _user$project$Draggable$updateDraggable = F3(
 	});
 var _user$project$Draggable$update = F3(
 	function (config, msg, model) {
-		var _p7 = A3(_user$project$Draggable$updateDraggable, config, msg, model.drag);
-		var dragState = _p7._0;
-		var dragCmd = _p7._1;
+		var _p8 = A3(_user$project$Draggable$updateDraggable, config, msg, model.drag);
+		var dragState = _p8._0;
+		var dragCmd = _p8._1;
 		return A2(
 			_elm_lang$core$Platform_Cmd_ops['!'],
 			_elm_lang$core$Native_Utils.update(
@@ -9074,17 +9288,17 @@ var _user$project$Draggable$Msg = function (a) {
 	return {ctor: 'Msg', _0: a};
 };
 var _user$project$Draggable$subscriptions = F2(
-	function (envelope, _p8) {
-		var _p9 = _p8;
-		var _p10 = _p9._0;
-		if (_p10.ctor === 'NotDragging') {
+	function (envelope, _p9) {
+		var _p10 = _p9;
+		var _p11 = _p10._0;
+		if (_p11.ctor === 'NotDragging') {
 			return _elm_lang$core$Platform_Sub$none;
 		} else {
 			return A2(
 				_elm_lang$core$Platform_Sub$map,
-				function (_p11) {
+				function (_p12) {
 					return envelope(
-						_user$project$Draggable$Msg(_p11));
+						_user$project$Draggable$Msg(_p12));
 				},
 				_elm_lang$core$Platform_Sub$batch(
 					{
@@ -9093,7 +9307,7 @@ var _user$project$Draggable$subscriptions = F2(
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$mouse$Mouse$ups(
-								function (_p12) {
+								function (_p13) {
 									return _user$project$Internal$StopDragging;
 								}),
 							_1: {ctor: '[]'}
@@ -9101,21 +9315,77 @@ var _user$project$Draggable$subscriptions = F2(
 					}));
 		}
 	});
+var _user$project$Draggable$touchTriggers = F2(
+	function (key, envelope) {
+		var touchToMouse = function (_p14) {
+			var _p15 = _p14;
+			return A2(
+				_elm_lang$mouse$Mouse$Position,
+				_elm_lang$core$Basics$round(_p15.clientX),
+				_elm_lang$core$Basics$round(_p15.clientY));
+		};
+		var mouseToEnv = function (internal) {
+			return function (_p16) {
+				return envelope(
+					_user$project$Draggable$Msg(
+						internal(
+							touchToMouse(_p16))));
+			};
+		};
+		return {
+			ctor: '::',
+			_0: _mpizenberg$elm_touch_events$SingleTouch$onStart(
+				mouseToEnv(
+					_user$project$Internal$StartDragging(key))),
+			_1: {
+				ctor: '::',
+				_0: _mpizenberg$elm_touch_events$SingleTouch$onMove(
+					mouseToEnv(_user$project$Internal$DragAt)),
+				_1: {
+					ctor: '::',
+					_0: _mpizenberg$elm_touch_events$SingleTouch$onEnd(
+						mouseToEnv(
+							function (_p17) {
+								return _user$project$Internal$StopDragging;
+							})),
+					_1: {ctor: '[]'}
+				}
+			}
+		};
+	});
+var _user$project$Draggable$positionDecoder = function (key) {
+	return _user$project$Draggable$whenLeftMouseButtonPressed(
+		A2(
+			_elm_lang$core$Json_Decode$map,
+			function (_p18) {
+				return _user$project$Draggable$Msg(
+					A2(_user$project$Internal$StartDragging, key, _p18));
+			},
+			_elm_lang$mouse$Mouse$position));
+};
 var _user$project$Draggable$mouseTrigger = F2(
 	function (key, envelope) {
-		var ignoreDefaults = A2(_elm_lang$virtual_dom$VirtualDom$Options, true, true);
 		return A3(
 			_elm_lang$virtual_dom$VirtualDom$onWithOptions,
 			'mousedown',
-			ignoreDefaults,
+			_user$project$Draggable$ignoreDefaults,
 			A2(
 				_elm_lang$core$Json_Decode$map,
-				function (_p13) {
-					return envelope(
-						_user$project$Draggable$Msg(
-							A2(_user$project$Internal$StartDragging, key, _p13)));
-				},
-				_elm_lang$mouse$Mouse$position));
+				envelope,
+				_user$project$Draggable$positionDecoder(key)));
+	});
+var _user$project$Draggable$customMouseTrigger = F2(
+	function (customDecoder, customEnvelope) {
+		return A3(
+			_elm_lang$virtual_dom$VirtualDom$onWithOptions,
+			'mousedown',
+			_user$project$Draggable$ignoreDefaults,
+			A3(
+				_elm_lang$core$Json_Decode$map2,
+				customEnvelope,
+				_user$project$Draggable$positionDecoder(
+					{ctor: '_Tuple0'}),
+				customDecoder));
 	});
 var _user$project$Draggable$Config = function (a) {
 	return {ctor: 'Config', _0: a};
@@ -9126,9 +9396,9 @@ var _user$project$Draggable$basicConfig = function (onDragByListener) {
 		_elm_lang$core$Native_Utils.update(
 			defaultConfig,
 			{
-				onDragBy: function (_p14) {
+				onDragBy: function (_p19) {
 					return _elm_lang$core$Maybe$Just(
-						onDragByListener(_p14));
+						onDragByListener(_p19));
 				}
 			}));
 };
@@ -9210,15 +9480,24 @@ var _user$project$BasicExample$view = function (_p2) {
 	};
 	return A2(
 		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$style(style),
-			_1: {
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			{
 				ctor: '::',
-				_0: A2(_user$project$Draggable$mouseTrigger, '', _user$project$BasicExample$DragMsg),
-				_1: {ctor: '[]'}
-			}
-		},
+				_0: _elm_lang$html$Html_Attributes$style(style),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_user$project$Draggable$mouseTrigger,
+						{ctor: '_Tuple0'},
+						_user$project$BasicExample$DragMsg),
+					_1: {ctor: '[]'}
+				}
+			},
+			A2(
+				_user$project$Draggable$touchTriggers,
+				{ctor: '_Tuple0'},
+				_user$project$BasicExample$DragMsg)),
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html$text('Drag me'),
