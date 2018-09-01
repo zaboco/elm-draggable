@@ -10,6 +10,6 @@ cache:
 node_js:
   - "6.9"
 install:
-  - npm install -g elm elm-test
+  - npm install -g elm@0.18 elm-test@0.18.2
 script:
   - elm-test
