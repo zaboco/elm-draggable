@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
+ELM_MAKE='elm make'
+
 cd examples/
-elm-make BasicExample.elm --output ../basic.html
-elm-make CustomEventsExample.elm --output ../custom.html
-elm-make ConstraintsExample.elm --output ../constraints.html
-elm-make PanAndZoomExample.elm --output ../pan-and-zoom.html
-elm-make MultipleTargetsExample.elm --output ../multiple.html
+$ELM_MAKE BasicExample.elm --output ../basic.html
+$ELM_MAKE CustomEventsExample.elm --output ../custom.html
+$ELM_MAKE ConstraintsExample.elm --output ../constraints.html
+$ELM_MAKE PanAndZoomExample.elm --output ../pan-and-zoom.html
+$ELM_MAKE MultipleTargetsExample.elm --output ../multiple.html
