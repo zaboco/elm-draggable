@@ -1,5 +1,6 @@
 module MultipleTargetsExample exposing (main)
 
+import Browser
 import Draggable
 import Draggable.Events exposing (onClick, onDragBy, onDragStart)
 import Html exposing (Html)
@@ -12,9 +13,9 @@ import Svg.Keyed
 import Svg.Lazy exposing (lazy)
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.program
+    Browser.element
         { init = init
         , update = update
         , subscriptions = subscriptions
@@ -33,8 +34,8 @@ type alias Id =
     String
 
 
-box : Id -> Vec2 -> Box
-box id position =
+makeBox : Id -> Vec2 -> Box
+makeBox id position =
     Box id position False
 
 
@@ -63,13 +64,13 @@ emptyGroup =
 addBox : Vec2 -> BoxGroup -> BoxGroup
 addBox position ({ uid, idleBoxes } as group) =
     { group
-        | idleBoxes = (box (toString uid) position) :: idleBoxes
+        | idleBoxes = makeBox (String.fromInt uid) position :: idleBoxes
         , uid = uid + 1
     }
 
 
-boxGroup : List Vec2 -> BoxGroup
-boxGroup positions =
+makeBoxGroup : List Vec2 -> BoxGroup
+makeBoxGroup positions =
     positions
         |> List.foldl addBox emptyGroup
 
@@ -77,7 +78,7 @@ boxGroup positions =
 allBoxes : BoxGroup -> List Box
 allBoxes { movingBox, idleBoxes } =
     movingBox
-        |> Maybe.map (flip (::) idleBoxes)
+        |> Maybe.map (\a -> a :: idleBoxes)
         |> Maybe.withDefault idleBoxes
 
 
@@ -85,12 +86,12 @@ startDragging : Id -> BoxGroup -> BoxGroup
 startDragging id ({ idleBoxes, movingBox } as group) =
     let
         ( targetAsList, others ) =
-            List.partition (.id >> ((==) id)) idleBoxes
+            List.partition (.id >> (==) id) idleBoxes
     in
-        { group
-            | idleBoxes = others
-            , movingBox = targetAsList |> List.head
-        }
+    { group
+        | idleBoxes = others
+        , movingBox = targetAsList |> List.head
+    }
 
 
 stopDragging : BoxGroup -> BoxGroup
@@ -112,10 +113,11 @@ toggleBoxClicked id group =
         possiblyToggleBox box =
             if box.id == id then
                 toggleClicked box
+
             else
                 box
     in
-        { group | idleBoxes = group.idleBoxes |> List.map possiblyToggleBox }
+    { group | idleBoxes = group.idleBoxes |> List.map possiblyToggleBox }
 
 
 type alias Model =
@@ -136,14 +138,14 @@ boxPositions : List Vec2
 boxPositions =
     let
         indexToPosition =
-            toFloat >> ((*) 60) >> ((+) 10) >> (Vector2.vec2 10)
+            toFloat >> (*) 60 >> (+) 10 >> Vector2.vec2 10
     in
-        List.range 0 10 |> List.map indexToPosition
+    List.range 0 10 |> List.map indexToPosition
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { boxGroup = boxGroup boxPositions
+init : flags -> ( Model, Cmd Msg )
+init _ =
+    ( { boxGroup = makeBoxGroup boxPositions
       , drag = Draggable.init
       }
     , Cmd.none
@@ -153,7 +155,7 @@ init =
 dragConfig : Draggable.Config Id Msg
 dragConfig =
     Draggable.customConfig
-        [ onDragBy (Vector2.fromTuple >> OnDragBy)
+        [ onDragBy (\( dx, dy ) -> Vector2.vec2 dx dy |> OnDragBy)
         , onDragStart StartDragging
         , onClick ToggleBoxClicked
         ]
@@ -197,7 +199,7 @@ view { boxGroup } =
     Html.div
         []
         [ Html.p
-            [ Html.Attributes.style [ ( "padding-left", "8px" ) ] ]
+            [ Html.Attributes.style "padding-left" "8px" ]
             [ Html.text "Drag any box around. Click it to toggle its color." ]
         , Svg.svg
             [ Attr.style "height: 100vh; width: 100vw; position: fixed;"
@@ -213,13 +215,8 @@ boxesView boxGroup =
     boxGroup
         |> allBoxes
         |> List.reverse
-        |> List.map boxKeyedView
-        |> Svg.Keyed.node "g" []
-
-
-boxKeyedView : Box -> ( String, Svg Msg )
-boxKeyedView box =
-    ( box.id, lazy boxView box )
+        |> List.map boxView
+        |> Svg.node "g" []
 
 
 boxView : Box -> Svg Msg
@@ -228,21 +225,22 @@ boxView { id, position, clicked } =
         color =
             if clicked then
                 "red"
+
             else
                 "lightblue"
     in
-        Svg.rect
-            [ num Attr.width <| getX boxSize
-            , num Attr.height <| getY boxSize
-            , num Attr.x (getX position)
-            , num Attr.y (getY position)
-            , Attr.fill color
-            , Attr.stroke "black"
-            , Attr.cursor "move"
-            , Draggable.mouseTrigger id DragMsg
-            , onMouseUp StopDragging
-            ]
-            []
+    Svg.rect
+        [ num Attr.width <| getX boxSize
+        , num Attr.height <| getY boxSize
+        , num Attr.x (getX position)
+        , num Attr.y (getY position)
+        , Attr.fill color
+        , Attr.stroke "black"
+        , Attr.cursor "move"
+        , Draggable.mouseTrigger id DragMsg
+        , onMouseUp StopDragging
+        ]
+        []
 
 
 background : Svg msg
@@ -257,6 +255,6 @@ background =
         []
 
 
-num : (String -> Svg.Attribute msg) -> number -> Svg.Attribute msg
+num : (String -> Svg.Attribute msg) -> Float -> Svg.Attribute msg
 num attr value =
-    attr (toString value)
+    attr (String.fromFloat value)

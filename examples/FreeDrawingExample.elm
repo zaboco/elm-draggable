@@ -1,5 +1,6 @@
 module FreeDrawingExample exposing (main)
 
+import Browser
 import Draggable exposing (Delta)
 import Draggable.Events exposing (onDragBy, onMouseDown)
 import Html exposing (Html)
@@ -31,8 +32,8 @@ type Msg
     | AddNewPointAtDelta Draggable.Delta
 
 
-init : ( Model, Cmd msg )
-init =
+init : flags -> ( Model, Cmd msg )
+init _ =
     ( { scene = Empty, drag = Draggable.init }, Cmd.none )
 
 
@@ -49,10 +50,14 @@ update msg model =
         AddNewPointAtDelta delta ->
             case model.scene of
                 Empty ->
-                    model ! []
+                    ( model
+                    , Cmd.none
+                    )
 
                 Path startPoint deltasSoFar ->
-                    { model | scene = Path startPoint (delta :: deltasSoFar) } ! []
+                    ( { model | scene = Path startPoint (delta :: deltasSoFar) }
+                    , Cmd.none
+                    )
 
 
 dragConfig : Draggable.Config () Msg
@@ -105,16 +110,16 @@ pathView firstPoint reverseDeltas =
 
         deltasString =
             deltas
-                |> List.map (\( dx, dy ) -> " l " ++ (toString dx) ++ " " ++ (toString dy))
+                |> List.map (\( dx, dy ) -> " l " ++ String.fromFloat dx ++ " " ++ String.fromFloat dy)
                 |> String.join ""
 
         firstPointString =
-            "M " ++ (toString firstPoint.x) ++ " " ++ (toString firstPoint.y)
+            "M " ++ String.fromFloat firstPoint.x ++ " " ++ String.fromFloat firstPoint.y
 
         pathString =
             firstPointString ++ deltasString
     in
-        Svg.path [ Attr.d pathString ] []
+    Svg.path [ Attr.d pathString ] []
 
 
 background : Svg msg
@@ -129,9 +134,9 @@ background =
         []
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.program
+    Browser.element
         { init = init
         , update = update
         , subscriptions = subscriptions

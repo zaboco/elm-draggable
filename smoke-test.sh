@@ -4,11 +4,12 @@ status=0
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
+ELM_MAKE='elm make'
 
 echo Compiling main library
 echo ======================
 
-elm-make --warn --yes --docs documentation.json
+$ELM_MAKE --docs documentation.json
 ((status+=$?))
 
 echo
@@ -18,7 +19,7 @@ echo ======================
 cd examples
 for f in *.elm; do
     echo "$f:"
-    elm-make --warn --yes $f
+    $ELM_MAKE $f --output=/dev/null
     ((status+=$?))
     echo
 done

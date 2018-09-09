@@ -1,6 +1,22 @@
-module Internal exposing (..)
+module Internal exposing
+    ( Config
+    , Delta
+    , Event
+    , Msg(..)
+    , Position
+    , State(..)
+    , defaultConfig
+    , distanceTo
+    , updateAndEmit
+    )
 
-import Mouse exposing (Position)
+import Browser.Events as Events
+
+
+type alias Position =
+    { x : Int
+    , y : Int
+    }
 
 
 type State a
@@ -70,7 +86,6 @@ updateAndEmit config msg drag =
 
         _ ->
             ( drag, Nothing )
-                |> logInvalidState drag msg
 
 
 
@@ -82,20 +97,3 @@ distanceTo end start =
     ( toFloat (end.x - start.x)
     , toFloat (end.y - start.y)
     )
-
-
-logInvalidState : State a -> Msg a -> b -> b
-logInvalidState drag msg result =
-    let
-        str =
-            String.join ""
-                [ "Invalid drag state: "
-                , toString drag
-                , ": "
-                , toString msg
-                ]
-
-        _ =
-            Debug.log str
-    in
-        result

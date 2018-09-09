@@ -1,9 +1,8 @@
-module Cmd.Extra
-    exposing
-        ( message
-        , multiMessage
-        , optionalMessage
-        )
+module Cmd.Extra exposing
+    ( message
+    , multiMessage
+    , optionalMessage
+    )
 
 import Task
 
