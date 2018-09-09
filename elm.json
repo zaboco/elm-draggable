@@ -3,7 +3,7 @@
     "name": "zaboco/elm-draggable",
     "summary": "easy way to make DOM elements draggable",
     "license": "BSD-3-Clause",
-    "version": "4.0.0",
+    "version": "4.0.1",
     "exposed-modules": [
         "Draggable",
         "Draggable.Events"
