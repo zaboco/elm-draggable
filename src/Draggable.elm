@@ -1,19 +1,10 @@
-module Draggable
-    exposing
-        ( State
-        , Msg
-        , Delta
-        , Config
-        , Event
-        , basicConfig
-        , customConfig
-        , mouseTrigger
-        , customMouseTrigger
-        , touchTriggers
-        , init
-        , update
-        , subscriptions
-        )
+module Draggable exposing
+    ( init
+    , basicConfig, customConfig
+    , update, subscriptions
+    , mouseTrigger, customMouseTrigger, touchTriggers
+    , Delta, State, Msg, Config, Event
+    )
 
 {-| This library provides and easy way to make DOM elements (Html or Svg) draggable.
 
@@ -51,12 +42,13 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 
 -}
 
+import Browser.Events
 import Cmd.Extra
-import Internal
+import Html exposing (Attribute)
+import Html.Events
+import Html.Events.Extra.Touch as Touch
+import Internal exposing (Position)
 import Json.Decode as Decode exposing (Decoder)
-import Mouse exposing (Position)
-import SingleTouch
-import VirtualDom
 
 
 {-| A type alias representing the distance between two drag points.
@@ -102,7 +94,9 @@ update config msg model =
         ( dragState, dragCmd ) =
             updateDraggable config msg model.drag
     in
-        { model | drag = dragState } ! [ dragCmd ]
+    ( { model | drag = dragState }
+    , dragCmd
+    )
 
 
 updateDraggable : Config a msg -> Msg a -> State a -> ( State a, Cmd msg )
@@ -111,7 +105,7 @@ updateDraggable (Config config) (Msg msg) (State drag) =
         ( newDrag, newMsgMaybe ) =
             Internal.updateAndEmit config msg drag
     in
-        ( State newDrag, Cmd.Extra.optionalMessage newMsgMaybe )
+    ( State newDrag, Cmd.Extra.optionalMessage newMsgMaybe )
 
 
 {-| Handle mouse subscriptions used for dragging
@@ -123,7 +117,9 @@ subscriptions envelope (State drag) =
             Sub.none
 
         _ ->
-            [ Mouse.moves Internal.DragAt, Mouse.ups (\_ -> Internal.StopDragging) ]
+            [ Browser.Events.onMouseMove <| Decode.map Internal.DragAt positionDecoder
+            , Browser.Events.onMouseUp <| Decode.succeed Internal.StopDragging
+            ]
                 |> Sub.batch
                 |> Sub.map (envelope << Msg)
 
@@ -133,28 +129,31 @@ subscriptions envelope (State drag) =
     div [ mouseTrigger "element-id" DragMsg ] [ text "Drag me" ]
 
 -}
-mouseTrigger : a -> (Msg a -> msg) -> VirtualDom.Property msg
+mouseTrigger : a -> (Msg a -> msg) -> Attribute msg
 mouseTrigger key envelope =
-    VirtualDom.onWithOptions "mousedown"
-        ignoreDefaults
-        (Decode.map envelope (positionDecoder key))
+    Html.Events.custom "mousedown" <|
+        Decode.map (alwaysPreventDefaultAndStopPropagation << envelope) (baseDecoder key)
 
 
 {-| DOM event handlers to manage dragging based on touch events. See `mouseTrigger` for details on the `key` parameter.
 -}
-touchTriggers : a -> (Msg a -> msg) -> List (VirtualDom.Property msg)
+touchTriggers : a -> (Msg a -> msg) -> List (Attribute msg)
 touchTriggers key envelope =
     let
-        touchToMouse =
-            \{ clientX, clientY } -> Mouse.Position (round clientX) (round clientY)
+        touchToMouse : Touch.Event -> Position
+        touchToMouse touchEvent =
+            List.head touchEvent.changedTouches
+                |> Maybe.map .clientPos
+                |> Maybe.withDefault ( 0, 0 )
+                |> (\( clientX, clientY ) -> Position (round clientX) (round clientY))
 
         mouseToEnv internal =
             touchToMouse >> internal >> Msg >> envelope
     in
-        [ SingleTouch.onStart <| mouseToEnv (Internal.StartDragging key)
-        , SingleTouch.onMove <| mouseToEnv Internal.DragAt
-        , SingleTouch.onEnd <| mouseToEnv (\_ -> Internal.StopDragging)
-        ]
+    [ Touch.onStart <| mouseToEnv (Internal.StartDragging key)
+    , Touch.onMove <| mouseToEnv Internal.DragAt
+    , Touch.onEnd <| mouseToEnv (\_ -> Internal.StopDragging)
+    ]
 
 
 {-| DOM event handler to start dragging on mouse down and also sending custom information about the `mousedown` event. It does so by using a custom `Decoder` for the [`MouseEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent).
@@ -162,23 +161,36 @@ touchTriggers key envelope =
     div [ mouseTrigger offsetDecoder CustomDragMsg ] [ text "Drag me" ]
 
 -}
-customMouseTrigger : Decoder a -> (Msg () -> a -> msg) -> VirtualDom.Property msg
+customMouseTrigger : Decoder a -> (Msg () -> a -> msg) -> Attribute msg
 customMouseTrigger customDecoder customEnvelope =
-    VirtualDom.onWithOptions "mousedown"
-        ignoreDefaults
-        (Decode.map2 customEnvelope (positionDecoder ()) customDecoder)
+    Html.Events.custom "mousedown" <|
+        Decode.map alwaysPreventDefaultAndStopPropagation
+            (Decode.map2 customEnvelope (baseDecoder ()) customDecoder)
 
 
-positionDecoder : a -> Decoder (Msg a)
-positionDecoder key =
-    Mouse.position
+baseDecoder : a -> Decoder (Msg a)
+baseDecoder key =
+    positionDecoder
         |> Decode.map (Msg << Internal.StartDragging key)
         |> whenLeftMouseButtonPressed
 
 
-ignoreDefaults : VirtualDom.Options
-ignoreDefaults =
-    VirtualDom.Options True True
+positionDecoder : Decoder Position
+positionDecoder =
+    Decode.map2 Position
+        (Decode.field "pageX" Decode.int)
+        (Decode.field "pageY" Decode.int)
+
+
+alwaysPreventDefaultAndStopPropagation :
+    msg
+    ->
+        { message : msg
+        , stopPropagation : Bool
+        , preventDefault : Bool
+        }
+alwaysPreventDefaultAndStopPropagation msg =
+    { message = msg, stopPropagation = True, preventDefault = True }
 
 
 whenLeftMouseButtonPressed : Decoder a -> Decoder a
@@ -219,7 +231,7 @@ basicConfig onDragByListener =
         defaultConfig =
             Internal.defaultConfig
     in
-        Config { defaultConfig | onDragBy = Just << onDragByListener }
+    Config { defaultConfig | onDragBy = Just << onDragByListener }
 
 
 {-| Custom config, including arbitrary options. See [`Events`](#Draggable-Events).

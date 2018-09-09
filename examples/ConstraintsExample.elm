@@ -1,17 +1,19 @@
-module ConstraintsExample exposing (..)
+module ConstraintsExample exposing (main)
 
+import Browser
+import Browser.Events
 import Char
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import Html exposing (Html)
-import Keyboard exposing (KeyCode)
+import Json.Decode as D exposing (Decoder)
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.program
+    Browser.element
         { init = init
         , update = update
         , subscriptions = subscriptions
@@ -43,8 +45,8 @@ type Msg
     | SetDragging Bool
 
 
-init : ( Model, Cmd Msg )
-init =
+init : flags -> ( Model, Cmd Msg )
+init _ =
     ( { position = Position 100 100
       , drag = Draggable.init
       , dragHorizontally = True
@@ -58,7 +60,7 @@ init =
 dragConfig : Draggable.Config String Msg
 dragConfig =
     Draggable.customConfig
-        [ onDragBy (OnDragBy)
+        [ onDragBy OnDragBy
         , onDragStart (\_ -> SetDragging True)
         , onDragEnd (SetDragging False)
         ]
@@ -82,7 +84,7 @@ update msg ({ position, dragVertically, dragHorizontally } as model) =
                         (position.x + dx * fx)
                         (position.y + dy * fy)
             in
-                ( { model | position = newPosition }, Cmd.none )
+            ( { model | position = newPosition }, Cmd.none )
 
         DragMsg dragMsg ->
             Draggable.update dragConfig dragMsg model
@@ -97,34 +99,72 @@ update msg ({ position, dragVertically, dragHorizontally } as model) =
             ( { model | isDragging = flag }, Cmd.none )
 
 
-boolToNumber : Bool -> number
+boolToNumber : Bool -> Float
 boolToNumber bool =
     if bool then
         1
+
     else
         0
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { drag } =
+subscriptions { drag, dragHorizontally, dragVertically } =
+    let
+        decoder : Bool -> Decoder Msg
+        decoder preventDragging =
+            keyDecoder
+                |> D.andThen
+                    (\key ->
+                        case key of
+                            "a" ->
+                                if dragHorizontally == preventDragging then
+                                    D.succeed <| SetDragHorizontally (not preventDragging)
+
+                                else
+                                    D.fail "No need to handle key"
+
+                            "w" ->
+                                if dragVertically == preventDragging then
+                                    D.succeed <| SetDragVertically (not preventDragging)
+
+                                else
+                                    D.fail "No need to handle key"
+
+                            _ ->
+                                D.fail "Ignoring key"
+                    )
+
+        handleKey : Bool -> String -> Msg
+        handleKey pressed code =
+            case code of
+                "a" ->
+                    if dragHorizontally == pressed then
+                        SetDragHorizontally (not pressed)
+
+                    else
+                        NoOp
+
+                "w" ->
+                    if dragVertically == pressed then
+                        SetDragVertically (not pressed)
+
+                    else
+                        NoOp
+
+                _ ->
+                    NoOp
+    in
     Sub.batch
-        [ Keyboard.downs (handleKey True)
-        , Keyboard.ups (handleKey False)
+        [ Browser.Events.onKeyDown <| decoder True
+        , Browser.Events.onKeyUp <| decoder False
         , Draggable.subscriptions DragMsg drag
         ]
 
 
-handleKey : Bool -> Keyboard.KeyCode -> Msg
-handleKey pressed code =
-    case (Char.fromCode code) of
-        'A' ->
-            SetDragHorizontally (not pressed)
-
-        'W' ->
-            SetDragVertically (not pressed)
-
-        _ ->
-            NoOp
+keyDecoder : Decoder String
+keyDecoder =
+    D.field "key" D.string
 
 
 
@@ -151,18 +191,19 @@ view { position, dragHorizontally, dragVertically, isDragging } =
         cursor =
             if isDragging then
                 "none"
+
             else
                 "default"
     in
-        Svg.svg
-            [ Attr.cursor cursor
-            , Attr.style "height: 100vh; width: 100vw;"
-            ]
-            [ background
-            , verticalGuideline position.x dragVertically
-            , horizontalGuideline position.y dragHorizontally
-            , box position isDragging
-            ]
+    Svg.svg
+        [ Attr.cursor cursor
+        , Attr.style "height: 100vh; width: 100vw;"
+        ]
+        [ background
+        , verticalGuideline position.x dragVertically
+        , horizontalGuideline position.y dragHorizontally
+        , box position isDragging
+        ]
 
 
 box : Position -> Bool -> Svg Msg
@@ -179,22 +220,23 @@ box position isDragging =
         cursor =
             if isDragging then
                 "none"
+
             else
                 "move"
     in
-        Svg.rect
-            [ num Attr.width boxSize.width
-            , num Attr.height boxSize.height
-            , num Attr.x x
-            , num Attr.y y
-            , Attr.cursor cursor
-            , Attr.fill "red"
-            , Draggable.mouseTrigger "" DragMsg
-            ]
-            []
+    Svg.rect
+        [ num Attr.width boxSize.width
+        , num Attr.height boxSize.height
+        , num Attr.x x
+        , num Attr.y y
+        , Attr.cursor cursor
+        , Attr.fill "red"
+        , Draggable.mouseTrigger "" DragMsg
+        ]
+        []
 
 
-horizontalGuideline : number -> Bool -> Svg Msg
+horizontalGuideline : Float -> Bool -> Svg Msg
 horizontalGuideline y isEnabled =
     Svg.g [] <|
         [ Svg.text_
@@ -216,7 +258,7 @@ horizontalGuideline y isEnabled =
         ]
 
 
-verticalGuideline : number -> Bool -> Svg Msg
+verticalGuideline : Float -> Bool -> Svg Msg
 verticalGuideline x isEnabled =
     Svg.g [] <|
         [ Svg.text_
@@ -243,6 +285,7 @@ guidelineStyle isEnabled otherAttributes =
         color =
             if isEnabled then
                 "black"
+
             else
                 "#ccc"
 
@@ -251,7 +294,7 @@ guidelineStyle isEnabled otherAttributes =
             , Attr.strokeDasharray "10, 10"
             ]
     in
-        otherAttributes ++ attributes
+    otherAttributes ++ attributes
 
 
 background : Svg msg
@@ -266,6 +309,6 @@ background =
         []
 
 
-num : (String -> Svg.Attribute msg) -> number -> Svg.Attribute msg
+num : (String -> Svg.Attribute msg) -> Float -> Svg.Attribute msg
 num attr value =
-    attr (toString value)
+    attr (String.fromFloat value)

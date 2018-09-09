@@ -1,19 +1,17 @@
-module Draggable.Events
-    exposing
-        ( onDragStart
-        , onDragBy
-        , onDragEnd
-        , onClick
-        , onMouseDown
-        )
+module Draggable.Events exposing
+    ( onDragStart, onDragEnd, onDragBy
+    , onClick, onMouseDown
+    )
 
 {-| Listeners for the various events involved in dragging (`onDragBy`, `onDragStart`, etc.). Also handles `click` events when the mouse was not moved.
+
 @docs onDragStart, onDragEnd, onDragBy
 @docs onClick, onMouseDown
+
 -}
 
-import Internal exposing (Config, Delta)
 import Draggable exposing (Event)
+import Internal exposing (Config, Delta)
 
 
 {-| Register a `DragStart` event listener. It will not trigger if the mouse has not moved while it was pressed. It receives the element key.
@@ -33,7 +31,7 @@ onDragEnd toMsg config =
 {-| Register a `DragBy` event listener. It will trigger every time the mouse is moved. The sent message will contain a `Delta`, which is the distance between the current position and the previous one.
 
     case Msg of
-        OnDragBy (dx, dy) ->
+        OnDragBy ( dx, dy ) ->
             { model | position = { x = position.x + dx, y = position.y + dy } }
 
 -}

@@ -1,9 +1,10 @@
-module CustomEventsExample exposing (..)
+module CustomEventsExample exposing (main)
 
-import Html exposing (Html)
-import Html.Attributes as A
+import Browser
 import Draggable
 import Draggable.Events exposing (onClick, onDragBy, onDragEnd, onDragStart)
+import Html exposing (Html)
+import Html.Attributes as A
 import Html.Events
 
 
@@ -31,9 +32,9 @@ type Msg
     | DragMsg (Draggable.Msg String)
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.program
+    Browser.element
         { init = init
         , update = update
         , subscriptions = subscriptions
@@ -41,8 +42,8 @@ main =
         }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : flags -> ( Model, Cmd Msg )
+init _ =
     ( { xy = Position 32 32
       , drag = Draggable.init
       , clicksCount = 0
@@ -97,40 +98,33 @@ view : Model -> Html Msg
 view { xy, isDragging, isClicked, clicksCount } =
     let
         translate =
-            "translate(" ++ (toString xy.x) ++ "px, " ++ (toString xy.y) ++ "px)"
+            "translate(" ++ String.fromFloat xy.x ++ "px, " ++ String.fromFloat xy.y ++ "px)"
 
         status =
             if isDragging then
                 "Release me"
+
             else
                 "Drag me"
 
         color =
             if isClicked then
                 "limegreen"
+
             else
                 "lightgray"
-
-        style =
-            [ "transform" => translate
-            , "padding" => "16px"
-            , "background-color" => color
-            , "width" => "100px"
-            , "text-align" => "center"
-            , "cursor" => "move"
-            ]
     in
-        Html.div
-            [ A.style style
-            , Draggable.mouseTrigger "" DragMsg
-            , Html.Events.onMouseUp (SetClicked False)
-            ]
-            [ Html.text status
-            , Html.br [] []
-            , Html.text <| (toString clicksCount) ++ " clicks"
-            ]
-
-
-(=>) : a -> b -> ( a, b )
-(=>) =
-    (,)
+    Html.div
+        [ A.style "transform" translate
+        , A.style "padding" "16px"
+        , A.style "background-color" color
+        , A.style "width" "100px"
+        , A.style "text-align" "center"
+        , A.style "cursor" "move"
+        , Draggable.mouseTrigger "" DragMsg
+        , Html.Events.onMouseUp (SetClicked False)
+        ]
+        [ Html.text status
+        , Html.br [] []
+        , Html.text <| String.fromInt clicksCount ++ " clicks"
+        ]

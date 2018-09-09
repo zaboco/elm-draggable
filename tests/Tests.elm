@@ -1,10 +1,9 @@
-module Tests exposing (..)
+module Tests exposing (all)
 
-import Fuzz exposing (Fuzzer)
-import Mouse exposing (Position)
-import Test exposing (..)
 import Expect as Should exposing (Expectation)
-import Internal exposing (Delta, Msg(..), State(..))
+import Fuzz exposing (Fuzzer)
+import Internal exposing (Delta, Msg(..), Position, State(..))
+import Test exposing (..)
 
 
 all : Test
@@ -70,7 +69,9 @@ updateTests =
                     ( DraggingTentative key startPosition
                     , Just (OnMouseDown key)
                     )
-    , (fuzz3 keyF positionF positionF)
+    , fuzz3 keyF
+        positionF
+        positionF
         "DraggingTentative -[DragAt]-> Dragging (onDragStart key)"
         (\key p1 p2 ->
             DraggingTentative key p1
@@ -131,13 +132,13 @@ noEventsTest =
                 andUpdate =
                     andThen << defaultUpdate
             in
-                NotDragging
-                    |> defaultUpdate (startDragging startPosition)
-                    |> andUpdate (DragAt endPosition)
-                    |> andUpdate StopDragging
-                    |> andUpdate (startDragging startPosition)
-                    |> andUpdate StopDragging
-                    |> Should.equal ( NotDragging, Nothing )
+            NotDragging
+                |> defaultUpdate (startDragging startPosition)
+                |> andUpdate (DragAt endPosition)
+                |> andUpdate StopDragging
+                |> andUpdate (startDragging startPosition)
+                |> andUpdate StopDragging
+                |> Should.equal ( NotDragging, Nothing )
 
 
 
@@ -168,4 +169,4 @@ andThen f ( model, msgMaybe ) =
         ( newModel, newMsgMaybe ) =
             f model
     in
-        ( newModel, msgMaybe |> Maybe.andThen (\_ -> newMsgMaybe) )
+    ( newModel, msgMaybe |> Maybe.andThen (\_ -> newMsgMaybe) )
