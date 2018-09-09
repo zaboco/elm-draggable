@@ -54,12 +54,7 @@ init _ =
 
 dragConfig : Draggable.Config () Msg
 dragConfig =
-    let
-        vectorFromPair : ( Float, Float ) -> Vec2
-        vectorFromPair ( x, y ) =
-            Vector2.vec2 x y
-    in
-    Draggable.basicConfig (OnDragBy << vectorFromPair)
+    Draggable.basicConfig (OnDragBy << (\( dx, dy ) -> Vector2.vec2 dx dy))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
