@@ -16,5 +16,7 @@
         "elm/json": "1.0.0 <= v < 2.0.0",
         "mpizenberg/elm-pointer-events": "3.0.0 <= v < 4.0.0"
     },
-    "test-dependencies": {}
+    "test-dependencies": {
+        "elm-explorations/test": "1.1.0 <= v < 2.0.0"
+    }
 }

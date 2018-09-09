@@ -1,9 +1,8 @@
-module Tests exposing (Emit, EmitMsg(..), Key(..), all, andThen, defaultKey, defaultUpdate, fullConfig, invalidUpdateTests, keyF, noEventsTest, positionF, startDragging, updateTests, updateWithEvents)
+module Tests exposing (all)
 
 import Expect as Should exposing (Expectation)
 import Fuzz exposing (Fuzzer)
-import Internal exposing (Delta, Msg(..), State(..))
-import Mouse exposing (Position)
+import Internal exposing (Delta, Msg(..), Position, State(..))
 import Test exposing (..)
 
 
