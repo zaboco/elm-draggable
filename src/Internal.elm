@@ -86,7 +86,6 @@ updateAndEmit config msg drag =
 
         _ ->
             ( drag, Nothing )
-                |> logInvalidState drag msg
 
 
 
@@ -98,20 +97,3 @@ distanceTo end start =
     ( toFloat (end.x - start.x)
     , toFloat (end.y - start.y)
     )
-
-
-logInvalidState : State a -> Msg a -> b -> b
-logInvalidState drag msg result =
-    let
-        str =
-            String.join ""
-                [ "Invalid drag state: "
-                , Debug.toString drag
-                , ": "
-                , Debug.toString msg
-                ]
-
-        _ =
-            Debug.log str
-    in
-    result
