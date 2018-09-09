@@ -1,6 +1,22 @@
-module Internal exposing (Config, Delta, Event, Msg(..), State(..), defaultConfig, distanceTo, logInvalidState, updateAndEmit)
+module Internal exposing
+    ( Config
+    , Delta
+    , Event
+    , Msg(..)
+    , Position
+    , State(..)
+    , defaultConfig
+    , distanceTo
+    , updateAndEmit
+    )
 
-import Mouse exposing (Position)
+import Browser.Events as Events
+
+
+type alias Position =
+    { x : Int
+    , y : Int
+    }
 
 
 type State a
@@ -90,9 +106,9 @@ logInvalidState drag msg result =
         str =
             String.join ""
                 [ "Invalid drag state: "
-                , toString drag
+                , Debug.toString drag
                 , ": "
-                , toString msg
+                , Debug.toString msg
                 ]
 
         _ =

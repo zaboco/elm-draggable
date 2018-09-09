@@ -1,5 +1,6 @@
-module BasicExample exposing (Model, Msg(..), Position, dragConfig, init, main, subscriptions, update, view)
+module BasicExample exposing (main)
 
+import Browser
 import Draggable
 import Html exposing (Html)
 import Html.Attributes as A
@@ -22,9 +23,9 @@ type Msg
     | DragMsg (Draggable.Msg ())
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.program
+    Browser.element
         { init = init
         , update = update
         , subscriptions = subscriptions
@@ -32,8 +33,8 @@ main =
         }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : flags -> ( Model, Cmd Msg )
+init _ =
     ( { xy = Position 32 32, drag = Draggable.init }
     , Cmd.none
     )
@@ -65,25 +66,16 @@ view : Model -> Html Msg
 view { xy } =
     let
         translate =
-            "translate(" ++ toString xy.x ++ "px, " ++ toString xy.y ++ "px)"
-
-        style =
-            [ "transform" => translate
-            , "padding" => "16px"
-            , "background-color" => "lightgray"
-            , "width" => "64px"
-            , "cursor" => "move"
-            ]
+            "translate(" ++ String.fromFloat xy.x ++ "px, " ++ String.fromFloat xy.y ++ "px)"
     in
     Html.div
-        ([ A.style style
+        ([ A.style "transform" translate
+         , A.style "padding" "16px"
+         , A.style "background-color" "lightgray"
+         , A.style "width" "64px"
+         , A.style "cursor" "move"
          , Draggable.mouseTrigger () DragMsg
          ]
             ++ Draggable.touchTriggers () DragMsg
         )
         [ Html.text "Drag me" ]
-
-
-(=>) : a -> b -> ( a, b )
-(=>) =
-    \a b -> ( a, b )

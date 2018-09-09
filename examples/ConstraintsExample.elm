@@ -1,17 +1,19 @@
-module ConstraintsExample exposing (Model, Msg(..), Position, Size, background, boolToNumber, box, boxSize, dragConfig, guidelineStyle, handleKey, horizontalGuideline, init, main, num, sceneSize, subscriptions, update, verticalGuideline, view)
+module ConstraintsExample exposing (main)
 
+import Browser
+import Browser.Events
 import Char
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import Html exposing (Html)
-import Keyboard exposing (KeyCode)
+import Json.Decode as D exposing (Decoder)
 import Svg exposing (Svg)
 import Svg.Attributes as Attr
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.program
+    Browser.element
         { init = init
         , update = update
         , subscriptions = subscriptions
@@ -43,8 +45,8 @@ type Msg
     | SetDragging Bool
 
 
-init : ( Model, Cmd Msg )
-init =
+init : flags -> ( Model, Cmd Msg )
+init _ =
     ( { position = Position 100 100
       , drag = Draggable.init
       , dragHorizontally = True
@@ -97,7 +99,7 @@ update msg ({ position, dragVertically, dragHorizontally } as model) =
             ( { model | isDragging = flag }, Cmd.none )
 
 
-boolToNumber : Bool -> number
+boolToNumber : Bool -> Float
 boolToNumber bool =
     if bool then
         1
@@ -107,25 +109,62 @@ boolToNumber bool =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { drag } =
+subscriptions { drag, dragHorizontally, dragVertically } =
+    let
+        decoder : Bool -> Decoder Msg
+        decoder preventDragging =
+            keyDecoder
+                |> D.andThen
+                    (\key ->
+                        case key of
+                            "a" ->
+                                if dragHorizontally == preventDragging then
+                                    D.succeed <| SetDragHorizontally (not preventDragging)
+
+                                else
+                                    D.fail "No need to handle key"
+
+                            "w" ->
+                                if dragVertically == preventDragging then
+                                    D.succeed <| SetDragVertically (not preventDragging)
+
+                                else
+                                    D.fail "No need to handle key"
+
+                            _ ->
+                                D.fail "Ignoring key"
+                    )
+
+        handleKey : Bool -> String -> Msg
+        handleKey pressed code =
+            case code of
+                "a" ->
+                    if dragHorizontally == pressed then
+                        SetDragHorizontally (not pressed)
+
+                    else
+                        NoOp
+
+                "w" ->
+                    if dragVertically == pressed then
+                        SetDragVertically (not pressed)
+
+                    else
+                        NoOp
+
+                _ ->
+                    NoOp
+    in
     Sub.batch
-        [ Keyboard.downs (handleKey True)
-        , Keyboard.ups (handleKey False)
+        [ Browser.Events.onKeyDown <| decoder True
+        , Browser.Events.onKeyUp <| decoder False
         , Draggable.subscriptions DragMsg drag
         ]
 
 
-handleKey : Bool -> Keyboard.KeyCode -> Msg
-handleKey pressed code =
-    case Char.fromCode code of
-        'A' ->
-            SetDragHorizontally (not pressed)
-
-        'W' ->
-            SetDragVertically (not pressed)
-
-        _ ->
-            NoOp
+keyDecoder : Decoder String
+keyDecoder =
+    D.field "key" D.string
 
 
 
@@ -197,7 +236,7 @@ box position isDragging =
         []
 
 
-horizontalGuideline : number -> Bool -> Svg Msg
+horizontalGuideline : Float -> Bool -> Svg Msg
 horizontalGuideline y isEnabled =
     Svg.g [] <|
         [ Svg.text_
@@ -219,7 +258,7 @@ horizontalGuideline y isEnabled =
         ]
 
 
-verticalGuideline : number -> Bool -> Svg Msg
+verticalGuideline : Float -> Bool -> Svg Msg
 verticalGuideline x isEnabled =
     Svg.g [] <|
         [ Svg.text_
@@ -270,6 +309,6 @@ background =
         []
 
 
-num : (String -> Svg.Attribute msg) -> number -> Svg.Attribute msg
+num : (String -> Svg.Attribute msg) -> Float -> Svg.Attribute msg
 num attr value =
-    attr (toString value)
+    attr (String.fromFloat value)
