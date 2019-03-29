@@ -80,7 +80,7 @@ update msg ({ position } as model) =
                 ( x, y ) =
                     position
             in
-                { model | position = ( x + dx, y + dy ) } ! []
+                ( { model | position = ( round (toFloat x + dx), round (toFloat y + dy) ) }, Cmd.none )
 
         DragMsg dragMsg ->
             Draggable.update dragConfig dragMsg model
