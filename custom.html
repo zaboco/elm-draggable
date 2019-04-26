@@ -4805,14 +4805,22 @@ var author$project$Internal$Position = F2(
 	function (x, y) {
 		return {x: x, y: y};
 	});
+var elm$core$Basics$truncate = _Basics_truncate;
 var elm$json$Json$Decode$field = _Json_decodeField;
-var elm$json$Json$Decode$int = _Json_decodeInt;
+var elm$json$Json$Decode$float = _Json_decodeFloat;
+var elm$json$Json$Decode$map = _Json_map1;
 var elm$json$Json$Decode$map2 = _Json_map2;
 var author$project$Draggable$positionDecoder = A3(
 	elm$json$Json$Decode$map2,
 	author$project$Internal$Position,
-	A2(elm$json$Json$Decode$field, 'pageX', elm$json$Json$Decode$int),
-	A2(elm$json$Json$Decode$field, 'pageY', elm$json$Json$Decode$int));
+	A2(
+		elm$json$Json$Decode$map,
+		elm$core$Basics$truncate,
+		A2(elm$json$Json$Decode$field, 'pageX', elm$json$Json$Decode$float)),
+	A2(
+		elm$json$Json$Decode$map,
+		elm$core$Basics$truncate,
+		A2(elm$json$Json$Decode$field, 'pageY', elm$json$Json$Decode$float)));
 var author$project$Internal$DragAt = function (a) {
 	return {$: 'DragAt', a: a};
 };
@@ -5017,7 +5025,6 @@ var elm$core$Task$perform = F2(
 			elm$core$Task$Perform(
 				A2(elm$core$Task$map, toMessage, task)));
 	});
-var elm$json$Json$Decode$map = _Json_map1;
 var elm$json$Json$Decode$succeed = _Json_succeed;
 var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	switch (handler.$) {
@@ -5819,6 +5826,7 @@ var author$project$Draggable$alwaysPreventDefaultAndStopPropagation = function (
 };
 var elm$json$Json$Decode$andThen = _Json_andThen;
 var elm$json$Json$Decode$fail = _Json_fail;
+var elm$json$Json$Decode$int = _Json_decodeInt;
 var author$project$Draggable$whenLeftMouseButtonPressed = function (decoder) {
 	return A2(
 		elm$json$Json$Decode$andThen,
