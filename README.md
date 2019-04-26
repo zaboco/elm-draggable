@@ -1,14 +1,14 @@
 # elm-draggable
 An easy way to make DOM elements draggable
 
-[![elm version](https://img.shields.io/badge/elm-v0.18-blue.svg?style=flat-square)](http://elm-lang.org)
+[![elm version](https://img.shields.io/badge/elm-v0.19-blue.svg?style=flat-square)](http://elm-lang.org)
 [![Build Status](https://travis-ci.org/zaboco/elm-draggable.svg?branch=master)](https://travis-ci.org/zaboco/elm-draggable)
 
 ## Install
 Have [elm installed](https://guide.elm-lang.org/install.html).
 
 ```sh
-elm package install --yes zaboco/elm-draggable
+elm install zaboco/elm-draggable
 ```
 
 ## Live examples
@@ -80,7 +80,7 @@ update msg ({ position } as model) =
                 ( x, y ) =
                     position
             in
-                { model | position = ( x + dx, y + dy ) } ! []
+                ( { model | position = ( round (toFloat x + dx), round (toFloat y + dy) ) }, Cmd.none )
 
         DragMsg dragMsg ->
             Draggable.update dragConfig dragMsg model
@@ -165,7 +165,7 @@ See [the full example](https://github.com/zaboco/elm-draggable/blob/master/examp
 #### Custom Delta
 By default, `OnDragBy` message will have a `Draggable.Delta` parameter, which, as we saw, is just an alias for `(Float, Float)`. However, there are situations when we would like some other data type for representing our `delta`.
 
-Luckily, that's pretty easy using function composition. For example, we can use a [Vec2](http://package.elm-lang.org/packages/elm-community/linear-algebra/1.0.0/Math-Vector2#Vec2) type from the `linear-algebra` library, which provides handy function like `translate`, `scale` and `negate`. And there is even a [simple way of converting our "floats" delta to a `Vec2`](http://package.elm-lang.org/packages/elm-community/linear-algebra/1.0.0/Math-Vector2#fromTuple)
+Luckily, that's pretty easy using function composition. For example, we can use a [Vec2](https://package.elm-lang.org/packages/elm-explorations/linear-algebra/1.0.3/Math-Vector2#Vec2) type from the `linear-algebra` library, which provides handy function like `translate`, `scale` and `negate`.
 
 ```elm
 import Math.Vector2 as Vector2 exposing (Vec2)
@@ -176,7 +176,7 @@ type Msg
 
 dragConfig : Draggable.Config Msg
 dragConfig =
-    Draggable.basicConfig (OnDragBy << Vector2.fromTuple)
+    Draggable.basicConfig (OnDragBy << (\( dx, dy ) -> Vector2.vec2 dx dy))
 ```
 
 There is actually [an example right for this use-case](https://github.com/zaboco/elm-draggable/blob/master/examples/PanAndZoomExample.elm)

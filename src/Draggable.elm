@@ -178,8 +178,8 @@ baseDecoder key =
 positionDecoder : Decoder Position
 positionDecoder =
     Decode.map2 Position
-        (Decode.field "pageX" Decode.int)
-        (Decode.field "pageY" Decode.int)
+        (Decode.field "pageX" Decode.float |> Decode.map truncate)
+        (Decode.field "pageY" Decode.float |> Decode.map truncate)
 
 
 alwaysPreventDefaultAndStopPropagation :
