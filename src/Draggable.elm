@@ -234,7 +234,7 @@ basicConfig onDragByListener =
     Config { defaultConfig | onDragBy = Just << onDragByListener }
 
 
-{-| Custom config, including arbitrary options. See [`Events`](#Draggable-Events).
+{-| Custom config, including arbitrary options. See [`Events`](Draggable-Events).
 
     config =
         customConfig
