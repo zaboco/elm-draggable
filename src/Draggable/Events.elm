@@ -10,6 +10,7 @@ module Draggable.Events exposing
 
 -}
 
+import Basics.Extra exposing (compose2)
 import Draggable exposing (Event)
 import Internal exposing (Config, Delta)
 
@@ -42,13 +43,13 @@ onDragBy toMsg config =
 
 {-| Register a `Click` event listener. It will trigger if the mouse is pressed and immediately release, without any move. It receives the element key.
 -}
-onClick : (a -> msg) -> Event a msg
+onClick : (a -> Int -> msg) -> Event a msg
 onClick toMsg config =
-    { config | onClick = Just << toMsg }
+    { config | onClick = compose2 Just toMsg }
 
 
 {-| Register a `MouseDown` event listener. It will trigger whenever the mouse is pressed and will indicate the target element by the given key.
 -}
-onMouseDown : (a -> msg) -> Event a msg
+onMouseDown : (a -> Int -> msg) -> Event a msg
 onMouseDown toMsg config =
-    { config | onMouseDown = Just << toMsg }
+    { config | onMouseDown = compose2 Just toMsg }

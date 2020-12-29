@@ -42,6 +42,7 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 
 -}
 
+import Basics.Extra exposing (compose2)
 import Browser.Events
 import Cmd.Extra
 import Html exposing (Attribute)
@@ -150,7 +151,7 @@ touchTriggers key envelope =
         mouseToEnv internal =
             touchToMouse >> internal >> Msg >> envelope
     in
-    [ Touch.onStart <| mouseToEnv (Internal.StartDragging key)
+    [ Touch.onStart <| mouseToEnv (Internal.StartDragging key 0)
     , Touch.onMove <| mouseToEnv Internal.DragAt
     , Touch.onEnd <| mouseToEnv (\_ -> Internal.StopDragging)
     ]
@@ -170,9 +171,9 @@ customMouseTrigger customDecoder customEnvelope =
 
 baseDecoder : a -> Decoder (Msg a)
 baseDecoder key =
-    positionDecoder
-        |> Decode.map (Msg << Internal.StartDragging key)
-        |> whenLeftMouseButtonPressed
+    Decode.map2 (compose2 Msg (Internal.StartDragging key))
+        mouseButtonDecoder
+        positionDecoder
 
 
 positionDecoder : Decoder Position
@@ -181,6 +182,9 @@ positionDecoder =
         (Decode.field "pageX" Decode.float |> Decode.map truncate)
         (Decode.field "pageY" Decode.float |> Decode.map truncate)
 
+mouseButtonDecoder : Decoder Int
+mouseButtonDecoder =
+    Decode.field "button" Decode.int
 
 alwaysPreventDefaultAndStopPropagation :
     msg
@@ -191,23 +195,6 @@ alwaysPreventDefaultAndStopPropagation :
         }
 alwaysPreventDefaultAndStopPropagation msg =
     { message = msg, stopPropagation = True, preventDefault = True }
-
-
-whenLeftMouseButtonPressed : Decoder a -> Decoder a
-whenLeftMouseButtonPressed decoder =
-    Decode.field "button" Decode.int
-        |> Decode.andThen
-            (\button ->
-                case button of
-                    -- https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-MouseEvent
-                    -- 0 indicates the primary (usually left) mouse button
-                    0 ->
-                        decoder
-
-                    _ ->
-                        Decode.fail "Event is only relevant when the main mouse button was pressed."
-            )
-
 
 
 -- CONFIG

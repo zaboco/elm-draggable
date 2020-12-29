@@ -21,12 +21,12 @@ type alias Position =
 
 type State a
     = NotDragging
-    | DraggingTentative a Position
+    | DraggingTentative a Int Position
     | Dragging Position
 
 
 type Msg a
-    = StartDragging a Position
+    = StartDragging a Int Position
     | DragAt Position
     | StopDragging
 
@@ -39,8 +39,8 @@ type alias Config a msg =
     { onDragStart : a -> Maybe msg
     , onDragBy : Delta -> Maybe msg
     , onDragEnd : Maybe msg
-    , onClick : a -> Maybe msg
-    , onMouseDown : a -> Maybe msg
+    , onClick : a -> Int -> Maybe msg
+    , onMouseDown : a -> Int -> Maybe msg
     }
 
 
@@ -53,30 +53,38 @@ defaultConfig =
     { onDragStart = \_ -> Nothing
     , onDragBy = \_ -> Nothing
     , onDragEnd = Nothing
-    , onClick = \_ -> Nothing
-    , onMouseDown = \_ -> Nothing
+    , onClick = \_ _ -> Nothing
+    , onMouseDown = \_ _ -> Nothing
     }
 
 
 updateAndEmit : Config a msg -> Msg a -> State a -> ( State a, Maybe msg )
 updateAndEmit config msg drag =
     case ( drag, msg ) of
-        ( NotDragging, StartDragging key initialPosition ) ->
-            ( DraggingTentative key initialPosition, config.onMouseDown key )
+        ( NotDragging, StartDragging key button initialPosition ) ->
+            ( DraggingTentative key button initialPosition, config.onMouseDown key button )
 
-        ( DraggingTentative key oldPosition, DragAt _ ) ->
-            ( Dragging oldPosition
-            , config.onDragStart key
-            )
+        ( DraggingTentative key button oldPosition, DragAt _ ) ->
+            case button of
+                -- https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-MouseEvent
+                -- 0 indicates the primary (usually left) mouse button
+                0 ->
+                    ( Dragging oldPosition
+                    , config.onDragStart key
+                    )
+                _ ->
+                    ( NotDragging
+                    , Nothing
+                    )
 
         ( Dragging oldPosition, DragAt newPosition ) ->
             ( Dragging newPosition
             , config.onDragBy (distanceTo newPosition oldPosition)
             )
 
-        ( DraggingTentative key _, StopDragging ) ->
+        ( DraggingTentative key button _, StopDragging ) ->
             ( NotDragging
-            , config.onClick key
+            , config.onClick key button
             )
 
         ( Dragging _, StopDragging ) ->
