@@ -1,3 +1,14 @@
+### 5.0.0
+- `customMouseTrigger` now allows all mouse buttons, not only the left one
+- `whenLeftMouseButtonPressed` is now exposed by the module, to allow the old behaviour when using `customMouseTrigger`. It must be applied manually to the custom decoder.
+- `customMouseTrigger` now also takes the key as an argument, same as `mouseTrigger`.
+
+#### Migration
+```diff
+- customMouseTrigger customDecoder CustomMsg
++ customMouseTrigger () (whenLeftMouseButtonPressed customDecoder) CustomMsg
+```
+
 ### 2.0.0
 
 #### 1. `Delta` now uses floats
