@@ -1,8 +1,8 @@
 module FreeDrawingExample exposing (main)
 
 import Browser
-import Draggable exposing (Delta)
-import Draggable.Events exposing (onDragBy, onMouseDown)
+import Draggable exposing (Delta, whenLeftMouseButtonPressed)
+import Draggable.Events exposing (onDragBy)
 import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
 import Svg exposing (Svg)
@@ -78,7 +78,7 @@ view { scene } =
         [ Attr.style "height: 100vh; width: 100vw; margin: 100px;"
         , Attr.fill "none"
         , Attr.stroke "black"
-        , Draggable.customMouseTrigger mouseOffsetDecoder StartPathAndDrag
+        , Draggable.customMouseTrigger () (whenLeftMouseButtonPressed mouseOffsetDecoder) StartPathAndDrag
         ]
         [ background
         , sceneView scene
