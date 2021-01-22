@@ -188,7 +188,7 @@ There are cases when we need some additional information (e.g. mouse offset) abo
 import Json.Decode as Decode exposing (Decoder)
 
 type Msg
-    = CustomMouseDown Draggable.Msg (Float, Float)
+    = CustomMouseDown (Draggable.Msg ()) (Float, Float)
 --  | ...
 
 update msg model =
@@ -199,7 +199,7 @@ update msg model =
 
 view { scene } =
     Svg.svg
-        [ Draggable.customMouseTrigger mouseOffsetDecoder CustomMouseDown
+        [ Draggable.customMouseTrigger () mouseOffsetDecoder CustomMouseDown
 --      , ...
         ]
         []

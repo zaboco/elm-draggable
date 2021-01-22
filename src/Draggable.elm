@@ -2,7 +2,7 @@ module Draggable exposing
     ( init
     , basicConfig, customConfig
     , update, subscriptions
-    , mouseTrigger, customMouseTrigger, touchTriggers
+    , mouseTrigger, customMouseTrigger, whenLeftMouseButtonPressed, touchTriggers
     , Delta, State, Msg, Config, Event
     )
 
@@ -33,7 +33,7 @@ An element is considered to be dragging when the mouse is pressed **and** moved 
 
 # DOM trigger
 
-@docs mouseTrigger, customMouseTrigger, touchTriggers
+@docs mouseTrigger, customMouseTrigger, whenLeftMouseButtonPressed, touchTriggers
 
 
 # Definitions
@@ -132,7 +132,7 @@ subscriptions envelope (State drag) =
 mouseTrigger : a -> (Msg a -> msg) -> Attribute msg
 mouseTrigger key envelope =
     Html.Events.custom "mousedown" <|
-        Decode.map (alwaysPreventDefaultAndStopPropagation << envelope) (baseDecoder key)
+        Decode.map (alwaysPreventDefaultAndStopPropagation << envelope) (key |> baseDecoder |> whenLeftMouseButtonPressed)
 
 
 {-| DOM event handlers to manage dragging based on touch events. See `mouseTrigger` for details on the `key` parameter.
@@ -158,21 +158,20 @@ touchTriggers key envelope =
 
 {-| DOM event handler to start dragging on mouse down and also sending custom information about the `mousedown` event. It does so by using a custom `Decoder` for the [`MouseEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent).
 
-    div [ mouseTrigger offsetDecoder CustomDragMsg ] [ text "Drag me" ]
+    div [ customMouseTrigger () offsetDecoder CustomDragMsg ] [ text "Drag me" ]
 
 -}
-customMouseTrigger : Decoder a -> (Msg () -> a -> msg) -> Attribute msg
-customMouseTrigger customDecoder customEnvelope =
+customMouseTrigger : k -> Decoder a -> (Msg k -> a -> msg) -> Attribute msg
+customMouseTrigger key customDecoder customEnvelope =
     Html.Events.custom "mousedown" <|
         Decode.map alwaysPreventDefaultAndStopPropagation
-            (Decode.map2 customEnvelope (baseDecoder ()) customDecoder)
+            (Decode.map2 customEnvelope (baseDecoder key) customDecoder)
 
 
 baseDecoder : a -> Decoder (Msg a)
 baseDecoder key =
     positionDecoder
         |> Decode.map (Msg << Internal.StartDragging key)
-        |> whenLeftMouseButtonPressed
 
 
 positionDecoder : Decoder Position
@@ -193,6 +192,14 @@ alwaysPreventDefaultAndStopPropagation msg =
     { message = msg, stopPropagation = True, preventDefault = True }
 
 
+{-| Modify a decoder to only trigger for the left mouse button.
+This modifier is already applied to the basic [`mouseTrigger`](Draggable-mouseTrigger). It's only useful in conjunction with [`customMouseTrigger`](Draggable-customMouseTrigger).
+
+    div
+        [ customMouseTrigger () (whenLeftMouseButtonPressed offsetDecoder) CustomDragMsg ]
+        [ text "Drag me" ]
+
+-}
 whenLeftMouseButtonPressed : Decoder a -> Decoder a
 whenLeftMouseButtonPressed decoder =
     Decode.field "button" Decode.int
